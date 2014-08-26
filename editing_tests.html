@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<head>
+<!--
+  Copyright 2014 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<title>Editing Unit Test Runner</title>
+<meta http-equiv="X-UA-Compatible" content="IE=11">
+<style>
+body {
+  font-family: Tahoma;
+}
+h3 {
+  margin-top: 10pt;
+  margin-bottom: 0px;
+}
+p { margin: 0px; }
+li { white-space: nowrap; }
+li.exception:before { color: red; content: 'EXCEPTION '; }
+li.fail:before { color: red; content: 'FAIL '; }
+li.incompatible_html:before { color: #ffca28; content: 'NOTE '; }
+li.incompatible_return:before { color: #ffca28; content: 'NOTE '; }
+li.incompatible_selection:before { color: #ffca28; content: 'NOTE'; }
+li.pass:before { color: green; content: 'PASS '; }
+li.warn:before { color: #80deea; content: 'WARN '; }
+span.incompatible_html { background-color: #ffca28; }
+span.incompatible_return { background-color: #ffca28; }
+span.incompatible_selection { background-color: #80deea; }
+ul.incompatible_html { background-color: #ffca28; }
+ul.incompatible_selection { background-color: #80deea; }
+ul.fail {
+    border: solid 2px red;
+    background-color: #e51c23;
+    color: white;
+}
+
+.actual { font-family: monospace; }
+.before{ font-family: monospace; }
+.chrome { font-family: monospace; }
+.compatible { background-color: #a3e9a4; }
+.compatible_html { background-color: #a3e9a4; }
+.expected { font-family: monospace; }
+.firefox { font-family: monospace; }
+.green { color: #259b24; }
+.ie { font-family: monospace; }
+.new { font-family: monospace; }
+.override { background-color: #a3e9a4; }
+.red { color: #bf360c; }
+.pass2 {
+  background-color: #76a7fa;
+  border-top: 1px solid #76a7fa;
+  border-bottom: 1px solid #76a7fa;
+  opacity: 0.50;
+  z-index: 20;
+}
+
+.selectionAnchorFocus {
+  background-color: rgba(118, 122, 250, 0.5);
+  border-right: 2px solid #3f51b5;
+}
+.selectionFocusAnchor {
+  background-color: rgba(118, 122, 250, 0.5);
+  border-left: 2px solid #3f51b5;
+}
+.w3c { font-family: monospace; }
+.warn { background-color: #ffff8d; }
+</style>
+<script>
+onerror = function(event) {
+  console.log('onerror', event);
+  var message ='Loading error. See console, Ctrl+Shift+J, for details.';
+  if (document.body) {
+    document.body.insertBefore(document.createTextNode(message),
+                               document.body.firstChild);
+  } else {
+    document.write(message);
+  }
+};
+
+onload = function() {
+  var buttons = document.getElementById('buttons');
+  document.getElementById('runAllTests').onclick = function(event) {
+    buttons.outerHTML = '';
+    testRunner.runAllTests();
+  };
+
+  testRunner.getSectionNames().forEach(function(sectionName) {
+    var button = document.createElement('button');
+    button.textContent = 'Run ' + sectionName;
+    button.addEventListener('click', function() {
+      testRunner.runAllTests(sectionName);
+    });
+    buttons.appendChild(document.createTextNode(' '));
+    buttons.appendChild(button);
+  });
+};
+</script>
+<script src="polyfill.js"></script>
+<script src="editing.js"></script>
+<script src="content_model.js"></script>
+<script src="editing_context.js"></script>
+<script src="editor.js"></script>
+<script src="nodes.js"></script>
+<script src="operations.js"></script>
+<script src="read_only_selection.js"></script>
+<script src="selection_tracker.js"></script>
+<script src="commands/create_link_command.js"></script>
+<script src="commands/remove_format_command.js"></script>
+<script src="commands/undo_command.js"></script>
+<script src="commands/unlink_command.js"></script>
+<!-- tests -->
+<script src="testing/testing.js"></script>
+<script src="testing/sample.js"></script>
+<script src="testing/test_case.js"></script>
+<script src="testing/test_runner.js"></script>
+
+<!-- Test Cases -->
+<script src="editing_context_unittest.js"></script>
+<script src="editor_unittest.js"></script>
+<script src="nodes_unittest.js"></script>
+<script src="operations_unittest.js"></script>
+<script src="read_only_selection_unittest.js"></script>
+<script src="commands/create_link_command_unittest.js"></script>
+<script src="commands/create_link_command_w3c_unittest.js"></script>
+<script src="commands/remove_format_command_unittest.js"></script>
+<!--
+TODO(yosin) We should review failures of "removeFormat" commands.
+-->
+<script src="commands/remove_format_command_w3c_unittest.js"></script>
+<script src="commands/unlink_command_unittest.js"></script>
+<script src="commands/unlink_command_w3c_unittest.js"></script>
+<!-- Test expectations -->
+<script src="testing/test_expectations.js"></script>
+</head>
+<body>
+<h1>Editing in JavaScript Test Runner</h1>
+<div id="buttons">
+<button id="runAllTests">Run All Tests</button>
+</div>
+<h2>Results</h2>
+<div id="statusBar">
+<div id="status"></div>
+<style>
+#progressBar {
+  background-color: #81d4fa;
+  height: 5pt;
+  width: 400pt;
+}
+#progress {
+  background-color: #0091ea;
+  height: 5pt;
+}
+</style>
+<div id="progressBar"><div id="progress"></div></div>
+</div>
+<div id="results"></div>
+<h2>Details</h2>
+</body>

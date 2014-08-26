@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2014 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<head>
+<title>Import W3C samples</title>
+<script src="https://dvcs.w3.org/hg/editing/raw-file/tip/conformancetest/data.js"></script>
+</head>
+<body>
+<h1>Import W3C Samples</h1>
+In this you can import samples from
+<a href="https://dvcs.w3.org/hg/editing/raw-file/tip/editing.html">WIP HTML Editing APIs</a>.
+<p>
+Command name:
+<select id="commandName" onchange="doImport()">
+<option value="">Choose command...</option>
+</select>
+<button onclick="doImport()">Import</button>
+</p>
+<textarea id="output" cols="80" rows="20"></textarea>
+</body>
+<script>
+var SCRIPT_HEADER =
+  "// Copyright 2014 The Chromium Authors. All rights reserved.\n" +
+  "// Use of this source code is governed by a BSD-style license that can be\n" +
+  "// found in the LICENSE file.\n\n" +
+  "// This test is generated from https://dvcs.w3.org/hg/editing/raw-file/tip/conformancetest/data.js\n" +
+  "// in HTML Editing APIs specification of https://dvcs.w3.org/hg/editing/raw-file/tip/editing.html\n\n" +
+  "'use strict';\n\n";
+
+var PRETTY_COMMAND_NAMES = (function() {
+  var prettyNames = {};
+  [
+    'backColor', 'bold', 'createLink', 'delete', 'fontName',
+    'fontSize', 'foreColor', 'formatBlock', 'forwardDelete', 'hiliteColor',
+    'indent', 'insertHorizontalRule', 'insertHTML', 'insertImage',
+    'insertLineBreak', 'insertOrderedList', 'insertParagraph', 'insertText',
+    'insertUnorderedList', 'italic', 'justifyCenter', 'justifyFull',
+    'justifyLeft', 'justifyRight', 'outdent', 'removeFormat', 'strikethrough',
+    'subscript', 'superscript', 'underline', 'unlink', 'selectAll', 'quasit'
+  ].forEach(function(prettyName) {
+    prettyNames[prettyName.toLowerCase()] = prettyName;
+  });
+  return prettyNames;
+})();
+
+function replaceDataAttr(text){
+  if (text.indexOf('data-start') < 0)
+    return text;
+  var dummy = document.createElement('div');
+  dummy.innerHTML = text;
+  var element = dummy.querySelector('*[data-start]');
+  var dataStart = parseInt(element.getAttribute('data-start'));
+  var dataEnd = parseInt(element.getAttribute('data-end'));
+  if (dataStart == dataEnd) {
+    element.insertBefore(document.createComment('{}'),
+                         element.childNodes[dataEnd]);
+  } else {
+    console.assert(dataStart < dataEnd, 'dataStart', dataStart,
+                   'must be less than', 'dataEnd', dataEnd);
+    element.insertBefore(document.createComment('}'),
+                         element.childNodes[dataEnd]);
+    element.insertBefore(document.createComment('{'),
+                         element.childNodes[dataStart]);
+  }
+  element.removeAttribute('data-start');
+  element.removeAttribute('data-end');
+  return dummy.innerHTML.replace(/<!--/g, '').replace(/-->/g, '');
+}
+
+// browserTests = [ testCase, ... ];
+// testCase = [
+//  before, // 0
+//  [ [commandsName, value]+ ], // 1 parameters for execCommand
+//  after, // 2
+//  [ boolean+ ], // 3 return value of execCommand
+//  documentState, // 4
+//  { commandName: queryResults } // 5
+// ];
+// var queryResults = [
+//    beforeQueryCommandIndeterm,
+//    beforeQueryCommandState,
+//    beforeQueryCommandValue,
+//    afterQueryCommandIndeterm,
+//    afterQueryCommandState,
+//    afterQueryCommandValue
+//  ]
+var testCases = browserTests.map(function(testCaseIn) {
+  var testCase = {
+    before: replaceDataAttr(testCaseIn[0]),
+    after: replaceDataAttr(testCaseIn[2])
+  };
+  var nameValues = testCaseIn[1];
+  var returnValues = testCaseIn[3];
+  while (nameValues.length) {
+    var nameValue = nameValues[0];
+    var commandName = nameValue[0];
+    var commandValue = nameValue[1]
+    if (commandName != 'defaultparagraphseparator' &&
+        commandName != 'stylewithcss' && commandName != 'usecss') {
+      break;
+    }
+    testCase.commandName = commandName;
+    testCase.commandValue = commandValue;
+    nameValues.shift();
+    returnValues.shift();
+  }
+
+  if (nameValues.length != 1)
+    return void(0);
+
+  testCase['commandName'] = nameValues[0][0];
+  testCase['commandValue'] = nameValues[0][1];
+  testCase['returnValue'] = returnValues[0];
+  return testCase;
+}).filter(function(testCase) {
+  return testCase;
+});
+
+console.log('Skip', browserTests.length - testCases.length, 'from',
+            browserTests.length, 'test cases');
+
+function stringify(thing) {
+  switch (typeof(thing)) {
+    case 'boolean':
+    case 'number':
+      return thing;
+    case 'string':
+      return "'" + String(thing).replace(/[\\]/g, '\\\\')
+          .replace(/\u0027/g, "\\'") + "'";
+    default:
+      console.log('stringify', 'unsupported', thing);
+      throw new Error('Unsupported value: ' + thing);
+  }
+}
+
+(function() {
+  var commandNames = {};
+  testCases.forEach(function(testCase) {
+    commandNames[testCase.commandName] = true;
+  });
+  var select = document.querySelector('select');
+  Object.keys(commandNames).sort().forEach(function(commandName) {
+    var element = document.createElement('option');
+    element.value = commandName;
+    element.text = PRETTY_COMMAND_NAMES[commandName];
+    select.add(element);
+  });
+})();
+
+function doImport() {
+  var candidateName = document.getElementById('commandName').value.toLowerCase();
+  var samples = [];
+  var sampleId = 0;
+
+  testCases.filter(function(testCase) {
+    return testCase.commandName == candidateName;
+  }).forEach(function(testCase) {
+    var sample = {};
+    if (testCase.commandValue)
+      sample.value = testCase.commandValue;
+    if (!testCase.returnValue)
+      sample.returnValue = false;
+
+    var after = '<div contenteditable>' + testCase.after + '</div>';
+    var before = '<div contenteditable>' + testCase.before + '</div>';
+
+    sample.after= replaceMarker(after, '^', '|');
+    sample.before = replaceMarker(before, '^', '|');
+    ++sampleId;
+    sample.sampleId = sampleId;
+    samples.push(sample);
+
+    if (before.indexOf('[]') >= 0 || before.indexOf('{}') >= 0)
+      return;
+
+    var sample2 = {};
+    Object.keys(sample).forEach(function(key) {
+      sample2[key] = sample[key];
+    });
+    sample2.after = replaceMarker(after, '|', '^');
+    sample2.before = replaceMarker(before, '|', '^');
+    sample2.sampleId = sampleId + 'r';
+    samples.push(sample2);
+  });
+
+  var output = document.getElementById('output');
+  output.value = SCRIPT_HEADER + "// " + samples.length + " test cases\n" +
+      samples.map(function(sample) {
+    if (sample.before.indexOf('|') < 0)
+      console.log('No caret', sample.before);
+    if (sample.after.indexOf('|') < 0)
+      console.log('No caret', sample.after);
+    return "testCaseFor('" + PRETTY_COMMAND_NAMES[candidateName] + "', '" +
+        'w3c.' + sample.sampleId + "', {\n" +
+        Object.keys(sample).sort().map(function(key) {
+          var value = sample[key];
+          return '  ' + key + ': ' + stringify(value);
+        }).join(',\n') + '\n});';
+  }).join('\n\n') + '\n';
+  output.focus();
+  output.setSelectionRange(0, output.value.length);
+}
+
+function replaceMarker(text, anchor, focus) {
+  if (text.indexOf('[]') >= 0)
+    return text.replace('[]', '|');
+  if (text.indexOf('{}') >= 0)
+    return text.replace('{}', '|');
+  return text.replace('[', anchor).replace(']', focus)
+             .replace('{', anchor).replace('}', focus);
+}
+</script>
