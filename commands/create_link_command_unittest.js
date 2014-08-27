@@ -134,20 +134,6 @@ testCaseFor('createLink', 'Range.3.2', {
   value: 'URL'
 });
 
-// Variation of w3c.4
-testCaseFor('createLink', 'Range.4.1', {
-  after: '<div contenteditable><p><a href="URL">^foo</a></p><p> <a href="URL"><span><b>bar</b>quux</span></a> </p><p><a href="URL">baz|</a></p></div>',
-  before: '<div contenteditable><p>^foo</p><p> <span><b>bar</b>quux</span> </p><p>baz|</p></div>',
-  value: 'URL'
-});
-
-testCaseFor('createLink', 'Range.4.2', {
-  after: '<div contenteditable><p><a href="URL">^foo</a></p><p> <a href="URL"><span><span>bar</span>quux</span></a> </p><p><a href="URL">baz|</a></p></div>',
-  before: '<div contenteditable><p>^foo</p><p> <span><span>bar</span>quux</span> </p><p>baz|</p></div>',
-  sampleId: 4,
-  value: 'URL'
-});
-
 // Variation of w3c.11
 testCaseFor('createLink', 'Range.11.1', {
   after: '<div contenteditable>foo<b><a href="URL">^bar</a><i><a href="URL">baz |</a>quux</i></b>mox</div>',

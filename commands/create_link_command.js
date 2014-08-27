@@ -105,16 +105,6 @@ editing.defineCommand('CreateLink', (function() {
              node.attributes.length == 1;
     }
 
-    function removeTrailingWhitespaces(anchorElement) {
-      // Remove trailing invisible nodes.
-      var lastChild;
-      while (lastChild = anchorElement.lastChild) {
-        if (editing.nodes.isVisibleNode(lastChild))
-          break;
-        context.insertAfter(anchorElement.parentNode, lastChild, anchorElement);
-      }
-    }
-
     function insertNewAnchorElement(anchorPhraseNode) {
       if (editing.nodes.isWhitespaceNode(anchorPhraseNode))
         return null;
@@ -169,7 +159,6 @@ editing.defineCommand('CreateLink', (function() {
     function endAnchorElement() {
       if (!anchorElement)
         return;
-      removeTrailingWhitespaces(anchorElement);
       anchorElement = null;
     }
 
