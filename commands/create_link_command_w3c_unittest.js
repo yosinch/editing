@@ -87,21 +87,21 @@ testCaseFor('createLink', 'w3c.7', {
 
 testCaseFor('createLink', 'w3c.8', {
   after: '<div contenteditable><span>foo<a href="http://www.google.com/">^http://www.google.com/|</a></span><span>bar</span></div>',
-  before: '<div contenteditable><span>foo</span>|<span>bar</span></div>',
+  before: '<div contenteditable><span>foo|</span><span>bar</span></div>',
   sampleId: 8,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.9', {
   after: '<div contenteditable><span>foo<a href="http://www.google.com/">^http://www.google.com/|</a></span><span>bar</span></div>',
-  before: '<div contenteditable><span>foo^</span><span>|bar</span></div>',
+  before: '<div contenteditable><span>foo|</span><span>bar</span></div>',
   sampleId: 9,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.9r', {
   after: '<div contenteditable><span>foo<a href="http://www.google.com/">^http://www.google.com/|</a></span><span>bar</span></div>',
-  before: '<div contenteditable><span>foo|</span><span>^bar</span></div>',
+  before: '<div contenteditable><span>foo|</span><span>bar</span></div>',
   sampleId: '9r',
   value: 'http://www.google.com/'
 });
@@ -150,14 +150,14 @@ testCaseFor('createLink', 'w3c.12r', {
 
 testCaseFor('createLink', 'w3c.13', {
   after: '<div contenteditable><p></p><p> </p><p><a href="http://www.google.com/">^foo|</a></p></div>',
-  before: '<div contenteditable>^<p></p><p> </p><p>foo</p>|</div>',
+  before: '<div contenteditable><p></p><p> </p><p>^foo|</p></div>',
   sampleId: 13,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.13r', {
   after: '<div contenteditable><p></p><p> </p><p><a href="http://www.google.com/">^foo|</a></p></div>',
-  before: '<div contenteditable>|<p></p><p> </p><p>foo</p>^</div>',
+  before: '<div contenteditable><p></p><p> </p><p>|foo^</p></div>',
   sampleId: '13r',
   value: 'http://www.google.com/'
 });
@@ -178,56 +178,56 @@ testCaseFor('createLink', 'w3c.14r', {
 
 testCaseFor('createLink', 'w3c.15', {
   after: '<div contenteditable><table><tbody><tr><td>foo</td><td><a href="http://www.google.com/">^bar</a></td><td>|baz</td></tr></tbody></table></div>',
-  before: '<div contenteditable><table><tbody><tr><td>foo</td>^<td>bar</td>|<td>baz</td></tr></tbody></table></div>',
+  before: '<div contenteditable><table><tbody><tr><td>foo</td><td>^bar</td><td>|baz</td></tr></tbody></table></div>',
   sampleId: 15,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.15r', {
   after: '<div contenteditable><table><tbody><tr><td>foo</td><td><a href="http://www.google.com/">^bar</a></td><td>|baz</td></tr></tbody></table></div>',
-  before: '<div contenteditable><table><tbody><tr><td>foo</td>|<td>bar</td>^<td>baz</td></tr></tbody></table></div>',
+  before: '<div contenteditable><table><tbody><tr><td>foo</td><td>|bar</td><td>^baz</td></tr></tbody></table></div>',
   sampleId: '15r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.16', {
   after: '<div contenteditable><table><tbody><tr><td><a href="http://www.google.com/">^foo</a></td><td><a href="http://www.google.com/">bar</a></td><td>|baz</td></tr></tbody></table></div>',
-  before: '<div contenteditable><table><tbody><tr>^<td>foo</td><td>bar</td>|<td>baz</td></tr></tbody></table></div>',
+  before: '<div contenteditable><table><tbody><tr><td>^foo</td><td>bar</td><td>|baz</td></tr></tbody></table></div>',
   sampleId: 16,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.16r', {
   after: '<div contenteditable><table><tbody><tr><td><a href="http://www.google.com/">^foo</a></td><td><a href="http://www.google.com/">bar</a></td><td>|baz</td></tr></tbody></table></div>',
-  before: '<div contenteditable><table><tbody><tr>|<td>foo</td><td>bar</td>^<td>baz</td></tr></tbody></table></div>',
+  before: '<div contenteditable><table><tbody><tr><td>|foo</td><td>bar</td><td>^baz</td></tr></tbody></table></div>',
   sampleId: '16r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.17', {
   after: '<div contenteditable><table><tbody><tr><td><a href="http://www.google.com/">^foo</a></td><td><a href="http://www.google.com/">bar</a></td><td><a href="http://www.google.com/">baz</a></td></tr></tbody></table>|</div>',
-  before: '<div contenteditable><table><tbody>^<tr><td>foo</td><td>bar</td><td>baz</td></tr>|</tbody></table></div>',
+  before: '<div contenteditable><table><tbody><tr><td>^foo</td><td>bar</td><td>baz</td></tr></tbody></table>|</div>',
   sampleId: 17,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.17r', {
   after: '<div contenteditable><table><tbody><tr><td><a href="http://www.google.com/">^foo</a></td><td><a href="http://www.google.com/">bar</a></td><td><a href="http://www.google.com/">baz</a></td></tr></tbody></table>|</div>',
-  before: '<div contenteditable><table><tbody>|<tr><td>foo</td><td>bar</td><td>baz</td></tr>^</tbody></table></div>',
+  before: '<div contenteditable><table><tbody><tr><td>|foo</td><td>bar</td><td>baz</td></tr></tbody></table>^</div>',
   sampleId: '17r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.18', {
   after: '<div contenteditable>^<table><tbody><tr><td><a href="http://www.google.com/">foo</a></td><td><a href="http://www.google.com/">bar</a></td><td><a href="http://www.google.com/">baz</a></td></tr></tbody></table>|</div>',
-  before: '<div contenteditable><table>^<tbody><tr><td>foo</td><td>bar</td><td>baz</td></tr></tbody>|</table></div>',
+  before: '<div contenteditable>^<table><tbody><tr><td>foo</td><td>bar</td><td>baz</td></tr></tbody></table>|</div>',
   sampleId: 18,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.18r', {
   after: '<div contenteditable>^<table><tbody><tr><td><a href="http://www.google.com/">foo</a></td><td><a href="http://www.google.com/">bar</a></td><td><a href="http://www.google.com/">baz</a></td></tr></tbody></table>|</div>',
-  before: '<div contenteditable><table>|<tbody><tr><td>foo</td><td>bar</td><td>baz</td></tr></tbody>^</table></div>',
+  before: '<div contenteditable>|<table><tbody><tr><td>foo</td><td>bar</td><td>baz</td></tr></tbody></table>^</div>',
   sampleId: '18r',
   value: 'http://www.google.com/'
 });
@@ -262,42 +262,42 @@ testCaseFor('createLink', 'w3c.20r', {
 
 testCaseFor('createLink', 'w3c.21', {
   after: '<div contenteditable><a href="http://www.google.com/">foo^barbaz|</a></div>',
-  before: '<div contenteditable><a href="http://www.google.com/">foo^barbaz</a>|</div>',
+  before: '<div contenteditable><a href="http://www.google.com/">foo^barbaz|</a></div>',
   sampleId: 21,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.21r', {
   after: '<div contenteditable><a href="http://www.google.com/">foo^barbaz|</a></div>',
-  before: '<div contenteditable><a href="http://www.google.com/">foo|barbaz</a>^</div>',
+  before: '<div contenteditable><a href="http://www.google.com/">foo|barbaz^</a></div>',
   sampleId: '21r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.22', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobar|baz</a></div>',
-  before: '<div contenteditable>^<a href="http://www.google.com/">foobar|baz</a></div>',
+  before: '<div contenteditable><a href="http://www.google.com/">^foobar|baz</a></div>',
   sampleId: 22,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.22r', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobar|baz</a></div>',
-  before: '<div contenteditable>|<a href="http://www.google.com/">foobar^baz</a></div>',
+  before: '<div contenteditable><a href="http://www.google.com/">|foobar^baz</a></div>',
   sampleId: '22r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.23', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobarbaz|</a></div>',
-  before: '<div contenteditable>^<a href="http://www.google.com/">foobarbaz</a>|</div>',
+  before: '<div contenteditable><a href="http://www.google.com/">^foobarbaz|</a></div>',
   sampleId: 23,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.23r', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobarbaz|</a></div>',
-  before: '<div contenteditable>|<a href="http://www.google.com/">foobarbaz</a>^</div>',
+  before: '<div contenteditable><a href="http://www.google.com/">|foobarbaz^</a></div>',
   sampleId: '23r',
   value: 'http://www.google.com/'
 });
@@ -360,14 +360,14 @@ testCaseFor('createLink', 'w3c.27r', {
 
 testCaseFor('createLink', 'w3c.28', {
   after: '<div contenteditable>foo<a href="http://www.google.com/">^bar|</a>baz</div>',
-  before: '<div contenteditable>foo^<a href="http://www.google.com/">bar</a>|baz</div>',
+  before: '<div contenteditable>foo<a href="http://www.google.com/">^bar|</a>baz</div>',
   sampleId: 28,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.28r', {
   after: '<div contenteditable>foo<a href="http://www.google.com/">^bar|</a>baz</div>',
-  before: '<div contenteditable>foo|<a href="http://www.google.com/">bar</a>^baz</div>',
+  before: '<div contenteditable>foo<a href="http://www.google.com/">|bar^</a>baz</div>',
   sampleId: '28r',
   value: 'http://www.google.com/'
 });
@@ -430,42 +430,42 @@ testCaseFor('createLink', 'w3c.32r', {
 
 testCaseFor('createLink', 'w3c.33', {
   after: '<div contenteditable><a href="otherurl">foo</a><a href="http://www.google.com/">^barbaz|</a></div>',
-  before: '<div contenteditable><a href="otherurl">foo^barbaz</a>|</div>',
+  before: '<div contenteditable><a href="otherurl">foo^barbaz|</a></div>',
   sampleId: 33,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.33r', {
   after: '<div contenteditable><a href="otherurl">foo</a><a href="http://www.google.com/">^barbaz|</a></div>',
-  before: '<div contenteditable><a href="otherurl">foo|barbaz</a>^</div>',
+  before: '<div contenteditable><a href="otherurl">foo|barbaz^</a></div>',
   sampleId: '33r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.34', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobar|</a><a href="otherurl">baz</a></div>',
-  before: '<div contenteditable>^<a href="otherurl">foobar|baz</a></div>',
+  before: '<div contenteditable><a href="otherurl">^foobar|baz</a></div>',
   sampleId: 34,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.34r', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobar|</a><a href="otherurl">baz</a></div>',
-  before: '<div contenteditable>|<a href="otherurl">foobar^baz</a></div>',
+  before: '<div contenteditable><a href="otherurl">|foobar^baz</a></div>',
   sampleId: '34r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.35', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobarbaz|</a></div>',
-  before: '<div contenteditable>^<a href="otherurl">foobarbaz</a>|</div>',
+  before: '<div contenteditable><a href="otherurl">^foobarbaz|</a></div>',
   sampleId: 35,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.35r', {
   after: '<div contenteditable><a href="http://www.google.com/">^foobarbaz|</a></div>',
-  before: '<div contenteditable>|<a href="otherurl">foobarbaz</a>^</div>',
+  before: '<div contenteditable><a href="otherurl">|foobarbaz^</a></div>',
   sampleId: '35r',
   value: 'http://www.google.com/'
 });
@@ -500,14 +500,14 @@ testCaseFor('createLink', 'w3c.37r', {
 
 testCaseFor('createLink', 'w3c.38', {
   after: '<div contenteditable>foo<a href="http://www.google.com/">^bar|</a>baz</div>',
-  before: '<div contenteditable>foo^<a href="otherurl">bar</a>|baz</div>',
+  before: '<div contenteditable>foo<a href="otherurl">^bar|</a>baz</div>',
   sampleId: 38,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.38r', {
   after: '<div contenteditable>foo<a href="http://www.google.com/">^bar|</a>baz</div>',
-  before: '<div contenteditable>foo|<a href="otherurl">bar</a>^baz</div>',
+  before: '<div contenteditable>foo<a href="otherurl">|bar^</a>baz</div>',
   sampleId: '38r',
   value: 'http://www.google.com/'
 });
@@ -570,28 +570,28 @@ testCaseFor('createLink', 'w3c.42r', {
 
 testCaseFor('createLink', 'w3c.43', {
   after: '<div contenteditable><b><a href="otherurl">foo</a><a href="http://www.google.com/">^barbaz|</a></b></div>',
-  before: '<div contenteditable><a href="otherurl"><b>foo^barbaz</b></a>|</div>',
+  before: '<div contenteditable><a href="otherurl"><b>foo^barbaz|</b></a></div>',
   sampleId: 43,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.43r', {
   after: '<div contenteditable><b><a href="otherurl">foo</a><a href="http://www.google.com/">^barbaz|</a></b></div>',
-  before: '<div contenteditable><a href="otherurl"><b>foo|barbaz</b></a>^</div>',
+  before: '<div contenteditable><a href="otherurl"><b>foo|barbaz^</b></a></div>',
   sampleId: '43r',
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.44', {
   after: '<div contenteditable><b><a href="http://www.google.com/">^foobar|</a><a href="otherurl">baz</a></b></div>',
-  before: '<div contenteditable>^<a href="otherurl"><b>foobar|baz</b></a></div>',
+  before: '<div contenteditable><a href="otherurl"><b>^foobar|baz</b></a></div>',
   sampleId: 44,
   value: 'http://www.google.com/'
 });
 
 testCaseFor('createLink', 'w3c.44r', {
   after: '<div contenteditable><b><a href="http://www.google.com/">^foobar|</a><a href="otherurl">baz</a></b></div>',
-  before: '<div contenteditable>|<a href="otherurl"><b>foobar^baz</b></a></div>',
+  before: '<div contenteditable><a href="otherurl"><b>|foobar^baz</b></a></div>',
   sampleId: '44r',
   value: 'http://www.google.com/'
 });

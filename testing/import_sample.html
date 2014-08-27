@@ -173,8 +173,12 @@ function doImport() {
       var sample = new testing.Sample(replaceMarker(before, '^', '|'));
       var editable = sample.document.body.firstChild;
       var testCase = {};
+      // TODO(yosin) Until http://crbug.com/346613 fixed, we use canonicalized
+      // version of selection.
+      var editor = editing.Editor.getOrCreate(sample.document);
+      editor.setDomSelection(sample.startingSelection);
       testCase['before'] = testing.serializeNode(editable, {
-          selection: sample.startingSelection
+          selection: editor.getDomSelection()
       });
       if (commandValue) {
         testCase['returnValue'] = sample.execCommand(commandName, false,
