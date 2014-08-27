@@ -5,10 +5,6 @@
 'use strict';
 
 editing.defineCommand('CreateLink', (function() {
-  // Note: Firefox and IE don't insert anchor element for caret.
-  // IE returns true event if it doesnt' insert anchor element.
-  /** @const */ var INSERT_LINK_FOR_CARET = false;
-
   /**
    * Insert an A element, link and content are specified URL, before selection
    * focus position.
@@ -181,10 +177,9 @@ editing.defineCommand('CreateLink', (function() {
         context, context.startingSelection);
     var effectiveNodes = editing.nodes.computeEffectiveNodes(selection);
     if (!effectiveNodes.length) {
-      if (INSERT_LINK_FOR_CARET)
-        return createLinkBeforeCaret(context, url);
-      context.setEndingSelection(context.startingSelection);
-      return true;
+      // Note: Firefox and IE don't insert anchor element for caret.
+      // IE returns true event if it doesnt' insert anchor element.
+      return createLinkBeforeCaret(context, url);
     }
 
     var pendingContainers = [];
@@ -334,10 +329,9 @@ editing.defineCommand('CreateLink', (function() {
       return true;
     }
     if (context.startingSelection.isCaret) {
-      if (INSERT_LINK_FOR_CARET)
-        return createLinkBeforeCaret(context, url);
-      context.setEndingSelection(context.startingSelection);
-      return true;
+      // Note: Firefox and IE don't insert anchor element for caret.
+      // IE returns true event if it doesnt' insert anchor element.
+      return createLinkBeforeCaret(context, url);
     }
     return createLinkForRange(context, url);
   }

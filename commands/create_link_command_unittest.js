@@ -25,22 +25,19 @@ testCase('createLink.NoUrl', function() {
 // <b>foo|bar</b> => <b>foo^<a>url</a>|bar</b>
 testCaseFor('createLink', 'CaretAtFirst', {
   before: '<p contenteditable>|abcd</p>',
-  after: '<p contenteditable>|abcd</p>',
-  chrome:'<p contenteditable>^<a href="URL">URL</a>|abcd</p>',
+  after:'<p contenteditable>^<a href="URL">URL</a>|abcd</p>',
   value: 'URL'
 });
 
 testCaseFor('createLink', 'Caret.AtLast', {
   before: '<p contenteditable>abcd|</p>',
-  after: '<p contenteditable>abcd|</p>',
-  chrome: '<p contenteditable>abcd^<a href="URL">URL</a>|</p>',
+  after: '<p contenteditable>abcd^<a href="URL">URL</a>|</p>',
   value: 'URL'
 });
 
 testCaseFor('createLink', 'Caret.AtMiddle', {
   before: '<p contenteditable>ab|cd</p>',
-  after: '<p contenteditable>ab|cd</p>',
-  chrome:  '<p contenteditable>ab^<a href="URL">URL</a>|cd</p>',
+  after:  '<p contenteditable>ab^<a href="URL">URL</a>|cd</p>',
   value: 'URL'
 });
 
@@ -48,22 +45,19 @@ testCaseFor('createLink', 'Caret.AtMiddle', {
 // <a><b>foo|bar</b></a> => <a><b>foo</b></a><b><a>URL</a></b><a><b>bar</a>
 testCaseFor('createLink', 'Caret.InteractiveAtFirst', {
   before: '<p contenteditable><a><b>|abcd</b></a></p>',
-  after: '<p contenteditable><a><b>|abcd</b></a></p>',
-  chrome:  '<p contenteditable><b>^<a href="URL">URL</a>|</b><a><b>abcd</b></a></p>',
+  after:  '<p contenteditable><b>^<a href="URL">URL</a>|</b><a><b>abcd</b></a></p>',
   value: 'URL'
 });
 
 testCaseFor('createLink', 'Caret.InteractiveAtLast', {
   before: '<p contenteditable><a><b>abcd|</b></a></p>',
-  after: '<p contenteditable><a><b>abcd|</b></a></p>',
-  chrome:  '<p contenteditable><a><b>abcd</b></a><b>^<a href="URL">URL</a>|</b></p>',
+  after:  '<p contenteditable><a><b>abcd</b></a><b>^<a href="URL">URL</a>|</b></p>',
   value: 'URL'
 });
 
 testCaseFor('createLink', 'Caret.InteractiveAtMiddle', {
   before: '<p contenteditable><a><b>ab|cd</b></a></p>',
-  after: '<p contenteditable><a><b>ab|cd</b></a></p>',
-  chrome:  '<p contenteditable><a><b>ab</b></a><b>^<a href="URL">URL</a>|</b><a><b>cd</b></a></p>',
+  after:  '<p contenteditable><a><b>ab</b></a><b>^<a href="URL">URL</a>|</b><a><b>cd</b></a></p>',
   value: 'URL'
 });
 
@@ -120,8 +114,7 @@ testCaseFor('createLink', 'Range.SimpleTree', {
 // See also w3c.9 "^</span><span>|"
 testCaseFor('createLink', 'EndTag', {
   before: '<p contenteditable><b>abc^</b>|</p>',
-  after: '<p contenteditable><b>abc^</b>|</p>',
-  chrome:  '<p contenteditable><b>abc</b>^<a href="URL">URL</a>|</p>',
+  after:  '<p contenteditable><b>abc</b>^<a href="URL">URL</a>|</p>',
   value: 'URL'
 });
 
