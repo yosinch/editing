@@ -36,7 +36,11 @@ window['testing']= {};
   });
 })();
 
-/// TODO(yosin) We should add more end tag omissible tag names.
+function NOTREACHED() {
+  throw new Error('NOTREACHED');
+}
+
+// TODO(yosin) We should add more end tag omissible tag names.
 testing.define('END_TAG_OMISSIBLE', (function() {
   var omissibleTagNames = new Set();
   ['br', 'hr', 'img', 'wbr'].forEach(function(tagName) {
@@ -46,6 +50,107 @@ testing.define('END_TAG_OMISSIBLE', (function() {
   return omissibleTagNames;
 })());
 
-function NOTREACHED() {
-  throw new Error('NOTREACHED');
-}
+testing.define('serializeNode', (function() {
+  /**
+   * @param {!Node} node
+   * @param {Object=} opt_options
+   *    selection: editing.ReadOnlySelection
+   *    visibleTextNode: boolean
+   * @return {string}
+   */
+  function serializeNode(node, opt_options) {
+    //console.assert(node instanceof Node);
+    /** @const */ var options = arguments.length >= 2 ?
+        /** @type {Object} */(opt_options) : {};
+    /** @const */ var selection = options.selection || null;
+    /** @const */ var visibleTextNode = Boolean(options.visibleTextNode);
+
+    function marker(node, offset) {
+      if (!selection)
+        return '';
+      if (selection.focusNode === node && selection.focusOffset == offset)
+        return '|';
+      if (selection.anchorNode === node && selection.anchorOffset == offset)
+        return '^';
+      return '';
+    }
+
+    function orderByAttributeName(attrNode1, attrNode2) {
+      return attrNode1.name.localeCompare(attrNode2.name);
+    }
+
+    function visit(node) {
+      if (editing.nodes.isText(node)) {
+        var text = node.nodeValue;
+        if (!selection)
+          return text;
+        if (selection.anchorNode === node && selection.focusNode === node) {
+          var start = selection.startOffset;
+          var end = selection.endOffset;
+          var anchorIsStart = selection.anchorOffset < selection.focusOffset;
+          var startMarker = anchorIsStart ? '^' : '|';
+          var endMarker = anchorIsStart ? '|' : '^';
+          if (start == end)
+            return text.substr(0, start) + '|' + text.substr(start);
+          return text.substr(0, start) + startMarker +
+                 text.substring(start, end) + endMarker + text.substr(end);
+        }
+        if (selection.focusNode === node) {
+          return text.substr(0, selection.focusOffset) + '|' +
+                 text.substr(selection.focusOffset);
+        }
+        if (selection.anchorNode === node) {
+          return text.substr(0, selection.anchorOffset) + '^' +
+                 text.substr(selection.anchorOffset);
+        }
+        return text;
+      }
+      if (!editing.nodes.isElement(node)) {
+        // To support |Document| node, we iterate over child nodes.
+        var sink = '';
+        for (var child = node.firstChild; child; child = child.nextSibling) {
+          sink += visit(child);
+        }
+        return sink.length ? sink : node.nodeValue;
+      }
+      var tagName = node.nodeName.toLowerCase();
+      var sink = '<' + tagName;
+      [].slice.call(node.attributes).sort(orderByAttributeName).forEach(
+        function(attrNode) {
+          var attrName = attrNode.name;
+          var attrValue = attrNode.value;
+          if (attrValue){
+            // IE11 append ";" for end of CSS property list.
+            if (attrName == 'style')
+              attrValue = attrValue.replace(/;$/, '');
+            attrValue = attrValue.replace(/&/g, '&amp;')
+                .replace(/\u0022/g, '&quot;');
+            sink += ' ' + attrName + '="' + attrValue + '"';
+          } else {
+            sink += ' ' + attrName;
+          }
+        });
+      sink += '>';
+      var child = node.firstChild;
+      var offset = 0;
+      while (child) {
+        sink += marker(node, offset);
+        sink += visit(child);
+        var nextSibling = child.nextSibling;
+        if (visibleTextNode && editing.nodes.isText(child) && nextSibling &&
+            editing.nodes.isText(nextSibling)) {
+            sink += '_';
+        }
+        child = nextSibling;
+        ++offset;
+      }
+      sink += marker(node, offset);
+      if (!testing.END_TAG_OMISSIBLE.has(tagName))
+        sink += '</' + tagName + '>';
+      return sink;
+    };
+    return visit(node);
+  }
+
+  return serializeNode;
+})());
