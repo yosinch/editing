@@ -1,11 +1,13 @@
 @if "%_echo%"=="" echo off
+if "%CR_ROOT%"=="" goto :no_cr_root
 setlocal
 
 set TMP=d:\tmp
 set TEMP=d:\tmp
+set closure_jar=%CR_ROOT%\third_party\closure_compiler\compiler\compiler.jar
 
-python checker.py --out_dir %TMP% ^ --externs ^
-    externs/es6_externs.js ^
+python checker.py --compiler %closure_jar% --out_dir %TMP% ^
+    --js_externs externs/es6_externs.js ^
     externs/html5_externs.js ^
     externs/editing_externs.js ^
     externs/editing_context_externs.js ^
@@ -35,5 +37,9 @@ python checker.py --out_dir %TMP% ^ --externs ^
     testing/externs/test_runner_externs.js ^
     testing/externs/testing_typedefs.js ^
     -- %*
-
 endlocal
+exit /b %ERRORLEVEL%
+
+:no_cr_root
+echo You should set CR_ROOT to Chromium source root, e.g. d:\src\w\crbk\src.
+exit /b 1
