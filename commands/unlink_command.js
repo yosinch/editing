@@ -65,7 +65,7 @@ editing.defineCommand('Unlink', (function() {
       var lastAnchorElement = lastOf(anchorElements);
       if (lastAnchorElement &&
           lastAnchorElement === currentNode.previousSibling) {
-        selectionTracker.willUnwrapElement(lastAnchorElement);
+        selectionTracker.willUnwrapElement(lastAnchorElement, null);
         context.unwrapElement(lastAnchorElement, null);
         anchorElements.pop();
       }
@@ -85,7 +85,7 @@ editing.defineCommand('Unlink', (function() {
 
     while (anchorElements.length) {
       var anchorElement = anchorElements.pop();
-      selectionTracker.willUnwrapElement(anchorElement);
+      selectionTracker.willUnwrapElement(anchorElement, null);
       context.unwrapElement(anchorElement, null);
     }
 

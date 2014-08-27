@@ -52,8 +52,46 @@ editing.RemoveAttribute = function(element, attrName) {}
  * @constructor
  * @extends {editing.Operation}
  * @final
+ * @param {!Node} parentNode
+ * @param {!Node} oldChild
+ */
+editing.RemoveChild = function(parentNode, oldChild) {}
+
+/**
+ * @constructor
+ * @extends {editing.Operation}
+ * @final
+ * @param {!Node} parentNode
+ * @param {!Node} newChild
+ * @param {!Node} oldChild
+ */
+editing.ReplaceChild = function(parentNode, newChild, oldChild) {}
+
+/**
+ * @constructor
+ * @extends {editing.Operation}
+ * @final
+ * @param {!Element} element
+ * @param {string} attrName
+ * @param {string} newValue
+ */
+editing.SetAttribute = function(element, attrName, newValue) {}
+
+/**
+ * @constructor
+ * @extends {editing.Operation}
+ * @final
  * @param {!Element} element
  * @param {string} propertyName
  * @param {string} newValue
  */
 editing.SetStyle = function(element, propertyName, newValue) {}
+
+/**
+ * @constructor
+ * @extends {editing.Operation}
+ * @final
+ * @param {!Text} textNode
+ * @param {!Text} newTextNode
+ */
+editing.SplitText = function(textNode, newTextNode) {}

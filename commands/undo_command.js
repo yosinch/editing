@@ -6,7 +6,7 @@
 
 editing.defineCommand('redo', (function() {
   /**
-   * @param {!EditingContext} context
+   * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.
    * @param {string} value Noe used.
    * @return {boolean}
@@ -20,7 +20,7 @@ editing.defineCommand('redo', (function() {
 
 editing.defineCommand('undo', (function() {
   /**
-   * @param {!EditingContext} context
+   * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.
    * @param {string} value Noe used.
    * @return {boolean}
