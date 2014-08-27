@@ -148,6 +148,30 @@ editing.define('Editor', (function() {
   }
 
   /**
+   * @return {!editing.ReadOnlySelection}
+   * Since Chrome always set start boundary point as anchor and end boundary as
+   * focus, we follow this.
+   */
+  function getDomSelectionAsChrome() {
+    var domSeleciton = this.document_.getSelection();
+    if (!domSeleciton.rangeCount) {
+      return new editing.ReadOnlySelection(null, 0, null, 0,
+          editing.SelectionDirection.ANCHOR_IS_START);
+    }
+    if (domSeleciton.isCollapsed) {
+      return new editing.ReadOnlySelection(
+          domSeleciton.anchorNode, domSeleciton.anchorOffset,
+          domSeleciton.anchorNode, domSeleciton.anchorOffset,
+          editing.SelectionDirection.ANCHOR_IS_START);
+    }
+    var range = domSeleciton.getRangeAt(0);
+    return new editing.ReadOnlySelection(
+        range.startContainer, range.startOffset,
+        range.endContainer, range.endOffset,
+        editing.SelectionDirection.ANCHOR_IS_START);
+  }
+
+  /**
    * @this {!Editor}
    * @return {boolean}
    */
@@ -209,7 +233,7 @@ editing.define('Editor', (function() {
     document: {get: function() { return this.document_; }},
     document_: {writable: true},
     execCommand: {value: execCommand},
-    getDomSelection: {value: getDomSelection },
+    getDomSelection: {value: getDomSelectionAsChrome },
     selection: {get: function() { return this.selection_; }},
     selection_: {writable: true},
     setDomSelection: {value: setDomSelection },
