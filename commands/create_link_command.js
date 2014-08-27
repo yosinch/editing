@@ -309,7 +309,7 @@ editing.defineCommand('CreateLink', (function() {
     // Example: foo<b>^bar<i>baz quux</i></b>|mox
     // where the last effective node is "baz quux".
     processPendingContents();
-    selectionTracker.finish();
+    selectionTracker.finishWithStartAsAnchor();
     return true;
   }
 
