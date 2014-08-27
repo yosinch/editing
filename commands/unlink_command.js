@@ -45,7 +45,7 @@ editing.defineCommand('Unlink', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.
-   * @param {string} value Noe used.
+   * @param {string} value Not used.
    * @return {boolean}
    */
   function unlinkCommand(context, userInterface, value) {
