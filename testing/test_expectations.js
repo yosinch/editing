@@ -14,6 +14,7 @@ testing.define('TEST_EXPECTATIONS', (function() {
   var W3C_SELECTION_IS_INCORRECT = 'W3C selection range is incorrect.';
   return {
     // createLink command
+/*
     'createLink.w3c.23': {expected: 'warn', reason: W3C_SELECTION_IS_INCORRECT},
     'createLink.w3c.23r': {expected: 'warn',
                           reason: W3C_SELECTION_IS_INCORRECT},
@@ -24,7 +25,7 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'createLink.w3c.46r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
     'createLink.w3c.47': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
     'createLink.w3c.47r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-
+*/
     // remove format
     'removeFormat.w3c.125': {expected: 'fail', reason: DO_NOT_REMOVE_CLASS},
     'removeFormat.w3c.125r': {expected: 'fail', reason: DO_NOT_REMOVE_CLASS},
