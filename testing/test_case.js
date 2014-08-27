@@ -152,7 +152,9 @@ function testCaseFor(commandName, testCaseId, data) {
       // Compare result HTML and selection
       var actualResult = testing.serializeNode(
           editor.document.body.firstChild,
-          {selection: editor.selection});
+          // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
+          // canonicalized selection rather than resulted selection.
+          {selection: editor.getDomSelection()});
       var expectedResult = data['after'];
       if (stripMarker(expectedResult) == stripMarker(actualResult)) {
         testRunner.pass('Result HTML');
@@ -179,7 +181,9 @@ function testCaseFor(commandName, testCaseId, data) {
       var checkCompatiblity = function() {
         actualResult2 = testing.serializeNode(
           editor.document.body.firstChild, {
-            selection: editor.selection,
+            // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
+            // canonicalized selection rather than resulted selection.
+            selection: editor.getDomSelection(),
             visibleTextNode: false
         });
 
@@ -226,7 +230,9 @@ function testCaseFor(commandName, testCaseId, data) {
         editor.execCommand('undo');
         var undoResult = testing.serializeNode(
             editor.document.body.firstChild,
-            {selection: editor.selection});
+            // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
+            // canonicalized selection rather than resulted selection.
+            {selection: editor.getDomSelection()});
         if (undoResult == data.before) {
           testRunner.pass('undo');
         } else if (stripMarker(undoResult) == stripMarker(data.before)) {
@@ -262,7 +268,9 @@ function testCaseFor(commandName, testCaseId, data) {
         editor.execCommand('redo');
         var redoResult = testing.serializeNode(
             editor.document.body.firstChild,
-            {selection: editor.selection});
+            // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
+            // canonicalized selection rather than resulted selection.
+            {selection: editor.getDomSelection()});
         if (redoResult == actualResult) {
           testRunner.pass('redo');
         } else if (stripMarker(redoResult) == stripMarker(actualResult)) {
