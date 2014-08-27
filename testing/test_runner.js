@@ -371,7 +371,7 @@ Object.defineProperties(TestRunner.prototype, (function() {
         status += ' Elapsed: ' + ((new Date())- startAt) + 'ms';
         if (lastBeginFrameTimeStamp) {
           var durationUs = timeStamp - lastBeginFrameTimeStamp;
-          status += ' latency=' + Math.floor(durationUs * 100) / 100 + 'us';
+          status += ' latency=' + Math.floor(durationUs * 100) / 100 + 'ms';
         }
         document.getElementById('status').textContent = status;
 
