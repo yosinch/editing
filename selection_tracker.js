@@ -202,6 +202,18 @@ editing.define('SelectionTracker', (function() {
 
   /**
    * @this {!SelectionTracker}
+   */
+  function finishWithStartAsAnchor() {
+    var startNodeAndOffset = this.start_.convertToNodeAndOffset();
+    var endNodeAndOffset = this.end_.convertToNodeAndOffset();
+    this.context_.setEndingSelection(new editing.ReadOnlySelection(
+        startNodeAndOffset.node, startNodeAndOffset.offset,
+        endNodeAndOffset.node, endNodeAndOffset.offset,
+        editing.SelectionDirection.ANCHOR_IS_START));
+  }
+
+  /**
+   * @this {!SelectionTracker}
    * @param {!Node} node
    */
   function willRemoveNode(node) {
@@ -229,6 +241,7 @@ editing.define('SelectionTracker', (function() {
     context_: {writable: true},
     end_:{writable: true},
     finish: {value: finish},
+    finishWithStartAsAnchor: {value: finishWithStartAsAnchor},
     start_: {writable: true},
     willRemoveNode: {value: willRemoveNode},
     willUnwrapElement: {value: willUnwrapElement}

@@ -13,6 +13,9 @@ editing.SelectionTracker = function(context, selection) {}
 /** @type {!function()} */
 editing.SelectionTracker.prototype.finish = function() {};
 
+/** @type {!function()} */
+editing.SelectionTracker.prototype.finishWithStartAsAnchor = function() {};
+
 /** @type {!function(!Node)} */
 editing.SelectionTracker.prototype.willRemoveNode = function(node) {};
 
