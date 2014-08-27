@@ -45,19 +45,19 @@ testCaseFor('createLink', 'Caret.AtMiddle', {
 // <a><b>foo|bar</b></a> => <a><b>foo</b></a><b><a>URL</a></b><a><b>bar</a>
 testCaseFor('createLink', 'Caret.InteractiveAtFirst', {
   before: '<p contenteditable><a><b>|abcd</b></a></p>',
-  after:  '<p contenteditable><b>^<a href="URL">URL</a>|</b><a><b>abcd</b></a></p>',
+  after:  '<p contenteditable><a><b><a href="URL">^URL|</a>abcd</b></a></p>',
   value: 'URL'
 });
 
 testCaseFor('createLink', 'Caret.InteractiveAtLast', {
   before: '<p contenteditable><a><b>abcd|</b></a></p>',
-  after:  '<p contenteditable><a><b>abcd</b></a><b>^<a href="URL">URL</a>|</b></p>',
+  after:  '<p contenteditable><a><b>abcd<a href="URL">^URL|</a></b></a></p>',
   value: 'URL'
 });
 
 testCaseFor('createLink', 'Caret.InteractiveAtMiddle', {
   before: '<p contenteditable><a><b>ab|cd</b></a></p>',
-  after:  '<p contenteditable><a><b>ab</b></a><b>^<a href="URL">URL</a>|</b><a><b>cd</b></a></p>',
+  after:  '<p contenteditable><a><b>ab<a href="URL">^URL|</a>cd</b></a></p>',
   value: 'URL'
 });
 
@@ -71,6 +71,7 @@ testCaseFor('createLink', 'Range.AnchorText.1', {
   value: 'URL'
 });
 
+// Variation of w3c.42
 // http://jsfiddle.net/66566/1/
 // <p contenteditable<a href="foo">^fo|o</a></p>
 // =>
@@ -79,8 +80,7 @@ testCaseFor('createLink', 'Range.AnchorText.1', {
 // IE: <p contenteditable<a href="URL">foo</a></p>
 testCaseFor('createLink', 'Range.AnchorText.2', {
   before: '<p contenteditable><a href="foo">^fo|o</a></p>',
-  after:  '<p contenteditable><a href="URL">^fo|o</a></p>',
-  notes: 'Special case?',
+  after:  '<p contenteditable><a href="URL">^fo</a><a href="foo">|o</a></p>',
   value: 'URL'
 });
 
@@ -114,7 +114,7 @@ testCaseFor('createLink', 'Range.SimpleTree', {
 // See also w3c.9 "^</span><span>|"
 testCaseFor('createLink', 'EndTag', {
   before: '<p contenteditable><b>abc^</b>|</p>',
-  after:  '<p contenteditable><b>abc</b>^<a href="URL">URL</a>|</p>',
+  after:  '<p contenteditable><b>abc<a href="URL">^URL|</a></b></p>',
   value: 'URL'
 });
 
@@ -151,6 +151,28 @@ testCaseFor('createLink', 'Range.11.2', {
 testCaseFor('createLink', 'Range.11.3', {
   after: '<div contenteditable>foo<a href="URL"><b>^bar<i>baz</i></b>q|</a>uux</div>',
   before: '<div contenteditable>foo<b>^bar<i>baz</i></b>q|uux</div>',
+  value: 'URL'
+});
+
+// Check w3c.42 is special case.
+// before: <div contenteditable><a href="otherurl"><b>foobarbaz</b></a></div>
+// after:  <div contenteditable><b><a href="otherurl">foo</a><a href="http://www.google.com/">bar</a><a href="otherurl">baz</a></b></div>
+// Wrap A by B.
+testCaseFor('createLink', 'Range.42.1', {
+  after: '<div contenteditable><b><a href="URL">^foo|</a></b><a href="otherurl">bar</a></div>',
+  before: '<div contenteditable><a href="otherurl"><b>^foo|</b>bar</a></div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink', 'Range.42.2', {
+  after: '<div contenteditable><b><i><a href="URL">^foo|</a><a href="otherurl">bar</a></i></b></div>',
+  before: '<div contenteditable><a href="otherurl"><b><i>^foo|bar</i></b></a></div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink', 'Range.42.3', {
+  after: '<div contenteditable><a href="otherurl">abc</a><b><i><a href="URL">^foo|</a><a href="otherurl">bar</a></i></b></div>',
+  before: '<div contenteditable><a href="otherurl">abc<b><i>^foo|bar</i></b></a></div>',
   value: 'URL'
 });
 

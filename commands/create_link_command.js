@@ -116,6 +116,21 @@ editing.defineCommand('CreateLink', (function() {
       return anchorElement;
     }
 
+    /**
+     * @param {Node} node
+     * @param {!Node} other
+     * @return boolean
+     */
+    function isStartOf(node, other) {
+      for (var runner = node; runner; runner = runner.parentNode) {
+        if (runner.previousSibling)
+          return false;
+        if (runner == other)
+          return true;
+      }
+      return false;
+    }
+
     function lastOf(array) {
       return array.length ? array[array.length - 1] : null;
     }
@@ -200,6 +215,7 @@ editing.defineCommand('CreateLink', (function() {
 
     // Special handling of start node, see w3c.30, w3c.40.
     var startNode = effectiveNodes[0];
+    var endNode = lastOf(effectiveNodes);
     var outerAnchorElement = startNode.parentNode;
     while (outerAnchorElement) {
       if (outerAnchorElement.nodeName == 'A')
@@ -207,31 +223,50 @@ editing.defineCommand('CreateLink', (function() {
       outerAnchorElement = outerAnchorElement.parentNode;
     }
     if (outerAnchorElement) {
-      // Note: Even if A element has "name" or other attributes, we
-      // override "href" as IE11. See w3c.46, w3c.47.
-      var allNodesInAnchor = effectiveNodes.every(function(node) {
-        return editing.nodes.isDescendantOf(node, outerAnchorElement);
-      });
-      if (allNodesInAnchor) {
-        // Special case for compatibility with Firefox and IE.
-        // See w3c.32, w3c.33
-        context.setAttribute(outerAnchorElement, 'href', url);
-        selectionTracker.finish();
-        return true;
-      }
-
+      var isStartOfContents = isStartOf(startNode, outerAnchorElement);
       if (outerAnchorElement.getAttribute('href') == url) {
         anchorElement = outerAnchorElement;
-      } else {
-        // Move |startNode| out of anchor element.
-        if (startNode.nextSibling) {
-          var newAnchorElement = context.splitNode(outerAnchorElement,
-                                                   startNode.nextSibling);
-          context.insertAfter(outerAnchorElement.parentNode, newAnchorElement,
-                              outerAnchorElement);
+      } else if (editing.nodes.isDescendantOf(endNode, outerAnchorElement)) {
+        // All selected nodes are in |outerAnchorElement|.
+        var isEndOfContents = editing.nodes.lastWithIn(outerAnchorElement) ==
+            endNode;
+        if (isStartOfContents && isEndOfContents) {
+          // Selected nodes == all children of |outerAnchorElement|.
+          anchorElement = outerAnchorElement;
+        } else if (isStartOfContents) {
+          // Move |startNode| to |endNode| before |outerAnchorElement|.
+          for (var child = startNode; child; child = child.nextSibling) {
+            context.insertBefore(outerAnchorElement.parentNode, child,
+                                 outerAnchorElement);
+            if (endNode == child ||
+                editing.nodes.isDescendantOf(endNode, child))
+              break;
+          }
+        } else if (isEndOfContents) {
+          // Move |startNode| and child nodes after |startNode| after
+          // |outerAnchorElement|.
+          for (var child = startNode; child; child = child.nextSibling) {
+            context.insertAfter(outerAnchorElement.parentNode, child,
+                                 outerAnchorElement);
+          }
+        } else {
+           // See w3c.34
+          var newAnchor = context.splitTree(outerAnchorElement, startNode);
+          var nextNode = editing.nodes.nextNodeSkippingChildren(endNode);
+          if (nextNode)
+            context.splitTree(newAnchor, nextNode);
+          newAnchor.setAttribute('href', url);
+          anchorElement = newAnchor;
         }
-        context.insertAfter(outerAnchorElement.parentNode, startNode,
-                            outerAnchorElement);
+      } else if (isStartOfContents) {
+        anchorElement = outerAnchorElement;
+      } else {
+        // Move |startNode| and child nodes after |startNode| after
+        // |outerAnchorElement|.
+        for (var child = startNode; child; child = child.nextSibling) {
+          context.insertAfter(outerAnchorElement.parentNode, child,
+                               outerAnchorElement);
+        }
       }
     }
 
