@@ -103,9 +103,9 @@ def main():
         js_output_file = os.path.join( \
             options.out_dir, os.path.splitext(js_basename)[0] + '_min.js')
         print 'Checking', js_source
-        succeeded = succeeded and check(options.compiler, js_output_file,
+        succeeded = check(options.compiler, js_output_file,
                                         [js_source], options.js_externs,
-                                        closure_options)
+                                        closure_options) and succeeded
     return 0 if succeeded else 1
 
 if __name__ == '__main__':
