@@ -397,6 +397,7 @@ window['TestRunner'] = (function() {
         }
         document.getElementById('status').textContent = status;
 
+        console.log(testCase.name);
         runTestCase.call(testRunner, testCase);
       }
       lastBeginFrameTimeStamp = timeStamp;
