@@ -22,27 +22,17 @@ editing.defineCommand('InsertOrderedList', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Array.<Node>} nodes
+   * @param {!Node} container
    */
-  function wrapByOrderedList(context, nodes) {
+  function wrapByOrderedList(context, container) {
+    var nodes = getChildTextNodes(container);
     var list = context.createElement('ol');
     var item = context.createElement('li');
     context.appendChild(list, item);
-    var text = "";
-    for (var i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
-      text += node.nodeValue;
-    }
-
-    /** @type {!Node} */
-    var parent = node.parentNode;
-    context.appendChild(item, context.createTextNode(text));
-    context.appendChild(parent, list);
-    for (var i = 0; i < nodes.length; i++) {
-      /** @type {!Node} */
-      var node = nodes[i];
-      context.removeChild(parent, node);
-    }
+    nodes.forEach(function(node) {
+      context.appendChild(item, node);
+    });
+    context.appendChild(container, list);
   }
 
   /**
@@ -57,13 +47,13 @@ editing.defineCommand('InsertOrderedList', (function() {
 
     /** @const @type {!Node} */
     var node = selection.focusNode;
-    var textNodes = getChildTextNodes(node);
 
-    // FIXME
-    var container = node.parentNode;
-    wrapByOrderedList(context, textNodes);
+    // TODO(hajimehoshi): This selection setting is work in progress.
+    wrapByOrderedList(context, node);
     context.setEndingSelection(new editing.ReadOnlySelection(
-        container, 0, container, 0, selection.direction));
+        selection.anchorNode, selection.anchorSelection,
+        selection.focusNode, selection.focusSelection,
+        selection.direction));
 
     return true;
   }
