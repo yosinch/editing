@@ -40,7 +40,7 @@ editing.Editor.prototype.execCommand = function(commandName, opt_userInterface,
                                         opt_value) {};
 
 /** @return {!editing.ReadOnlySelection} */
-editing.Editor.prototype.getDomSelection;
+editing.Editor.prototype.getDomSelection = function() {};
 
 /**
  * @param {!editing.EditingContext} context

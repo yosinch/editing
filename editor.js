@@ -40,6 +40,9 @@ editing.define('Editor', (function() {
     return document.editor_;
   }
 
+  /** @return {!editing.ReadOnlySelection} */
+  Editor.prototype.getDomSelection = function() {};
+
   /**
    * @type {?editing.ReadOnlySelection}
    */
@@ -127,6 +130,7 @@ editing.define('Editor', (function() {
   }
 
   /**
+   * @this {!Editor}
    * @return {!editing.ReadOnlySelection}
    */
   function getDomSelection() {
@@ -145,6 +149,13 @@ editing.define('Editor', (function() {
         domSeleciton.anchorNode, domSeleciton.anchorOffset,
         domSeleciton.focusNode, domSeleciton.focusOffset,
         direction());
+  }
+
+  /**
+   * @this {!Editor}
+   */
+  function loadDomSelection() {
+    this.selection_ = this.getDomSelection();
   }
 
   /**
@@ -210,6 +221,7 @@ editing.define('Editor', (function() {
     document_: {writable: true},
     execCommand: {value: execCommand},
     getDomSelection: {value: getDomSelection },
+    loadDomSelection: {value: loadDomSelection},
     selection: {get: function() { return this.selection_; }},
     selection_: {writable: true},
     setDomSelection: {value: setDomSelection },
