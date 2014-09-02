@@ -18,23 +18,23 @@ function dumpNodes(nodes) {
 }
 
 //
-// computeEffectiveNodes
+// setUpEffectiveNodes
 //
-testCaseWithSample('nodes.computeEffectiveNodes.1',
+testCaseWithSample('nodes.setUpEffectiveNodes.1',
     '<p contenteditable>foo<b>^bar<i>baz</i></b>|quux</p>',
     function(context, selection) {
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
-      var nodes = editing.nodes.computeEffectiveNodes(normalizedSelection);
+      var nodes = editing.nodes.setUpEffectiveNodes(normalizedSelection);
       expectEq('B,bar,I,baz', function() { return dumpNodes(nodes) });
     });
 
-testCaseWithSample('nodes.computeEffectiveNodes.2',
+testCaseWithSample('nodes.setUpEffectiveNodes.2',
     '<p contenteditable><span style="font-weight: bold">^foo</span> <span>bar|</span></p>',
     function(context, selection) {
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
-      var nodes = editing.nodes.computeEffectiveNodes(normalizedSelection);
+      var nodes = editing.nodes.setUpEffectiveNodes(normalizedSelection);
       expectEq('SPAN,foo, ,SPAN,bar', function() { return dumpNodes(nodes) });
     });
 

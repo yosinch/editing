@@ -9,12 +9,6 @@ editing.nodes;
  * @param {!editing.ReadOnlySelection} selection
  * @return {!Array.<!Node>}
  */
-editing.nodes.computeEffectiveNodes = function(selection) {};
-
-/**
- * @param {!editing.ReadOnlySelection} selection
- * @return {!Array.<!Node>}
- */
 editing.nodes.computeSelectedNodes = function(selection) {};
 
 /**
@@ -101,3 +95,8 @@ editing.nodes.normalizeSelection = function(context, selection) {};
  * @return {?Node}
  */
 editing.nodes.previousNode = function(node) {};
+/**
+ * @param {!editing.ReadOnlySelection} selection
+ * @return {!Array.<!Node>}
+ */
+editing.nodes.setUpEffectiveNodes = function(selection) {};
