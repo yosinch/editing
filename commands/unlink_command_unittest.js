@@ -97,12 +97,12 @@ testCaseFor('unlink', 'contents.text.whole.focus.anchor', {
 //
 testCaseFor('unlink', 'contents.text.partial.anchor.focus', {
   before: '<p contenteditable><a href="foo">ab^cd|ef</a></p>',
-  after:'<p contenteditable>ab^cd|ef</p>'
+  after:'<p contenteditable><a href="foo">ab</a>^cd|<a href="foo">ef</a></p>'
 });
 
 testCaseFor('unlink', 'contents.text.partial.focus.anchor', {
   before: '<p contenteditable><a href="foo">ab|cd^ef</a></p>',
-  after:'<p contenteditable>ab|cd^ef</p>'
+  after:'<p contenteditable><a href="foo">ab</a>^cd|<a href="foo">ef</a></p>'
 });
 
 //
@@ -110,17 +110,17 @@ testCaseFor('unlink', 'contents.text.partial.focus.anchor', {
 //
 testCaseFor('unlink', 'contents.partial.anchor.focus', {
   before: '<p contenteditable><a href="foo"><b>ab^cd|ef</b></a></p>',
-  after:'<p contenteditable><b>ab^cd|ef</b></p>'
+  after: '<p contenteditable><b><a href="foo">ab</a>^cd|<a href="foo">ef</a></b></p>'
 });
 
 testCaseFor('unlink', 'contents.nodes.partial.anchor.focus', {
   before: '<p contenteditable><a href="foo"><b>ab^c</b>d|e</a></p>',
-  after:'<p contenteditable><b>ab^c</b>d|e</p>'
+  after:'<p contenteditable><b><a href="foo">ab</a>^c</b>d|<a href="foo">e</a></p>'
 });
 
 testCaseFor('unlink', 'contents.nodes.partial.focus.anchor', {
   before: '<p contenteditable><a href="foo"><b>ab|c</b>d^e</a></p>',
-  after:'<p contenteditable><b>ab|c</b>d^e</p>'
+  after:'<p contenteditable><b><a href="foo">ab</a>^c</b>d|<a href="foo">e</a></p>'
 });
 
 //
@@ -138,12 +138,12 @@ testCaseFor('unlink', 'multiple.whole.focus.anchor', {
 
 testCaseFor('unlink', 'multiple.partial.anchor.focus', {
   before: '<p contenteditable><a href="foo">a^bc</a>d<a href="foo2">e|f</a></p>',
-  after:'<p contenteditable>a^bcde|f</p>',
+  after:'<p contenteditable><a href="foo">a</a>^bcde|<a href="foo2">f</a></p>',
 });
 
 testCaseFor('unlink', 'multiple.partial.focus.anchor', {
   before: '<p contenteditable><a href="foo">a|bc</a>d<a href="foo2">e^f</a></p>',
-  after:'<p contenteditable>a|bcde^f</p>',
+  after:'<p contenteditable><a href="foo">a</a>^bcde|<a href="foo2">f</a></p>',
   firefox: '<p contenteditable>abcd<a href="foo2">ef</a></p>'
 });
 

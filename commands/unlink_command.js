@@ -6,29 +6,33 @@
 
 editing.defineCommand('Unlink', (function() {
   /**
+   * @param {!editing.EditingContext} context
    * @param {!editing.ReadOnlySelection} selection
    * @return {!Array.<!Node>}
    */
-  function computeEffectiveNodes(selection) {
-    if (selection.isEmpty)
+  function setUpEffectiveNodes(context, selection) {
+    if (!selection.isRange)
       return [];
-    var selectedNodes = selection.isCaret ? [selection.anchorNode] :
-        editing.nodes.computeSelectedNodes(selection);
+    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return [];
 
     // Add enclosing A element into effective nodes.
-    var firstNode = selectedNodes[0];
-    var runner = firstNode;
+    var needSplit = false;
+    var startNode = selectedNodes[0];
+    var runner = startNode;
     while (runner && runner.nodeName != 'A') {
+      needSplit = needSplit || runner.previousSibling;
       runner = runner.parentNode;
     }
     if (!runner)
       return selectedNodes;
     if (!editing.nodes.isEditable(runner))
       return [];
+    if (needSplit)
+      runner = context.splitTree(runner, startNode);
     var effectiveNodes = [];
-    while (runner != firstNode) {
+    while (runner != startNode) {
       effectiveNodes.push(runner);
       runner = editing.nodes.nextNode(runner);
     }
@@ -49,14 +53,10 @@ editing.defineCommand('Unlink', (function() {
    * @return {boolean}
    */
   function unlinkCommand(context, userInterface, value) {
-    if (context.startingSelection.isCaret) {
-      context.setEndingSelection(context.startingSelection);
-      return false;
-    }
-
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
-    var effectiveNodes = computeEffectiveNodes(selection);
+    var selectionTracker = new editing.SelectionTracker(context, selection);
+    var effectiveNodes = setUpEffectiveNodes(context, selection);
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
       return false;
@@ -65,7 +65,6 @@ editing.defineCommand('Unlink', (function() {
     // We'll remove nested anchor elements event if nested anchor elements
     // aren't valid HTML5.
     var anchorElements = [];
-    var selectionTracker = new editing.SelectionTracker(context, selection);
     effectiveNodes.forEach(function(currentNode) {
       var lastAnchorElement = lastOf(anchorElements);
       if (lastAnchorElement &&
@@ -89,9 +88,12 @@ editing.defineCommand('Unlink', (function() {
     });
 
     while (anchorElements.length) {
+      var endNode = lastOf(effectiveNodes);
       var anchorElement = anchorElements.pop();
-      selectionTracker.willUnwrapElement(anchorElement, null);
-      context.unwrapElement(anchorElement, null);
+      var stopChild = endNode.parentNode == anchorElement ?
+          endNode.nextSibling : null;
+      selectionTracker.willUnwrapElement(anchorElement, stopChild);
+      context.unwrapElement(anchorElement, stopChild);
     }
 
     selectionTracker.finish();
