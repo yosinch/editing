@@ -176,5 +176,12 @@ testCaseFor('createLink', 'Range.42.3', {
   value: 'URL'
 });
 
+// Taken from "LayoutTests/editing/execCommand/createLink.html"
+testCaseFor('createLink', 'createLink.html_starthere', {
+  after: '<div contenteditable="true" id="test3">This line starts out with <a href="http://www.apple.com"><b>a</b></a><a href="http://www.google.com"><span id="starthere">^ link</span> in the middle. The second half of this paragraph, starting|</a> after the bold "a" should end up being a link to google.com.</div>',
+  before: '<div contenteditable="true" id="test3">This line starts out with <a href="http://www.apple.com"><b>a</b><span id="starthere">^ link</span></a> in the middle. The second half of this paragraph, starting| after the bold "a" should end up being a link to google.com.</div>',
+  value: 'http://www.google.com'
+});
+
 // Create link with range in interactive
 // <a><b>a^b|c</b> => <a><b>a</b></a><a><b>b</b></a><a><b>c</b></a>

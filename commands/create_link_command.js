@@ -263,9 +263,12 @@ editing.defineCommand('CreateLink', (function() {
       } else {
         // Move |startNode| and child nodes after |startNode| after
         // |outerAnchorElement|.
-        for (var child = startNode; child; child = child.nextSibling) {
+        var child = startNode;
+        while (child) {
+          var next = child.nextSibling;
           context.insertAfter(outerAnchorElement.parentNode, child,
-                               outerAnchorElement);
+                              outerAnchorElement);
+          child = next;
         }
       }
     }
