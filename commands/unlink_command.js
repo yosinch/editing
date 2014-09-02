@@ -5,42 +5,6 @@
 'use strict';
 
 editing.defineCommand('Unlink', (function() {
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
-   * @return {!Array.<!Node>}
-   */
-  function setUpEffectiveNodes(context, selection) {
-    if (!selection.isRange)
-      return [];
-    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
-    if (!selectedNodes.length)
-      return [];
-
-    // Add enclosing A element into effective nodes.
-    var needSplit = false;
-    var startNode = selectedNodes[0];
-    var runner = startNode;
-    while (runner && runner.nodeName != 'A') {
-      needSplit = needSplit || runner.previousSibling;
-      runner = runner.parentNode;
-    }
-    if (!runner)
-      return selectedNodes;
-    if (!editing.nodes.isEditable(runner))
-      return [];
-    if (needSplit)
-      runner = context.splitTree(runner, startNode);
-    var effectiveNodes = [];
-    while (runner != startNode) {
-      effectiveNodes.push(runner);
-      runner = editing.nodes.nextNode(runner);
-    }
-    selectedNodes.forEach(function(node) {
-      effectiveNodes.push(node);
-    });
-    return effectiveNodes;
-  }
 
   function lastOf(array) {
     return array.length ? array[array.length - 1] : null;
@@ -56,7 +20,10 @@ editing.defineCommand('Unlink', (function() {
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
     var selectionTracker = new editing.SelectionTracker(context, selection);
-    var effectiveNodes = setUpEffectiveNodes(context, selection);
+    var effectiveNodes = editing.nodes.setUpEffectiveNodes(
+        context, selection, function(node) {
+          return node.nodeName !== 'A';
+        });
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
       return false;
