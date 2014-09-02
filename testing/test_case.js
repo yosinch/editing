@@ -95,13 +95,14 @@ function testCaseFor(commandName, testCaseId, data) {
     if (focusIndex < 0)
       return escaped;
     if (anchorIndex < 0)
-      return escaped.replace('|', '<span class="selectionAnchorFocus"></span>');
+      return escaped.replace('|', '<span class="selectionCaret">|</span>');
     if (anchorIndex < focusIndex) {
-      return escaped.replace('^', '<span class="selectionAnchorFocus">')
-        .replace('|', '</span>');
+      return escaped.replace('^', '<span class="selectionRange">^')
+        .replace('|', '</span><span class="selectionFocus">|</span>');
     }
-    return escaped.replace('|', '<span class="selectionFocusAnchor">')
-        .replace('^', '</span>');
+    return escaped.replace('|', '<span class="selectionRange">' +
+                                '<span class="selectionFocus">|</span>')
+        .replace('^', '^</span>');
   }
 
   function stripMarker(text) {
