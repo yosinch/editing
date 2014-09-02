@@ -51,8 +51,8 @@ editing.defineCommand('InsertOrderedList', (function() {
     // TODO(hajimehoshi): This selection setting is work in progress.
     wrapByOrderedList(context, node);
     context.setEndingSelection(new editing.ReadOnlySelection(
-        selection.anchorNode, selection.anchorSelection,
-        selection.focusNode, selection.focusSelection,
+        selection.startContainer, selection.startOffset,
+        selection.endContainer, selection.endOffset,
         selection.direction));
 
     return true;

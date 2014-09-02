@@ -12,7 +12,7 @@ editing.defineCommand('InsertUnorderedList', (function() {
    * @param {string} value Not used.
    * @return {boolean}
    */
-  function createInsertUnorderedListCommand(context, userInterface, url) {
+  function createInsertUnorderedListCommand(context, userInterface, value) {
     return true;
   }
 
