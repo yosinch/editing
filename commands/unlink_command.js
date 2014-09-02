@@ -49,12 +49,17 @@ editing.defineCommand('Unlink', (function() {
    * @return {boolean}
    */
   function unlinkCommand(context, userInterface, value) {
+    if (context.startingSelection.isCaret) {
+      context.setEndingSelection(context.startingSelection);
+      return false;
+    }
+
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
     var effectiveNodes = computeEffectiveNodes(selection);
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
-      return true;
+      return false;
     }
 
     // We'll remove nested anchor elements event if nested anchor elements

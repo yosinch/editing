@@ -8,7 +8,8 @@
 
 testCaseFor('unlink', 'nothing', {
   before: '<p contenteditable>|abcd</p>',
-  after:'<p contenteditable>|abcd</p>'
+  after:'<p contenteditable>|abcd</p>',
+  returnValue: false
 });
 
 //
@@ -16,17 +17,20 @@ testCaseFor('unlink', 'nothing', {
 //
 testCaseFor('unlink', 'caret.child', {
   before: '<p contenteditable><a href="foo">b|ar</a></p>',
-  after:'<p contenteditable>b|ar</p>'
+  after: '<p contenteditable><a href="foo">b|ar</a></p>',
+  returnValue: false
 });
 
 testCaseFor('unlink', 'caret.lastchild', {
   before: '<p contenteditable><a href="foo">bar|</a></p>',
-  after:'<p contenteditable>bar|</p>'
+  after: '<p contenteditable><a href="foo">bar|</a></p>',
+  returnValue: false
 });
 
 testCaseFor('unlink', 'caret.descendant', {
   before: '<p contenteditable><a href="foo"><b>b|ar</b></a></p>',
-  after:'<p contenteditable><b>b|ar</b></p>'
+  after: '<p contenteditable><a href="foo"><b>b|ar</b></a></p>',
+  returnValue: false
 });
 
 // Remove A element if it has "href" attribute only.
