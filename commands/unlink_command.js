@@ -96,7 +96,7 @@ editing.defineCommand('Unlink', (function() {
       context.unwrapElement(anchorElement, stopChild);
     }
 
-    selectionTracker.finish();
+    selectionTracker.finishWithStartAsAnchor();
     return true;
   }
 
