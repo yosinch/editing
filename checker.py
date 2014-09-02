@@ -2,6 +2,7 @@
 # Written by Yoshifumi "VOGUE" INOUE. (yosi@msn.com)
 
 import argparse
+import glob
 import os
 import re
 import sys
@@ -85,7 +86,7 @@ def check(closure_jar, js_output_file, js_files, js_externs, closure_options):
 def main():
     parser = argparse.ArgumentParser(
         description="Typecheck JavaScript using Closure compiler")
-    parser.add_argument("sources", nargs=argparse.ONE_OR_MORE,
+    parser.add_argument("sources", nargs=argparse.ZERO_OR_MORE,
         help="Path to source files to typecheck")
     parser.add_argument("-C", "--compiler",
         help="Path to compiler.jar");
@@ -98,14 +99,34 @@ def main():
 
     closure_options = []
     succeeded = True
-    for js_source in options.sources:
-        js_basename = os.path.basename(js_source)
-        js_output_file = os.path.join( \
-            options.out_dir, os.path.splitext(js_basename)[0] + '_min.js')
-        print 'Checking', js_source
+    js_sources = options.sources
+
+    if len(js_sources) == 0:
+        # TODO(hajimehoshi): Now 'testing/*.js' are skipped because they causes
+        # a lot of warnings. Enable type-checking for them later.
+        filenames = []
+        for dir in ['.', 'commands']:
+            filenames.extend(glob.glob(dir + '/*.js'))
+        js_sources = [filename for filename in filenames
+                      if not (filename.endswith('_unittest.js') or
+                              filename == './polyfill.js')]
+        if len(js_sources) == 0:
+            return 0
+
+        js_output_file = js_output_file = os.path.join(
+            options.out_dir, 'output.js')
         succeeded = check(options.compiler, js_output_file,
-                                        [js_source], options.js_externs,
-                                        closure_options) and succeeded
+                          js_sources, options.js_externs,
+                          closure_options) and succeeded
+    else:
+        for js_source in js_sources:
+            js_basename = os.path.basename(js_source)
+            js_output_file = os.path.join(
+                options.out_dir, os.path.splitext(js_basename)[0] + '_min.js')
+            print 'Checking', js_source
+            succeeded = check(options.compiler, js_output_file,
+                              [js_source], options.js_externs,
+                              closure_options) and succeeded
     return 0 if succeeded else 1
 
 if __name__ == '__main__':

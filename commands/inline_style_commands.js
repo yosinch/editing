@@ -4,6 +4,12 @@
 
 'use strict';
 
+// TODO(hajimehoshi): Temporal definition: we need to implement this later
+/**
+ * @param {Object} obj
+ */
+function makeInlineStyleCommand(obj) {}
+
 (function() {
   editing.defineCommand('backColor', makeInlineStyleCommand({
     cssProperty: 'background-color',
