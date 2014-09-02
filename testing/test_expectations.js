@@ -27,6 +27,7 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'createLink.w3c.47r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
 */
     // remove format
+/*
     'removeFormat.w3c.125': {expected: 'fail', reason: DO_NOT_REMOVE_CLASS},
     'removeFormat.w3c.125r': {expected: 'fail', reason: DO_NOT_REMOVE_CLASS},
     'removeFormat.w3c.126': {expected: 'fail', reason: DO_NOT_REMOVE_CLASS},
@@ -89,8 +90,9 @@ testing.define('TEST_EXPECTATIONS', (function() {
       ie: '<div contenteditable><b></b><p style="font-weight: bold"><b>foo</b>bar<b>baz</b></p><b></b></div>',
       w3c: ' <div contenteditable><p><b>foo</b>bar<b>baz</b></p></div>'
     },
-
+*/
     // unlink command
+/*
     'unlink.w3c.24': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
     'unlink.w3c.24r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
     'unlink.w3c.25': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
@@ -115,6 +117,7 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'unlink.w3c.34r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
     'unlink.w3c.35': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
     'unlink.w3c.35r': {expected: 'fail', reason: IE_BACKWARD_SELECTION}
+*/
   };
 })());
 
