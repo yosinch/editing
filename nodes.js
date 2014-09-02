@@ -80,7 +80,7 @@ editing.define('nodes', (function() {
    * Computes effective nodes for inline formatting commands. |selection|
    * should be normalized.
    */
-  function computeEffectiveNodes(selection) {
+  function setUpEffectiveNodes(selection) {
     if (isText(selection.anchorNode) || isText(selection.focusNode))
       throw new Error('Selection should be normalized.');
     var selectedNodes = computeSelectedNodes(selection);
@@ -451,7 +451,6 @@ editing.define('nodes', (function() {
 
   return Object.defineProperties({}, {
     commonAncestor: {value: commonAncestor},
-    computeEffectiveNodes: {value: computeEffectiveNodes},
     computeSelectedNodes: {value: computeSelectedNodes},
     isContentEditable: {value: isContentEditable},
     isDescendantOf: {value: isDescendantOf},
@@ -472,5 +471,6 @@ editing.define('nodes', (function() {
     normalizeSelection: {value: normalizeSelection},
     previousNode: {value: previousNode},
     previousNodeSkippingChildren: {value: previousNodeSkippingChildren},
+    setUpEffectiveNodes: {value: setUpEffectiveNodes},
   });
 })());
