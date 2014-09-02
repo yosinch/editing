@@ -23,12 +23,12 @@ function TestRunner() {
   this.testCaseMap_ = {};
   this.useTryCatch_ = true;
   Object.seal(this);
-};
+}
 
 /** @type {!Array.<!TestCase>} */
 TestRunner.prototype.allTestCases_;
 
-///** @type {!function((string|!function()), !Object=)} */
+/** @type {!function((string|!function()), !Object=)} */
 TestRunner.prototype.fail = function(message, opt_options) {};
 
 /** @type {!Object.<string, !TestCase>} */
