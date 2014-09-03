@@ -145,7 +145,7 @@ editing.defineCommand('removeFormat', (function() {
       context.unwrapElement(styleElement, stopChild);
     }
 
-    selectionTracker.finish();
+    selectionTracker.finishWithStartAsAnchor();
     return true;
   }
   /*
