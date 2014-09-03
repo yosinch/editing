@@ -10,7 +10,7 @@ editing.defineCommand('removeFormat', (function() {
   /** @const */
   var TAG_NAMES_TO_REMOVE = editing.newSet([
         'ACRONYM', 'B', 'BDO', 'BIG', 'CITE', 'CODE',
-        'DFN', 'EM', 'FONT', 'I', 'INS', 'KBD', 'MARK', 'NOBR', 'Q', 'S',
+        'DFN', 'EM', 'FONT', 'I', 'INS', 'KBD', 'NOBR', 'Q', 'S',
         'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
         'VAR']);
 
