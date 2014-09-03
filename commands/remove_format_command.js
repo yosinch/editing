@@ -99,9 +99,9 @@ editing.defineCommand('removeFormat', (function() {
    * @return {boolean}
    */
   function removeFormatCommand(context, userInterface, value) {
-    if (context.startingSelection.isEmpty) {
+    if (!context.startingSelection.isRange) {
       context.setEndingSelection(context.startingSelection);
-      return true;
+      return false;
     }
 
     /** @const */ var selection = editing.nodes.normalizeSelection(
@@ -110,7 +110,7 @@ editing.defineCommand('removeFormat', (function() {
     var effectiveNodes = prepareForRemoveFormat(context, selection);
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
-      return true;
+      return false;
     }
 
     var styleElements = [];
