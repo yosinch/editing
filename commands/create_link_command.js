@@ -248,10 +248,13 @@ editing.defineCommand('CreateLink', (function() {
           }
         } else if (isEndOfContents) {
           // Move |startNode| and child nodes after |startNode| after
-          // |outerAnchorElement|.
-          for (var child = startNode; child; child = child.nextSibling) {
+          // |outerAnchorElement|. See w3c.37.
+          var child = startNode;
+          while (child) {
+            var next = child.nextSibling;
             context.insertAfter(outerAnchorElement.parentNode, child,
                                 outerAnchorElement);
+            child = next;
           }
         } else {
            // See w3c.34
