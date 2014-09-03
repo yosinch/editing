@@ -109,25 +109,20 @@ function testCaseFor(commandName, testCaseId, data) {
     return text.replace('^', '').replace('|', '');
   }
 
-  if (typeof(data['after']) != 'string') {
-    testRunner.fail('Test data after must be string: ' + data['after']);
-    return;
-  }
-  if (data['after'].indexOf('|') < 0) {
-    testRunner.fail('Test data after must have "|": ' + data['after']);
-    return;
-  }
-
-  if (typeof(data.before) != 'string') {
-    testRunner.fail('Test data before must be string: ' + data.before);
-    return;
-  }
-  if (data.before.indexOf('|') < 0) {
-    testRunner.fail('Test data before must have "|": ' + data.before);
-    return;
-  }
-
   var testCaseName = commandName + '.' + testCaseId;
+  console.assert(typeof(data['after']) === 'string',
+                 'Test data for ' + testCaseName + ', after must be string: ' +
+                  data['after']);
+  console.assert(data['after'].indexOf('|') >= 0,
+                 'Test data for ' + testCaseName + ' after must have "|": ' +
+                 data['after']);
+  console.assert(typeof(data['before']) === 'string',
+                 'Test data for ' + testCaseName + ', before must be string: ' +
+                  data['before']);
+  console.assert(data['before'].indexOf('|') >= 0,
+                 'Test data for ' + testCaseName + ' before must have "|": ' +
+                 data['before']);
+
   testCase(testCaseName, function() {
     var sample = new testing.Sample(data.before);
     var sample2 = new testing.Sample(data.before);
