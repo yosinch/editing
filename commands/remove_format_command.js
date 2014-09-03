@@ -11,7 +11,7 @@ editing.defineCommand('removeFormat', (function() {
   var TAG_NAMES_TO_REMOVE = editing.newSet([
         'ACRONYM', 'B', 'BDO', 'BIG', 'CITE', 'CODE',
         'DFN', 'EM', 'FONT', 'I', 'INS', 'KBD', 'NOBR', 'Q', 'S',
-        'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
+        'SAMP', 'SMALL', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
         'VAR']);
 
   /**
@@ -20,11 +20,8 @@ editing.defineCommand('removeFormat', (function() {
    * @return {!Array.<!Node>}
    */
   function prepareForRemoveFormat(context, selection) {
-    if (selection.isEmpty)
-      return [];
-    var selectedNodes = selection.isCaret ?
-        [selection.anchorNode] : editing.nodes.computeSelectedNodes(selection);
-
+    console.assert(selection.isRange);
+    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     var effectiveNodes = selectedNodes;
 
     // Adjust first node
@@ -148,14 +145,6 @@ editing.defineCommand('removeFormat', (function() {
     selectionTracker.finishWithStartAsAnchor();
     return true;
   }
-  /*
-      context.setStyle(node, 'backgroundColor', '');
-      context.setStyle(node, 'color', '');
-      context.setStyle(node, 'fontFamily', '');
-      context.setStyle(node, 'fontSize', '');
-      context.setStyle(node, 'fontWeight', '');
-      context.setStyle(node, 'textDecoration', '');
-  */
 
   return removeFormatCommand;
 })());
