@@ -92,32 +92,12 @@ testing.define('TEST_EXPECTATIONS', (function() {
     },
 */
     // unlink command
-/*
-    'unlink.w3c.24': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.24r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.25': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.25r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.26': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.26r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.27': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.27r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.28': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.28r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.29': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.29r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.30': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.30r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.31': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.31r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.32': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.32r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.33': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.33r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.34': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.34r': {expected: 'fail', reason: IE_BACKWARD_SELECTION},
-    'unlink.w3c.35': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
-    'unlink.w3c.35r': {expected: 'fail', reason: IE_BACKWARD_SELECTION}
-*/
+    'unlink.contents.partial.anchor.focus': {expected: 'fail',
+                                             reason: 'issue #8'},
+    'unlink.contents.nodes.partial.anchor.focus': {expected: 'fail',
+                                                   reason: 'issue #8'},
+    'unlink.contents.nodes.partial.focus.anchor': {expected: 'fail',
+                                                   reason: 'issue #8'}
   };
 })());
 
