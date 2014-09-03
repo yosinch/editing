@@ -129,8 +129,9 @@ editing.defineCommand('removeFormat', (function() {
         return;
       }
 
-      if (isStyleElement(currentNode))
-        styleElements.push(currentNode);
+      if (!isStyleElement(currentNode))
+        return;
+      styleElements.push(currentNode);
     });
 
     var lastNode = lastOf(effectiveNodes);
