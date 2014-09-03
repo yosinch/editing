@@ -74,55 +74,36 @@ editing.define('nodes', (function() {
   }
 
   /**
-   * @param {!editing.EditingContext} context
    * @param {!editing.ReadOnlySelection} selection
    * @return {!Array.<!Node>}
    *
    * Computes effective nodes for inline formatting commands. |selection|
    * should be normalized.
    */
-  function setUpEffectiveNodes(context, selection) {
+  function setUpEffectiveNodes(selection) {
     if (isText(selection.anchorNode) || isText(selection.focusNode))
       throw new Error('Selection should be normalized.');
-    if (!selection.isRange)
-      return [];
-
     var selectedNodes = computeSelectedNodes(selection);
     if (!selectedNodes.length)
-      return [];
-
-    var needSplit = false;
+      return selectedNodes;
     var nodeSet = editing.newSet(selectedNodes);
-
     // Add ancestors of start node of selected nodes if all descendant nodes
     // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
     // Note: selection doesn't need to end beyond end tag.
     var startNode = selectedNodes[0];
-    var runner = startNode.parentNode;
-
-    // TODO(hajimehoshi): 'A' is for the unlink command and hard-corded temporalily.
-    while (runner && runner.nodeName !== 'A') {
-      needSplit = needSplit || runner.previousSibling;
-      if (!isEditable(runner))
+    for (var ancestor = startNode.parentNode; ancestor;
+         ancestor = ancestor.parentNode) {
+      if (!isEditable(ancestor))
         break;
-      if (runner.firstChild !== startNode)
+      if (ancestor.firstChild !== startNode)
         break;
-      if (!nodeSet.has(lastWithIn(runner)))
+      if (!nodeSet.has(lastWithIn(ancestor)))
         break;
-      selectedNodes.unshift(runner);
-      nodeSet.add(runner);
-      runner = runner.parentNode;
+      selectedNodes.unshift(ancestor);
+      nodeSet.add(ancestor);
+      startNode = ancestor;
     }
-    if (!runner)
-      return selectedNodes;
-    if (needSplit)
-      runner = context.splitTree(runner, startNode);
-
-    var effectiveNodes = [];
-    selectedNodes.forEach(function(node) {
-      effectiveNodes.push(node);
-    });
-    return effectiveNodes;
+    return selectedNodes;
   }
 
   /**

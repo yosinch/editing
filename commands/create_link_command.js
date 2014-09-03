@@ -179,7 +179,7 @@ editing.defineCommand('CreateLink', (function() {
 
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
-    var effectiveNodes = editing.nodes.setUpEffectiveNodes(context, selection);
+    var effectiveNodes = editing.nodes.setUpEffectiveNodes(selection);
     if (!effectiveNodes.length) {
       // Note: Firefox and IE don't insert anchor element for caret.
       // IE returns true event if it doesnt' insert anchor element.
