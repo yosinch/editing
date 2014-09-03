@@ -214,11 +214,6 @@ Object.defineProperties(TestRunner.prototype, (function() {
     // To report number of test cases in progress report, we populate
     // |testCasesByClass| here.
     var testCasesByClass = {};
-/*
-    Object.keys(CLASS_ORDERS).forEach(function(key) {
-      testCasesByClass[key] = new Set();
-    });
-*/
     function classifyTestCase(testCase, className) {
       var testCases = testCasesByClass[className];
       if (!testCases) {
@@ -316,7 +311,7 @@ Object.defineProperties(TestRunner.prototype, (function() {
         'Run ' + runTests.length + ' tests' +
         ' in ' + Math.floor((endAt - startAt) * 1000) / 1000 + ' ms' +
         Object.keys(testCasesByClass).reduce(function(sink, key) {
-          var count = testCasesByClass[key].length;
+          var count = testCasesByClass[key].size;
           return sink + ', <span class="' + key + '">' + count + ' ' + key +
                  '</span>';
         }, '');
