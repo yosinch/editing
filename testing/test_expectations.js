@@ -14,6 +14,26 @@ testing.define('TEST_EXPECTATIONS', (function() {
   var W3C_SELECTION_IS_INCORRECT = 'W3C selection range is incorrect.';
   return {
     // createLink command
+    'createLink.Caret.InteractiveAtFirst': {expected: 'fail',
+                                            reason: 'issue #16'},
+    'createLink.Caret.InteractiveAtLast': {expected: 'fail',
+                                           reason: 'issue #16'},
+    'createLink.Caret.InteractiveAtMiddle': {expected: 'fail',
+                                             reason: 'issue #16'},
+    'createLink.EndTag': {expected: 'fail', reason: 'issue #16'},
+    'createLink.Range.42.1': {expected: 'fail', reason: 'issue #16'},
+    'createLink.Range.42.2': {expected: 'fail', reason: 'issue #16'},
+    'createLink.Range.42.3': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.42': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.42r': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.43': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.43r': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.44': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.44r': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.45': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.45r': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.47': {expected: 'fail', reason: 'issue #16'},
+    'createLink.w3c.47r': {expected: 'fail', reason: 'issue #16'},
 /*
     'createLink.w3c.23': {expected: 'warn', reason: W3C_SELECTION_IS_INCORRECT},
     'createLink.w3c.23r': {expected: 'warn',
