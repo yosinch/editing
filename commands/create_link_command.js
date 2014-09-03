@@ -255,6 +255,11 @@ editing.defineCommand('CreateLink', (function() {
           var nextNode = editing.nodes.nextNodeSkippingChildren(endNode);
           if (nextNode)
             context.splitTree(newAnchor, nextNode);
+          // Remove attribute from new A element created by |splitTree()|.
+          // See w3c.46 and w3c.47.
+          [].forEach.call(newAnchor.attributes, function(attrNode) {
+            newAnchor.removeAttribute(attrNode.name);
+          });
           newAnchor.setAttribute('href', url);
           anchorElement = newAnchor;
         }
