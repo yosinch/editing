@@ -189,8 +189,8 @@ Object.defineProperties(TestRunner.prototype, (function() {
 
     /** @const */
     var KEY_NAME_OREDERS = {
-      actual: '1',
-      before: '0',
+      actual: '3',
+      before: '1',
       expected: '2'
     };
 
@@ -202,9 +202,9 @@ Object.defineProperties(TestRunner.prototype, (function() {
     };
 
     function compareKeys(key1, key2) {
-      key1 = KEY_NAME_OREDERS[key1] || key1;
-      key2 = KEY_NAME_OREDERS[key2] || key2;
-      return key1.localeCompare(key1);
+      key1 = KEY_NAME_OREDERS[key1] + key1;
+      key2 = KEY_NAME_OREDERS[key2] + key2;
+      return key1.localeCompare(key2);
     }
 
     function orderOfClass(className) {
