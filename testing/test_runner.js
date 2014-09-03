@@ -214,17 +214,18 @@ Object.defineProperties(TestRunner.prototype, (function() {
     // To report number of test cases in progress report, we populate
     // |testCasesByClass| here.
     var testCasesByClass = {};
+/*
     Object.keys(CLASS_ORDERS).forEach(function(key) {
-      testCasesByClass[key] = [];
+      testCasesByClass[key] = new Set();
     });
-
+*/
     function classifyTestCase(testCase, className) {
       var testCases = testCasesByClass[className];
       if (!testCases) {
-        testCases = [];
+        testCases = new Set();
         testCasesByClass[className] = testCases;
       }
-      testCases.push(testCase);
+      testCases.add(testCase);
     }
 
     var runTests = [];
@@ -326,21 +327,25 @@ Object.defineProperties(TestRunner.prototype, (function() {
         return orderOfClass(key1) - orderOfClass(key2);
       }).forEach(function(sectionName) {
         var testCases = testCasesByClass[sectionName];
-        if (!testCases.length)
+        if (!testCases.size)
           return;
         var h3 = document.createElement('h3');
-        h3.textContent = sectionName + ' (' + testCases.length + ')';
+        h3.textContent = sectionName + ' (' + testCases.size + ')';
         resultElement.appendChild(h3);
         var p = document.createElement('p');
         resultElement.appendChild(p);
-        var MAX_LINKS = 50;
-        testCases.slice(0, MAX_LINKS).forEach(function(testCase, index) {
+        /** @const */ var MAX_LINKS = 50;
+        var count = 0;
+        testCases.forEach(function(testCase) {
+          ++count;
+          if (count > MAX_LINKS)
+            return;
           p.appendChild(document.createTextNode(' '));
           var a = document.createElement('a');
           a.href = '#' + testCase.name;
           a.textContent = testCase.name;
           p.appendChild(a);
-          if (index == MAX_LINKS - 1 && testCases.length >= MAX_LINKS)
+          if (count == MAX_LINKS && testCases.size >= MAX_LINKS)
             p.appendChild(document.createTextNode(' AND MORE!'));
         });
       });
@@ -371,9 +376,10 @@ Object.defineProperties(TestRunner.prototype, (function() {
         document.getElementById('progress').style.width = percent + '%';
 
         ['exception', 'fail'].forEach(function(key) {
-          if (!testCasesByClass[key].length)
+          var testCases = testCasesByClass[key];
+          if (!testCases || !testCases.size)
             return;
-          status += ' ' + testCasesByClass[key].length + ' ' + key + '.';
+          status += ' ' + testCasesByClass[key].size + ' ' + key + '.';
         });
 
         status += ' Elapsed: ' + ((new Date())- startAt) + 'ms';
