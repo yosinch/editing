@@ -5,6 +5,40 @@
 'use strict';
 
 editing.defineCommand('CreateLink', (function() {
+
+  /**
+   * @param {!editing.ReadOnlySelection} selection
+   * @return {!Array.<!Node>}
+   *
+   * Computes effective nodes for inline formatting commands. |selection|
+   * should be normalized.
+   */
+  function setUpEffectiveNodes(selection) {
+    if (isText(selection.anchorNode) || isText(selection.focusNode))
+      throw new Error('Selection should be normalized.');
+    var selectedNodes = computeSelectedNodes(selection);
+    if (!selectedNodes.length)
+      return selectedNodes;
+    var nodeSet = editing.newSet(selectedNodes);
+    // Add ancestors of start node of selected nodes if all descendant nodes
+    // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
+    // Note: selection doesn't need to end beyond end tag.
+    var startNode = selectedNodes[0];
+    for (var ancestor = startNode.parentNode; ancestor;
+         ancestor = ancestor.parentNode) {
+      if (!isEditable(ancestor))
+        break;
+      if (ancestor.firstChild !== startNode)
+        break;
+      if (!nodeSet.has(lastWithIn(ancestor)))
+        break;
+      selectedNodes.unshift(ancestor);
+      nodeSet.add(ancestor);
+      startNode = ancestor;
+    }
+    return selectedNodes;
+  }
+
   /**
    * Insert an A element, link and content are specified URL, before selection
    * focus position.
@@ -179,10 +213,7 @@ editing.defineCommand('CreateLink', (function() {
 
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
-    var effectiveNodes = editing.nodes.setUpEffectiveNodes(
-        context, selection, function(node) {
-          return node.nodeName === 'A';
-        });
+    var effectiveNodes = setUpEffectiveNodes(selection);
     if (!effectiveNodes.length) {
       // Note: Firefox and IE don't insert anchor element for caret.
       // IE returns true event if it doesnt' insert anchor element.
@@ -219,12 +250,14 @@ editing.defineCommand('CreateLink', (function() {
     // Special handling of start node, see w3c.30, w3c.40.
     var startNode = effectiveNodes[0];
     var endNode = lastOf(effectiveNodes);
+
     var outerAnchorElement = startNode.parentNode;
     while (outerAnchorElement) {
       if (outerAnchorElement.nodeName == 'A')
         break;
       outerAnchorElement = outerAnchorElement.parentNode;
     }
+
     if (outerAnchorElement) {
       var isStartOfContents = isStartOf(startNode, outerAnchorElement);
       if (outerAnchorElement.getAttribute('href') == url) {

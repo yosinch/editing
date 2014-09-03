@@ -80,14 +80,12 @@ editing.define('nodes', (function() {
    * @return {!Array.<!Node>}
    *
    * Computes effective nodes for inline formatting commands. |selection|
-   * should be normalized.
+   * should be normalized. In addition to the selected nodes, this unshifts
+   * ancestor nodes until the result of |predicate| is false.
    */
   function setUpEffectiveNodes(context, selection, predicate) {
     if (isText(selection.anchorNode) || isText(selection.focusNode))
       throw new Error('Selection should be normalized.');
-    if (!selection.isRange)
-      return [];
-
     var selectedNodes = computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return [];
