@@ -82,7 +82,7 @@ function testCaseWithSample(name, htmlText, testFunction) {
   });
 }
 
-function testCaseFor(commandName, testCaseId, data) {
+function testCaseFor(testCaseName, data) {
   function escapeHtml(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
@@ -109,7 +109,9 @@ function testCaseFor(commandName, testCaseId, data) {
     return text.replace('^', '').replace('|', '');
   }
 
-  var testCaseName = commandName + '.' + testCaseId;
+  var commandName = testCaseName.substring(0, testCaseName.indexOf('.'));
+  console.assert(commandName !== '', 'Test case name should start with' +
+                 ' commandName + ".".');
   console.assert(typeof(data['after']) === 'string',
                  'Test data for ' + testCaseName + ', after must be string: ' +
                   data['after']);

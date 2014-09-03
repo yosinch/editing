@@ -196,7 +196,7 @@ function doImport() {
       sample.finish();
       return testCase;
     } catch (exception) {
-      console.log('Bad sample', sampleId, before);
+      console.log('Bad sample', sampleId, before, exception);
       return void(0);
     }
   }
@@ -226,8 +226,8 @@ function doImport() {
       console.log('No caret', testCase.before);
     if (testCase.after.indexOf('|') < 0)
       console.log('No caret', testCase.after);
-    return "testCaseFor('" + PRETTY_COMMAND_NAMES[candidateName] + "', '" +
-        'w3c.' + testCase.sampleId + "', {\n" +
+    return "testCaseFor('" + PRETTY_COMMAND_NAMES[candidateName] + '.w3c.' +
+        testCase.sampleId + "', {\n" +
         Object.keys(testCase).sort().map(function(key) {
           var value = testCase[key];
           return '  ' + key + ': ' + stringify(value);
