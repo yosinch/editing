@@ -364,8 +364,8 @@ Object.defineProperties(TestRunner.prototype, (function() {
           return;
         }
 
-       var numRun = runTests.length + 1;
-       var percent = Math.floor((numRun / allTestCases.length) * 1000) / 10;
+        var numRun = runTests.length + 1;
+        var percent = Math.floor((numRun / allTestCases.length) * 1000) / 10;
         var status= 'Run ' +
             numRun + '/' + allTestCases.length + '(' + percent + '%) tests.';
         document.getElementById('progress').style.width = percent + '%';
