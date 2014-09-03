@@ -74,36 +74,50 @@ editing.define('nodes', (function() {
   }
 
   /**
+   * @param {!editing.EditingContext} context
    * @param {!editing.ReadOnlySelection} selection
+   * @param {!function(!Node):boolean} predicate
    * @return {!Array.<!Node>}
    *
    * Computes effective nodes for inline formatting commands. |selection|
    * should be normalized.
    */
-  function setUpEffectiveNodes(selection) {
+  function setUpEffectiveNodes(context, selection, predicate) {
     if (isText(selection.anchorNode) || isText(selection.focusNode))
       throw new Error('Selection should be normalized.');
+    if (!selection.isRange)
+      return [];
+
     var selectedNodes = computeSelectedNodes(selection);
     if (!selectedNodes.length)
-      return selectedNodes;
-    var nodeSet = editing.newSet(selectedNodes);
+      return [];
+
+    var needSplit = false;
+
     // Add ancestors of start node of selected nodes if all descendant nodes
     // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
     // Note: selection doesn't need to end beyond end tag.
     var startNode = selectedNodes[0];
-    for (var ancestor = startNode.parentNode; ancestor;
-         ancestor = ancestor.parentNode) {
-      if (!isEditable(ancestor))
-        break;
-      if (ancestor.firstChild !== startNode)
-        break;
-      if (!nodeSet.has(lastWithIn(ancestor)))
-        break;
-      selectedNodes.unshift(ancestor);
-      nodeSet.add(ancestor);
-      startNode = ancestor;
+    var runner = startNode;
+
+    while (runner && predicate(runner)) {
+      needSplit = needSplit || !!runner.previousSibling;
+      runner = runner.parentNode;
     }
-    return selectedNodes;
+    if (!runner || runner === startNode)
+      return selectedNodes;
+    if (!isEditable(runner))
+      return [];
+    if (needSplit)
+      runner = context.splitTree(runner, startNode);
+
+    var effectiveNodes = [];
+    while (runner !== startNode) {
+      effectiveNodes.push(runner);
+      runner = nextNode(runner);
+    }
+    effectiveNodes = effectiveNodes.concat(selectedNodes);
+    return effectiveNodes;
   }
 
   /**

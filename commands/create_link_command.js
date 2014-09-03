@@ -177,9 +177,13 @@ editing.defineCommand('CreateLink', (function() {
       anchorElement = null;
     }
 
+    console.log('setUpEffectiveNodes');
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
-    var effectiveNodes = editing.nodes.setUpEffectiveNodes(selection);
+    var effectiveNodes = editing.nodes.setUpEffectiveNodes(
+        context, selection, function(node) {
+          return node.nodeName === 'A';
+        });
     if (!effectiveNodes.length) {
       // Note: Firefox and IE don't insert anchor element for caret.
       // IE returns true event if it doesnt' insert anchor element.
@@ -247,7 +251,7 @@ editing.defineCommand('CreateLink', (function() {
           // |outerAnchorElement|.
           for (var child = startNode; child; child = child.nextSibling) {
             context.insertAfter(outerAnchorElement.parentNode, child,
-                                 outerAnchorElement);
+                                outerAnchorElement);
           }
         } else {
            // See w3c.34
