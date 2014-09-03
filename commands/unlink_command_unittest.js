@@ -75,7 +75,7 @@ testCaseFor('unlink', 'anchor.href.Name', {
 
 testCaseFor('unlink', 'anchor.href.style', {
   before: '<p contenteditable>^<a href="url1" style="font-weight: bold">bar</a>|</p>',
-  after:'<p contenteditable>^bar|</p>',
+  after:'<p contenteditable><b>^bar|</b></p>',
   firefox: '<p contenteditable><a href="url1" style="font-weight: bold;">bar</a></p>',
 });
 

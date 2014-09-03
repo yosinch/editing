@@ -92,6 +92,7 @@ testing.define('TEST_EXPECTATIONS', (function() {
     },
 */
     // unlink command
+    'unlink.anchor.href.style': {expected: 'fail', reason: 'issue #10'},
     'unlink.contents.partial.anchor.focus': {expected: 'fail',
                                              reason: 'issue #8'},
     'unlink.contents.nodes.partial.anchor.focus': {expected: 'fail',
