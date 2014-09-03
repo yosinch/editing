@@ -177,7 +177,6 @@ editing.defineCommand('CreateLink', (function() {
       anchorElement = null;
     }
 
-    console.log('setUpEffectiveNodes');
     /** @const */ var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
     var effectiveNodes = editing.nodes.setUpEffectiveNodes(
