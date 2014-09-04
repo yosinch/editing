@@ -132,7 +132,7 @@ editing.define('EditingContext', (function() {
   /**
    * @this {!EditingContext}
    * @param {string} tagName
-   * @return {!Node}
+   * @return {!Element}
    */
   function createElement(tagName) {
     return this.document_.createElement(tagName);

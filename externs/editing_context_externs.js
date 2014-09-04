@@ -27,7 +27,7 @@ editing.EditingContext.prototype.appendChild = function(parentNode, newChild) {}
 /**
  * @this {!editing.EditingContext}
  * @param {string} tagName
- * @return {!Node}
+ * @return {!Element}
  */
 editing.EditingContext.prototype.createElement = function(tagName) {};
 
