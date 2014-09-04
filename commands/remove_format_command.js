@@ -9,9 +9,9 @@ editing.defineCommand('removeFormat', (function() {
   // TODO(yosin) We should move |TAG_NAMES_TO_REMOVE| to "content_model.js".
   /** @const */
   var TAG_NAMES_TO_REMOVE = editing.newSet([
-        'ABBR', 'ACRONYM', 'B', 'BDI', 'BDO', 'BIG', 'BLINK', 'CITE', 'CODE',
-        'DFN', 'EM', 'FONT', 'I', 'INS', 'KBD', 'MARK', 'NOBR', 'Q', 'S',
-        'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
+        'ACRONYM', 'B', 'BDO', 'BIG', 'CITE', 'CODE',
+        'DFN', 'EM', 'FONT', 'I', 'INS', 'KBD', 'NOBR', 'Q', 'S',
+        'SAMP', 'SMALL', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
         'VAR']);
 
   /**
@@ -20,11 +20,8 @@ editing.defineCommand('removeFormat', (function() {
    * @return {!Array.<!Node>}
    */
   function prepareForRemoveFormat(context, selection) {
-    if (selection.isEmpty)
-      return [];
-    var selectedNodes = selection.isCaret ?
-        [selection.anchorNode] : editing.nodes.computeSelectedNodes(selection);
-
+    console.assert(selection.isRange);
+    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     var effectiveNodes = selectedNodes;
 
     // Adjust first node
@@ -99,9 +96,9 @@ editing.defineCommand('removeFormat', (function() {
    * @return {boolean}
    */
   function removeFormatCommand(context, userInterface, value) {
-    if (context.startingSelection.isEmpty) {
+    if (!context.startingSelection.isRange) {
       context.setEndingSelection(context.startingSelection);
-      return true;
+      return false;
     }
 
     /** @const */ var selection = editing.nodes.normalizeSelection(
@@ -110,7 +107,7 @@ editing.defineCommand('removeFormat', (function() {
     var effectiveNodes = prepareForRemoveFormat(context, selection);
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
-      return true;
+      return false;
     }
 
     var styleElements = [];
@@ -132,8 +129,9 @@ editing.defineCommand('removeFormat', (function() {
         return;
       }
 
-      if (isStyleElement(currentNode))
-        styleElements.push(currentNode);
+      if (!isStyleElement(currentNode))
+        return;
+      styleElements.push(currentNode);
     });
 
     var lastNode = lastOf(effectiveNodes);
@@ -145,17 +143,9 @@ editing.defineCommand('removeFormat', (function() {
       context.unwrapElement(styleElement, stopChild);
     }
 
-    selectionTracker.finish();
+    selectionTracker.finishWithStartAsAnchor();
     return true;
   }
-  /*
-      context.setStyle(node, 'backgroundColor', '');
-      context.setStyle(node, 'color', '');
-      context.setStyle(node, 'fontFamily', '');
-      context.setStyle(node, 'fontSize', '');
-      context.setStyle(node, 'fontWeight', '');
-      context.setStyle(node, 'textDecoration', '');
-  */
 
   return removeFormatCommand;
 })());

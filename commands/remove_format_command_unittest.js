@@ -34,3 +34,9 @@ testCaseFor('removeFormat.class', {
   after:'<p contenteditable><style>.bold{font-weight:bold}</style>^<span class="bold">abcd</span>|</p>',
   notes: 'class="bold" does not affect removeFormat'
 });
+
+
+testCaseFor('removeFormat.nested_div_style', {
+  before: '<div contenteditable><div style="font-weight: bold">fo^o<div style="font-style: italic">bar</div>ba|z</div>',
+  after: '<div contenteditable><div><span style="font-weight: bold">fo</span>^o<div>bar</div>ba|<b>z</b></div></div>',
+});
