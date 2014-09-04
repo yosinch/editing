@@ -14,9 +14,11 @@ editing.defineCommand('CreateLink', (function() {
    * should be normalized.
    */
   function setUpEffectiveNodes(selection) {
-    if (isText(selection.anchorNode) || isText(selection.focusNode))
+    if (editing.nodes.isText(selection.anchorNode) ||
+        editing.nodes.isText(selection.focusNode)) {
       throw new Error('Selection should be normalized.');
-    var selectedNodes = computeSelectedNodes(selection);
+    }
+    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return selectedNodes;
     var nodeSet = editing.newSet(selectedNodes);
@@ -26,11 +28,11 @@ editing.defineCommand('CreateLink', (function() {
     var startNode = selectedNodes[0];
     for (var ancestor = startNode.parentNode; ancestor;
          ancestor = ancestor.parentNode) {
-      if (!isEditable(ancestor))
+      if (!editing.nodes.isEditable(ancestor))
         break;
       if (ancestor.firstChild !== startNode)
         break;
-      if (!nodeSet.has(lastWithIn(ancestor)))
+      if (!nodeSet.has(editing.nodes.lastWithIn(ancestor)))
         break;
       selectedNodes.unshift(ancestor);
       nodeSet.add(ancestor);
