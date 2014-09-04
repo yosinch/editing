@@ -66,9 +66,15 @@ editing.EditingContext.prototype.insertAfter = function(
 editing.EditingContext.prototype.insertBefore = function(
     parentNode, newChild, refChild) {};
 
-
 /** @type {!Array.<!editing.Operation>} */
 editing.EditingContext.prototype.operations;
+
+/**
+ * @this {!editing.EditingContext}
+ * @param {!Element} element
+ * @param {string} name
+ */
+editing.EditingContext.prototype.removeAttribute = function(element, name) {};
 
 /**
  * @this {!editing.EditingContext}
