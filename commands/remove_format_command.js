@@ -16,59 +16,98 @@ editing.defineCommand('removeFormat', (function() {
 
   /**
    * @param {!editing.EditingContext} context
+   * @param {!Array.<!Node>} effectiveNodes
+   */
+  function adjustSelectionEnd(context, effectiveNodes) {
+    var endNode = lastOf(effectiveNodes);
+    console.assert(!endNode.hasChildNodes(), 'endNode', endNode,
+                   'must not have child nodes.');
+    var lastNode = endNode;
+    for (var runner = endNode.parentNode; runner; runner = runner.parentNode) {
+      if (!editing.nodes.isEditable(runner))
+        break;
+      if (!editing.nodes.isElement(runner))
+        continue;
+      var element = /** @type {!Element} */(runner);
+      var child = lastNode;
+      lastNode = element;
+      var nextSibling = child.nextSibling;
+      if (!nextSibling)
+        continue;
+      if (editing.nodes.isPhrasing(element)) {
+        if (!isStyleElement(element))
+          continue;
+        context.splitNode(element, nextSibling);
+        continue;
+      }
+      introduceStyleSpanIfNeeded(context, element, nextSibling);
+    }
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Array.<!Node>} selectedNodes
+   * @return {!Array.<!Node>}
+   */
+  function adjustSlectionStart(context, selectedNodes) {
+    var styleElement = null;
+    var startNode = selectedNodes[0];
+    var effectiveNodes = selectedNodes;
+    var lastNode = null;
+    for (var runner = startNode; runner; runner = runner.parentNode) {
+      if (!editing.nodes.isEditable(runner))
+        break;
+      var child = lastNode;
+      lastNode = runner;
+      if (!editing.nodes.isElement(runner))
+        continue;
+      var element = /** @type {!Element} */(runner);
+      if (editing.nodes.isPhrasing(element)) {
+        if (isStyleElement(element))
+          styleElement = element;
+        continue;
+      }
+
+      if (!child || element.firstChild === child)
+        continue;
+
+      // Since, |startNode| is middle non-phrasing node, we wrap nodes before
+      // |startNode| within SPAN with STYLE attribute.
+      // See "removeFormat.nested_div_style"
+      if (introduceStyleSpanIfNeeded(context, element, child))
+        styleElement = element;
+    }
+
+    if (!styleElement || styleElement === startNode)
+      return effectiveNodes;
+
+    if (startNode.previousSibling && editing.nodes.isPhrasing(styleElement))
+      styleElement = context.splitTree(styleElement, startNode);
+
+    for (var runner = startNode; runner; runner = runner.parentNode) {
+      // TODO(yosin) We should check |Array.prototype.unshift()| whether slow
+      // or not.
+      effectiveNodes.unshift(runner);
+      if (runner == styleElement)
+        break;
+    }
+    return effectiveNodes;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
    * @param {!editing.ReadOnlySelection} selection
    * @return {!Array.<!Node>}
    */
   function prepareForRemoveFormat(context, selection) {
     console.assert(selection.isRange);
     var selectedNodes = editing.nodes.computeSelectedNodes(selection);
-    var effectiveNodes = selectedNodes;
-
-    // Adjust first node
-    {
-      var firstNode = selectedNodes[0];
-      var styleElement = null;
-      for (var runner = firstNode; runner; runner = runner.parentNode) {
-        if (!editing.nodes.isPhrasing(runner) ||
-            !editing.nodes.isEditable(runner)) {
-          break;
-        }
-        if (isStyleElement(runner))
-          styleElement = runner;
-      }
-      if (styleElement && styleElement !== firstNode) {
-        if (firstNode.previousSibling) {
-          var newTree = context.splitTree(styleElement, firstNode);
-          styleElement = newTree
-        }
-        effectiveNodes = [];
-        for (var runner = styleElement; runner != firstNode;
-             runner = editing.nodes.nextNode(runner)) {
-          effectiveNodes.push(runner);
-        }
-        selectedNodes.forEach(function(node) {
-          effectiveNodes.push(node);
-        });
-      }
-    }
-
-    // Adjust last node
-    var lastNode = lastOf(selectedNodes);
-    styleElement = null;
-    for (var runner = firstNode; runner; runner = runner.parentNode) {
-      if (!editing.nodes.isPhrasing(runner) ||
-          !editing.nodes.isEditable(runner)) {
-        break;
-      }
-      if (isStyleElement(runner))
-        styleElement = runner;
-    }
-    if (!styleElement)
-      return effectiveNodes;
-    var nextNode = editing.nodes.nextNode(lastNode);
-    if (!nextNode || !editing.nodes.isDescendantOf(nextNode, styleElement))
-      return effectiveNodes;
-    var newTree = context.splitTree(styleElement, nextNode);
+    if (!selectedNodes.length)
+      return [];
+    var startNode = selectedNodes[0];
+    var endNode = lastOf(selectedNodes);
+    var effectiveNodes = adjustSlectionStart(context, selectedNodes);
+    adjustSelectionEnd(context, effectiveNodes);
     return effectiveNodes;
   }
 
@@ -87,6 +126,30 @@ editing.defineCommand('removeFormat', (function() {
     if (!editing.nodes.isPhrasing(element))
       return false;
     return element.hasAttribute('style');
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   * @param {!Node} lastNode
+   * @return {boolean}
+   */
+  function introduceStyleSpanIfNeeded(context, element, lastNode) {
+    console.assert(element === lastNode.parentNode,
+                   'Last node', lastNode, 'must be a child of', element);
+    var style = element.getAttribute('style');
+    if (!style)
+      return false;
+    var styleSpan = context.createElement('span');
+    styleSpan.setAttribute('style', style);
+    var child = element.firstChild;
+    while (child !== lastNode) {
+      var next = child.nextSibling;
+      context.appendChild(styleSpan, child);
+      child = next;
+    }
+    context.insertBefore(element, styleSpan, lastNode);
+    return true;
   }
 
   /**
@@ -110,8 +173,7 @@ editing.defineCommand('removeFormat', (function() {
       return false;
     }
 
-    var styleElements = [];
-    var pendingContents = [];
+    /** @type {!Array.<!Element>} */ var styleElements = [];
     effectiveNodes.forEach(function(currentNode) {
       var styleElement = lastOf(styleElements);
       if (styleElement && styleElement == currentNode.previousSibling) {
@@ -129,9 +191,27 @@ editing.defineCommand('removeFormat', (function() {
         return;
       }
 
-      if (!isStyleElement(currentNode))
+      console.assert(editing.nodes.isElement(currentNode),
+                     'Effective nodes contains invalid node', currentNode);
+      var element = /** @type {!Element} */(currentNode);
+
+      if (!editing.nodes.isPhrasing(element)) {
+        if (element.hasAttribute('style'))
+          context.removeAttribute(element, 'style');
         return;
-      styleElements.push(currentNode);
+      }
+
+      if (element.nodeName === 'SPAN' &&
+          element.hasAttribute('style')) {
+        context.removeAttribute(element, 'style');
+        if (!element.attributes.length)
+          styleElements.push(element);
+        return;
+      }
+
+      if (!isStyleElement(element))
+        return;
+      styleElements.push(element);
     });
 
     var lastNode = lastOf(effectiveNodes);
