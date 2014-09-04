@@ -417,7 +417,6 @@ editing.define('EditingContext', (function() {
    * @return {!Node}
    */
   function splitTree(treeNode, refNode) {
-    console.log(treeNode, refNode);
     console.assert(editing.nodes.isDescendantOf(refNode, treeNode),
                   'refNode', refNode,
                   'must be descendant of treeNdoe', treeNode);
