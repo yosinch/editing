@@ -14,10 +14,8 @@ editing.defineCommand('CreateLink', (function() {
    * should be normalized.
    */
   function setUpEffectiveNodes(selection) {
-    if (editing.nodes.isText(selection.anchorNode) ||
-        editing.nodes.isText(selection.focusNode)) {
-      throw new Error('Selection should be normalized.');
-    }
+    console.assert(!editing.nodes.isText(selection.anchorNode));
+    console.assert(!editing.nodes.isText(selection.focusNode));
     var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return selectedNodes;
