@@ -83,7 +83,7 @@ editing.define('nodes', (function() {
    * should be normalized. In addition to the selected nodes, this unshifts
    * ancestor nodes until the result of |predicate| is false.
    *
-   * TODO(hajimehoshi): If |predicate| returns false at any time, only selected
+   * TODO(hajimehoshi): If |predicate| returns true at any time, only selected
    * nodes will be returned. Is this OK?
    */
   function setUpEffectiveNodes(context, selection, predicate) {
