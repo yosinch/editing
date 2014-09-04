@@ -30,7 +30,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.1',
             return node.nodeName !== 'B';
           });
       expectEq('B,bar,I,baz', function() { return dumpNodes(nodes) });
-      console.log(context.document);
+      expectEq('foo<b>bar<i>baz</i></b>quux', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
     });
 
 testCaseWithSample('nodes.setUpEffectiveNodes.2',
@@ -43,6 +45,36 @@ testCaseWithSample('nodes.setUpEffectiveNodes.2',
             return node.nodeName !== 'SPAN';
           });
       expectEq('SPAN,foo, ,SPAN,bar', function() { return dumpNodes(nodes) });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
+    '<p contenteditable><a>foo<b>^bar|</b></a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return node.nodeName !== 'A';
+          });
+      expectEq('A,foo,B,bar', function() { return dumpNodes(nodes) });
+      expectEq('<a>foo<b>bar</b></a>', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
+    '<p contenteditable><a>foo<b><i>^bar|</i></b></a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return node.nodeName !== 'A';
+          });
+      expectEq('A,foo,B,I,bar', function() { return dumpNodes(nodes) });
+      expectEq('<a>foo<b><i>bar</i></b></a>', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
     });
 
 //
