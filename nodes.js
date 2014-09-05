@@ -97,17 +97,23 @@ editing.define('nodes', (function() {
     // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
     // Note: selection doesn't need to end beyond end tag.
     var startNode = selectedNodes[0];
-    var needSplit = !!startNode.previousSibling;
+    var needSplit = false;
     var runner = startNode;
 
-    while (runner && predicate(runner))
+    while (runner && predicate(runner)) {
+      needSplit = needSplit || !!runner.previousSibling;
       runner = runner.parentNode;
+    }
     if (!runner || runner === startNode)
       return selectedNodes;
     if (!isEditable(runner))
       return [];
-    if (needSplit)
-      runner = context.splitTree(runner, startNode);
+    if (needSplit) {
+      var refNode = startNode;
+      while (!refNode.previousSibling)
+        refNode = refNode.parentNode;
+      runner = context.splitTree(runner, refNode);
+    }
 
     var effectiveNodes = [];
     while (runner !== startNode) {
