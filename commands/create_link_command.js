@@ -46,7 +46,7 @@ editing.defineCommand('CreateLink', (function() {
    * @param {string} url
    */
   function createLinkBeforeCaret(context, url) {
-    console.assert(url != '', 'url must be non-empty string');
+    console.assert(url !== '', 'url must be non-empty string');
     var editor = context.editor;
 
     var anchorElement = context.createElement('a');
@@ -93,7 +93,7 @@ editing.defineCommand('CreateLink', (function() {
     }
 
     // Shrink ancestors to child of |editable|.
-    while (ancestors[ancestors.length - 1] != editable) {
+    while (ancestors[ancestors.length - 1] !== editable) {
       ancestors.pop();
     }
     ancestors.pop();
@@ -130,13 +130,13 @@ editing.defineCommand('CreateLink', (function() {
    * @return {boolean}
    */
   function createLinkForRange(context, url) {
-    console.assert(url != '');
+    console.assert(url !== '');
     var editor = context.editor;
 
     function canMerge(node){
-      return node && node.nodeName == 'A' &&
-             node.getAttribute('href') == url &&
-             node.attributes.length == 1;
+      return node && node.nodeName === 'A' &&
+             node.getAttribute('href') === url &&
+             node.attributes.length === 1;
     }
 
     function insertNewAnchorElement(anchorPhraseNode) {
@@ -159,7 +159,7 @@ editing.defineCommand('CreateLink', (function() {
       for (var runner = node; runner; runner = runner.parentNode) {
         if (runner.previousSibling)
           return false;
-        if (runner == other)
+        if (runner === other)
           return true;
       }
       return false;
@@ -197,7 +197,7 @@ editing.defineCommand('CreateLink', (function() {
         // See w3c.44
         return;
       }
-      if (node.parentNode == anchorElement.parentNode) {
+      if (node.parentNode === anchorElement.parentNode) {
         context.appendChild(anchorElement, node);
         return;
       }
@@ -227,7 +227,7 @@ editing.defineCommand('CreateLink', (function() {
       // All descendant of |lastPendingContainer| can be contents of anchor.
       var lastContainer = pendingContainers.pop();
       while (pendingContents.length &&
-             lastOf(pendingContents).parentNode == lastContainer) {
+             lastOf(pendingContents).parentNode === lastContainer) {
         pendingContents.pop();
       }
       if (pendingContainers.length) {
@@ -253,28 +253,28 @@ editing.defineCommand('CreateLink', (function() {
 
     var outerAnchorElement = startNode.parentNode;
     while (outerAnchorElement) {
-      if (outerAnchorElement.nodeName == 'A')
+      if (outerAnchorElement.nodeName === 'A')
         break;
       outerAnchorElement = outerAnchorElement.parentNode;
     }
 
     if (outerAnchorElement) {
       var isStartOfContents = isStartOf(startNode, outerAnchorElement);
-      if (outerAnchorElement.getAttribute('href') == url) {
+      if (outerAnchorElement.getAttribute('href') === url) {
         anchorElement = outerAnchorElement;
       } else if (editing.nodes.isDescendantOf(endNode, outerAnchorElement)) {
         // All selected nodes are in |outerAnchorElement|.
         var isEndOfContents = editing.nodes.lastWithIn(outerAnchorElement) ==
             endNode;
         if (isStartOfContents && isEndOfContents) {
-          // Selected nodes == all children of |outerAnchorElement|.
+          // Selected nodes === all children of |outerAnchorElement|.
           anchorElement = outerAnchorElement;
         } else if (isStartOfContents) {
           // Move |startNode| to |endNode| before |outerAnchorElement|.
           for (var child = startNode; child; child = child.nextSibling) {
             context.insertBefore(outerAnchorElement.parentNode, child,
                                  outerAnchorElement);
-            if (endNode == child ||
+            if (endNode === child ||
                 editing.nodes.isDescendantOf(endNode, child))
               break;
           }
@@ -318,7 +318,7 @@ editing.defineCommand('CreateLink', (function() {
     }
 
     effectiveNodes.forEach(function(currentNode) {
-      if (currentNode == anchorElement)
+      if (currentNode === anchorElement)
         return;
 
       var lastPendingContainer = lastOf(pendingContainers);
@@ -333,14 +333,14 @@ editing.defineCommand('CreateLink', (function() {
         return;
       }
 
-      if (currentNode.nodeName == 'A') {
+      if (currentNode.nodeName === 'A') {
         if (!anchorElement) {
           processPendingContents();
           anchorElement = currentNode;
           context.setAttribute(anchorElement, 'href', url);
           return;
         }
-        console.assert(anchorElement.getAttribute('href') == url);
+        console.assert(anchorElement.getAttribute('href') === url);
         context.setAttribute(currentNode, 'href', url);
         if (canMerge(currentNode)) {
           var child = currentNode.firstChild;
@@ -391,7 +391,7 @@ editing.defineCommand('CreateLink', (function() {
    * @return {boolean}
    */
   function createLinkCommand(context, userInterface, url) {
-    if (url == '') {
+    if (url === '') {
       context.setEndingSelection(context.startingSelection);
       return false;
     }
