@@ -25,19 +25,19 @@ testCase('createLink.NoUrl', function() {
 // <b>foo|bar</b> => <b>foo^<a>url</a>|bar</b>
 testCaseFor('createLink.CaretAtFirst', {
   before: '<p contenteditable>|abcd</p>',
-  after:'<p contenteditable>^<a href="URL">URL</a>|abcd</p>',
+  after:'<p contenteditable><a href="URL">^URL|</a>abcd</p>',
   value: 'URL'
 });
 
 testCaseFor('createLink.Caret.AtLast', {
   before: '<p contenteditable>abcd|</p>',
-  after: '<p contenteditable>abcd^<a href="URL">URL</a>|</p>',
+  after: '<p contenteditable>abcd<a href="URL">^URL|</a></p>',
   value: 'URL'
 });
 
 testCaseFor('createLink.Caret.AtMiddle', {
   before: '<p contenteditable>ab|cd</p>',
-  after:  '<p contenteditable>ab^<a href="URL">URL</a>|cd</p>',
+  after:  '<p contenteditable>ab<a href="URL">^URL|</a>cd</p>',
   value: 'URL'
 });
 
@@ -80,7 +80,7 @@ testCaseFor('createLink.Range.AnchorText.1', {
 // IE: <p contenteditable<a href="URL">foo</a></p>
 testCaseFor('createLink.Range.AnchorText.2', {
   before: '<p contenteditable><a href="foo">^fo|o</a></p>',
-  after:  '<p contenteditable><a href="URL">^fo</a><a href="foo">|o</a></p>',
+  after:  '<p contenteditable><a href="URL">^fo|</a><a href="foo">o</a></p>',
   value: 'URL'
 });
 
@@ -90,7 +90,7 @@ testCaseFor('createLink.Range.AnchorText.2', {
 // PHRASING,
 testCaseFor('createLink.RangeList', {
   before: '<div contenteditable>^<ul><li>one</li><li>two</li></ul>|</div>',
-  after:  '<div contenteditable>^<ul><li><a href="URL">one</a></li><li><a href="URL">two</a></li></ul>|</div>',
+  after:  '<div contenteditable><ul><li><a href="URL">^one</a></li><li><a href="URL">two|</a></li></ul></div>',
   value: 'URL'
 });
 
@@ -103,7 +103,7 @@ testCaseFor('createLink.Range.SimpleText', {
 
 testCaseFor('createLink.Range.SimpleTree', {
   before: '<p contenteditable>^abcd<b>efg</b>|</p>',
-  after:  '<p contenteditable><a href="URL">^abcd<b>efg</b>|</a></p>',
+  after:  '<p contenteditable><a href="URL">^abcd<b>efg|</b></a></p>',
   value: 'URL'
 });
 
@@ -143,8 +143,8 @@ testCaseFor('createLink.Range.11.1', {
 
 // <b>...</b> is in effective range.
 testCaseFor('createLink.Range.11.2', {
-  after: '<div contenteditable>foo<b><a href="URL">^bar<i>baz</i></a></b>|quux</div>',
-  before: '<div contenteditable>foo<b>^bar<i>baz</i></b>|quux</div>',
+  after: '<div contenteditable>foo<b><a href="URL">^bar<i>baz|</i></a></b>quux</div>',
+  before: '<div contenteditable>foo<b>^bar<i>baz|</i></b>quux</div>',
   value: 'URL'
 });
 

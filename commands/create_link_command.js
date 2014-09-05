@@ -40,98 +40,12 @@ editing.defineCommand('CreateLink', (function() {
   }
 
   /**
-   * Insert an A element, link and content are specified URL, before selection
-   * focus position.
-   * @param {!editing.EditingContext} context
-   * @param {string} url
-   */
-  function createLinkBeforeCaret(context, url) {
-    console.assert(url !== '', 'url must be non-empty string');
-    var editor = context.editor;
-
-    var anchorElement = context.createElement('a');
-    context.setAttribute(anchorElement, 'href', url);
-    context.appendChild(anchorElement, context.createTextNode(url));
-
-    /** @const @type {!editing.ReadOnlySelection} */
-    var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
-
-    /** @const @type {!Node} */
-    var containerNode = selection.focusNode;
-
-    /** @const @type {?Node} */
-    var caretNode = containerNode.childNodes[selection.focusOffset];
-
-    if (!editing.nodes.isContentEditable(containerNode))
-      throw new Error('Caret should be in editable element.' +
-                      String(containerNode));
-
-    var ancestors = [];
-    var interactive = null;
-    for (var runner = containerNode; runner; runner = runner.parentNode) {
-      if (editing.nodes.isInteractive(runner))
-        interactive = runner;
-      ancestors.push(runner);
-    }
-
-    if (!interactive) {
-      // Insert anchor element before caret.
-      context.insertBefore(containerNode, anchorElement, caretNode);
-      var offset = editing.nodes.nodeIndex(anchorElement);
-      context.setEndingSelection(new editing.ReadOnlySelection(
-          containerNode, offset, containerNode, offset + 1,
-          editing.SelectionDirection.ANCHOR_IS_START));
-      return true;
-    }
-
-    var editable = interactive.parentNode;
-    if (!editable || !editing.nodes.isContentEditable(editable)) {
-      // We can't insert anchor element before/after focus node.
-      context.setEndingSelection(context.startingSelection);
-      return false;
-    }
-
-    // Shrink ancestors to child of |editable|.
-    while (ancestors[ancestors.length - 1] !== editable) {
-      ancestors.pop();
-    }
-    ancestors.pop();
-
-    var anchorTree = ancestors.reverse().reduce(
-        function(previousValue, currentValue) {
-          if (editing.nodes.isInteractive(currentValue))
-            return previousValue;
-          var newNode = currentValue.cloneNode(false);
-          context.appendChild(newNode, previousValue);
-          return newNode;
-       }, anchorElement);
-
-    if (!caretNode) {
-      context.insertAfter(editable, anchorTree, interactive);
-    } else if (selection.focusOffset) {
-      var followingTree = context.splitTree(interactive, caretNode);
-      context.insertBefore(editable, anchorTree, followingTree);
-    } else {
-      context.insertBefore(editable, anchorTree, interactive);
-    }
-
-    var offset = editing.nodes.nodeIndex(anchorElement);
-    context.setEndingSelection(new editing.ReadOnlySelection(
-        anchorElement.parentNode, offset,
-        anchorElement.parentNode, offset + 1,
-        editing.SelectionDirection.ANCHOR_IS_START));
-    return true;
-  }
-
-  /**
    * @param {!editing.EditingContext} context
    * @param {string} url
    * @return {boolean}
    */
   function createLinkForRange(context, url) {
     console.assert(url !== '');
-    var editor = context.editor;
 
     function canMerge(node){
       return node && node.nodeName === 'A' &&
@@ -165,6 +79,11 @@ editing.defineCommand('CreateLink', (function() {
       return false;
     }
 
+    /**
+     * @template T
+     * @param {!Array.<T>} array
+     * @return {?T}
+     */
     function lastOf(array) {
       return array.length ? array[array.length - 1] : null;
     }
@@ -211,13 +130,26 @@ editing.defineCommand('CreateLink', (function() {
       anchorElement = null;
     }
 
-    /** @const */ var selection = editing.nodes.normalizeSelection(
+    var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
+    if (selection.isCaret) {
+      // If selection is caret, we insert |url| before caret and select it,
+      // then apply "createLink" command.
+      var textNode = context.createTextNode(url);
+      var refChild = selection.anchorNode.childNodes[selection.anchorOffset];
+      if (refChild)
+        context.insertBefore(selection.anchorNode, textNode, refChild);
+      else
+        context.appendChild(selection.anchorNode, textNode);
+      selection = new editing.ReadOnlySelection(
+        selection.anchorNode, selection.anchorOffset,
+        selection.anchorNode, selection.anchorOffset + 1,
+        editing.SelectionDirection.ANCHOR_IS_START);
+    }
     var effectiveNodes = setUpEffectiveNodes(selection);
     if (!effectiveNodes.length) {
-      // Note: Firefox and IE don't insert anchor element for caret.
-      // IE returns true event if it doesnt' insert anchor element.
-      return createLinkBeforeCaret(context, url);
+      context.setEndingSelection(context.startingSelection);
+      return true;
     }
 
     var pendingContainers = [];
@@ -398,11 +330,6 @@ editing.defineCommand('CreateLink', (function() {
     if (context.startingSelection.isEmpty) {
       context.setEndingSelection(context.startingSelection);
       return true;
-    }
-    if (context.startingSelection.isCaret) {
-      // Note: Firefox and IE don't insert anchor element for caret.
-      // IE returns true event if it doesnt' insert anchor element.
-      return createLinkBeforeCaret(context, url);
     }
     return createLinkForRange(context, url);
   }
