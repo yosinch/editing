@@ -91,7 +91,7 @@ editing.define('nodes', (function() {
       throw new Error('Selection should be normalized.');
     var selectedNodes = computeSelectedNodes(selection);
     if (!selectedNodes.length)
-      return [];
+      return [null];
 
     // Add ancestors of start node of selected nodes if all descendant nodes
     // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
@@ -111,19 +111,19 @@ editing.define('nodes', (function() {
       selectedNodes.unshift(null);
       return selectedNodes;
     }
-    if (needSplit) {
+    if (needSplit && isPhrasing(runner)) {
       var refNode = startNode;
       while (!refNode.previousSibling)
         refNode = refNode.parentNode;
       runner = context.splitTree(runner, refNode);
     }
 
-    var effectiveNodes = [];
-    while (runner !== startNode) {
-      effectiveNodes.push(runner);
-      runner = nextNode(runner);
+    var effectiveNodes = selectedNodes;
+    for (var ancestor = startNode.parentNode; ancestor != runner;
+         ancestor = ancestor.parentNode) {
+      effectiveNodes.unshift(ancestor);
     }
-    effectiveNodes = effectiveNodes.concat(selectedNodes);
+    effectiveNodes.unshift(runner);
     return effectiveNodes;
   }
 
