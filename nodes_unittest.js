@@ -8,7 +8,9 @@ function dumpNodes(nodes) {
   var sink = ''
   var delimiter = '';
   nodes.forEach(function(node) {
-    if (editing.nodes.isText(node))
+    if (node === null)
+      sink += "(null)";
+    else if (editing.nodes.isText(node))
       sink += delimiter + node.nodeValue;
     else
       sink += delimiter + node.nodeName;
@@ -73,7 +75,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
           // This will always return true.
           return node.nodeName !== 'A';
         });
-      expectEq('bb,I,cc', function() { return dumpNodes(nodes) });
+      expectEq('(null),bb,I,cc', function() { return dumpNodes(nodes) });
       // Nothing will be split.
       expectEq('aaa<b>bbb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
                function() {
@@ -189,6 +191,22 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
           });
       expectEq('A,B,bar,baz', function() { return dumpNodes(nodes) });
       expectEq('<a href="URL">foo</a><a href="URL"><b>bar</b>baz</a>',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.Junk',
+    '<p contenteditable><a href="URL">foo<b>^bar|</b>baz</a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return true;
+          });
+      expectEq('(null),bar', function() { return dumpNodes(nodes) });
+      expectEq('<a href="URL">foo<b>bar</b>baz</a>',
                function() {
                  return context.document.body.firstChild.innerHTML;
                });

@@ -82,9 +82,9 @@ editing.define('nodes', (function() {
    * Computes effective nodes for inline formatting commands. |selection|
    * should be normalized. In addition to the selected nodes, this unshifts
    * ancestor nodes until the result of |predicate| is false.
-   *
-   * TODO(hajimehoshi): If |predicate| returns true at any time, only selected
-   * nodes will be returned. Is this OK?
+   * 
+   * If |predicate| always returns true until reaching the top node, this
+   * returns null and the following selected nodes.
    */
   function setUpEffectiveNodes(context, selection, predicate) {
     if (isText(selection.anchorNode) || isText(selection.focusNode))
@@ -99,15 +99,18 @@ editing.define('nodes', (function() {
     var startNode = selectedNodes[0];
     var needSplit = false;
     var runner = startNode;
-
+    if (editing.nodes.isText(runner)) {
+      needSplit = !!runner.previousSibling;
+      runner = runner.parentNode;
+    }
     while (runner && predicate(runner)) {
       needSplit = needSplit || !!runner.previousSibling;
       runner = runner.parentNode;
     }
-    if (!runner || runner === startNode)
+    if (!runner || runner === startNode) {
+      selectedNodes.unshift(null);
       return selectedNodes;
-    if (!isEditable(runner))
-      return [];
+    }
     if (needSplit) {
       var refNode = startNode;
       while (!refNode.previousSibling)
