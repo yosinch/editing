@@ -24,6 +24,8 @@ editing.defineCommand('Unlink', (function() {
         context, selection, function(node) {
           return node.nodeName !== 'A';
         });
+    if (!effectiveNodes[0])
+      effectiveNodes.shift();
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
       return false;
