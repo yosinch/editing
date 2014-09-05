@@ -24,6 +24,9 @@ testing.Sample.prototype.finish;
 /** @type {!editing.ReadOnlySelection} */
 testing.Sample.prototype.startingSelection;
 
+/** @type {string} */
+testing.browserId;
+
 /**
  * @param {?Node} node
  * @param {!Object=} opt_options

@@ -15,29 +15,29 @@ var ISSUE_URL = 'https://github.com/yosin-chromium/editing/issues/';
  */
 var TestCase;
 
-/**
- * @constructor
- * @final
- */
-function TestRunner() {
-  this.allTestCases_ = [];
-  this.results_ = [];
-  this.sectionName_ = '';
-  this.testCaseMap_ = {};
-  this.useTryCatch_ = true;
-  Object.seal(this);
-}
+window['TestRunner'] = (function() {
+  /**
+   * @constructor
+   * @final
+   * @return {undefined}
+   */
+  function TestRunner() {
+    this.allTestCases_ = [];
+    this.results_ = [];
+    this.sectionName_ = '';
+    this.testCaseMap_ = {};
+    this.useTryCatch_ = true;
+    Object.seal(this);
+  }
 
-/** @type {!Array.<!TestCase>} */
-TestRunner.prototype.allTestCases_;
+  /** @type {!Array.<!TestCase>} */
+  TestRunner.prototype.allTestCases_;
 
-/** @type {!function((string|!function()), !Object=)} */
-TestRunner.prototype.fail = function(message, opt_options) {};
+  /** @type {!function((string|!function()), !Object=)} */
+  TestRunner.prototype.fail = function(message, opt_options) {};
 
-/** @type {!Object.<string, !TestCase>} */
-TestRunner.prototype.testCaseMap_;
-
-Object.defineProperties(TestRunner.prototype, (function() {
+  /** @type {!Object.<string, !TestCase>} */
+  TestRunner.prototype.testCaseMap_;
 
   /**
    * @param {!TestRunner} testRunner
@@ -78,11 +78,11 @@ Object.defineProperties(TestRunner.prototype, (function() {
    *
    * Note: Firefox inserts "use strict" and inserts spaces.
    */
-  function toPrettyString(closure){
+  function toPrettyString(closure) {
     var text = closure.toString()
         .replace('"use strict";', '')  // Firefox add "use strict".
         .replace(/function\s*\(\)\s*\{\s*return\s*/, '')
-        .replace(/;\s*}/g, '');
+        .replace(/;\s*\}/g, '');
     return text;
   }
 
@@ -416,7 +416,7 @@ Object.defineProperties(TestRunner.prototype, (function() {
     this.results_.push(mergeResult(result, opt_result));
   }
 
-  return {
+  Object.defineProperties(TestRunner.prototype, {
     addTest: {value: addTest},
     allTestCases_: {writable: true},
     constructor: TestRunner,
@@ -433,8 +433,9 @@ Object.defineProperties(TestRunner.prototype, (function() {
     useTryCatch: {get: function() { return this.useTryCatch_; }},
     useTryCatch_: {writable: true},
     warn: {value: warn}
-  }
-})());
+  });
+  return TestRunner;
+})();
 
 // Instead of |var testRunner = {}| to make closure compiler happy.
 window['testRunner'] = new TestRunner();

@@ -36,10 +36,6 @@ window['testing']= {};
   });
 })();
 
-function NOTREACHED() {
-  throw new Error('NOTREACHED');
-}
-
 // TODO(yosin) We should add more end tag omissible tag names.
 testing.define('END_TAG_OMISSIBLE', (function() {
   var omissibleTagNames = new Set();
@@ -63,7 +59,7 @@ testing.define('serializeNode', (function() {
     /** @const */ var options = arguments.length >= 2 ?
         /** @type {Object} */(opt_options) : {};
     /** @const */ var selection = options.selection || null;
-    /** @const */ var visibleTextNode = Boolean(options.visibleTextNode);
+    /** @const */ var visibleTextNode = Boolean(options['visibleTextNode']);
 
     function marker(node, offset) {
       if (!selection)
