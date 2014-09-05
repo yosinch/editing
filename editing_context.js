@@ -414,8 +414,6 @@ editing.define('EditingContext', (function() {
     
     var newParent = /** @type {!Element} */(parent.cloneNode(false));
     this.removeAttribute(newParent, 'id');
-    if (newParent.nodeName === 'A')
-      this.removeAttribute(newParent, 'name');
     var sibling = child;
     while (sibling) {
       console.assert(sibling.parentNode === parent);
@@ -448,8 +446,6 @@ editing.define('EditingContext', (function() {
                    element);
     var newElement = element.cloneNode(false);
     this.removeAttribute(element, 'id');
-    if (element.tagName === 'A')
-      this.removeAttribute(element, 'name');
     var child = element.firstChild;
     while (child !== refChild) {
       var nextSibling = child.nextSibling;
