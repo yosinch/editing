@@ -59,6 +59,8 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'removeFormat.w3c.136r': {expected: 'fail', reason: 'issue #25'},
     'removeFormat.w3c.137': {expected: 'fail', reason: 'issue #25'},
     'removeFormat.w3c.137r': {expected: 'fail', reason: 'issue #25'},
+    'removeFormat.w3c.140': {expected: 'fail', reason: 'issue #26'},
+    'removeFormat.w3c.140r': {expected: 'fail', reason: 'issue #26'},
     'removeFormat.w3c.142': {expected: 'fail', reason: 'issue #21'},
     'removeFormat.w3c.142r': {expected: 'fail', reason: 'issue #21'},
     'removeFormat.w3c.143': {expected: 'fail', reason: 'issue #21'},
