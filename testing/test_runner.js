@@ -4,6 +4,9 @@
 
 'use strict';
 
+/** @const */
+var ISSUE_URL = 'https://github.com/yosin-chromium/editing/issues/';
+
 /**
  * @typedef {{
  *   name: string,
@@ -207,6 +210,12 @@ Object.defineProperties(TestRunner.prototype, (function() {
       return key1.localeCompare(key2);
     }
 
+    function formatMessage(plainText) {
+      return plainText
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\bissue #(\d+)\b/g, '<a href="' + ISSUE_URL + '$1">$&</a>');
+    }
+
     function orderOfClass(className) {
       return CLASS_ORDERS[className] || 9999;
     }
@@ -280,7 +289,7 @@ Object.defineProperties(TestRunner.prototype, (function() {
         ol.appendChild(li);
         var spanMessage = document.createElement('span');
         spanMessage.classList.add(className);
-        spanMessage.textContent = result.message;
+        spanMessage.innerHTML = formatMessage(result.message);
         li.appendChild(spanMessage);
         var ulResult = document.createElement('ul');
         ulResult.classList.add(className);
