@@ -450,6 +450,9 @@ editing.define('EditingContext', (function() {
    * @param {!Node} treeNode
    * @param {!Node} refNode
    * @return {!Node}
+   *
+   * This function is similar to |splitTreeLeft| but it moves nodes |refNode|
+   * and after |refNode| to new element.
    */
   function splitTree(treeNode, refNode) {
     console.assert(editing.nodes.isDescendantOf(refNode, treeNode),
@@ -461,6 +464,32 @@ editing.define('EditingContext', (function() {
       lastNode = this.splitNode(runner, lastNode);
     }
     return this.splitNode(treeNode, lastNode);
+  }
+
+
+  /**
+   * @this {!EditingContext}
+   * @param {!Node} treeNode
+   * @param {!Node} refNode
+   * @return {!Node}
+   *
+   * Split |treeNode| at |refNode| by moving nodes before |refNode| to
+   * new element and return it.
+   *
+   * This function is similar to |splitTree| but moves nodes before |refNode|
+   * to new element.
+   */
+  function splitTreeLeft(treeNode, refNode) {
+    console.assert(editing.nodes.isDescendantOf(refNode, treeNode),
+                  'refNode', refNode,
+                  'must be descendant of treeNdoe', treeNode);
+    var lastNode = refNode;
+    for (var runner = refNode.parentNode; runner && runner !== treeNode;
+         runner = runner.parentNode) {
+      this.splitNodeLeft(runner, lastNode);
+      lastNode = runner;
+    }
+    return this.splitNodeLeft(treeNode, lastNode);
   }
 
   /**
@@ -518,6 +547,7 @@ editing.define('EditingContext', (function() {
     splitNodeLeft: {value: splitNodeLeft},
     splitText: {value: splitText},
     splitTree: {value: splitTree},
+    splitTreeLeft: {value: splitTreeLeft},
     // Selection before executing editing command. This |ReadOnlySelection| is
     // put into undo stack for undo operation. See also |endingSelection|
     startingSelection: {get: function() { return this.startingSelection_; }},

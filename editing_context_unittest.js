@@ -124,6 +124,35 @@ testCaseWithSample('context.splitTree.deep',
     });
 
 //
+// splitTreeLeft
+//
+testCaseWithSample('context.splitTreeLeft.shallow',
+    '<p contenteditable><e1>one</e1>|<e2>two</e2><e3>three</e3></p>',
+    function(context, selectionIn) {
+      var selection = editing.nodes.normalizeSelection(context, selectionIn);
+      var refNode = selection.focusNode.childNodes[selection.focusOffset];
+      var oldTree = refNode.parentNode;
+      var newTree = context.splitTreeLeft(oldTree, refNode);
+      expectEq('<p contenteditable><e1>one</e1></p>',
+               function() { return testing.serializeNode(newTree); });
+      expectEq('<p contenteditable><e2>two</e2><e3>three</e3></p>',
+              function() { return testing.serializeNode(oldTree); });
+    });
+
+testCaseWithSample('context.splitTreeLeft.deep',
+    '<p contenteditable><b>bold1<i>italic1<s>strike1|strike2</s>italic2</i>bold2</b></p>',
+    function(context, selectionIn) {
+      var selection = editing.nodes.normalizeSelection(context, selectionIn);
+      var refNode = selection.focusNode.childNodes[selection.focusOffset];
+      var oldTree = refNode.parentNode.parentNode.parentNode;
+      var newTree = context.splitTreeLeft(oldTree, refNode);
+      expectEq('<b>bold1<i>italic1<s>strike1</s></i></b>',
+               function() { return testing.serializeNode(newTree); });
+      expectEq('<b><i><s>strike2</s>italic2</i>bold2</b>',
+               function() { return testing.serializeNode(oldTree); });
+    });
+
+//
 // unwrapElement
 //
 testCaseWithSample('context.unwrapElement.1',
