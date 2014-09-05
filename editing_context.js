@@ -267,6 +267,8 @@ editing.define('EditingContext', (function() {
     ASSERT_EDITING_IN_PROGRESS(this);
     console.assert(typeof(name) == 'string',
         'Attribute name must be string rather than ' + name);
+    if (!element.hasAttribute(name))
+      return;
     var operation = new editing.RemoveAttribute(element, name);
     this.operations_.push(operation);
     operation.execute();
@@ -385,7 +387,7 @@ editing.define('EditingContext', (function() {
     if (!parent.parentNode)
       throw new Error('Parent ' + parent + ' must have a parent.');
     var newParent = parent.cloneNode(false);
-    newParent.removeAttribute('id');
+    this.removeAttribute(newParent, 'id');
     var sibling = child;
     while (sibling) {
       console.assert(sibling.parentNode === parent);

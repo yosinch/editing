@@ -16,6 +16,26 @@ function dumpNodes(nodes) {
   });
   return sink;
 }
+
+//
+// removeAttribute
+//
+testCaseWithSample('context.removeAttribute.1',
+    '<p contenteditable>|<a id="foo">bar</a></p>',
+    function(context, selectionIn) {
+      var element = context.document.querySelector('a');
+      context.removeAttribute(element, 'id');
+      expectFalse(function () { return element.hasAttribute('id') });
+    });
+
+testCaseWithSample('context.removeAttribute.2',
+    '<p contenteditable>|<a id="foo">bar</a></p>',
+    function(context, selectionIn) {
+      var element = context.document.querySelector('a');
+      // No exception for non-existing removing attribute.
+      context.removeAttribute(element, 'notexist');
+    });
+
 //
 // splitNode
 //
