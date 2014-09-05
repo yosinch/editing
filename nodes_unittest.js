@@ -47,6 +47,106 @@ testCaseWithSample('nodes.setUpEffectiveNodes.2',
       expectEq('SPAN,foo, ,SPAN,bar', function() { return dumpNodes(nodes) });
     });
 
+testCaseWithSample('nodes.setUpEffectiveNodes.3',
+    '<p contenteditable>aaa<b>b^bb<i>cc|c</i>ddd<i>eee</i>fff</b>ggg</p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
+      expectEq('B,bb,I,cc', function() { return dumpNodes(nodes) });
+      expectEq('aaa<b>b</b><b>bb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
+    '<p contenteditable>aaa<b>b^bb<i>cc|c</i>ddd<i>eee</i>fff</b>ggg</p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          // This will always return true.
+          return node.nodeName !== 'A';
+        });
+      expectEq('bb,I,cc', function() { return dumpNodes(nodes) });
+      // Nothing will be split.
+      expectEq('aaa<b>bbb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.4',
+    '<p contenteditable>aaa<b>b^bb<i>ccc</i>dd|d<i>eee</i>fff</b>ggg</p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
+      expectEq('B,bb,I,ccc,dd', function() { return dumpNodes(nodes) });
+      expectEq('aaa<b>b</b><b>bb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.5',
+    '<p contenteditable>aaa<b>b^bb<i>ccc</i>ddd<i>ee|e</i>fff</b>ggg</p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
+      expectEq('B,bb,I,ccc,ddd,I,ee', function() { return dumpNodes(nodes) });
+      expectEq('aaa<b>b</b><b>bb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.6',
+    '<p contenteditable>aaa<b>bbb<i>c^cc</i>ddd<i>ee|e</i>fff</b>ggg</p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
+      // 'bbb' is not included.
+      expectEq('B,I,cc,ddd,I,ee', function() { return dumpNodes(nodes) });
+      expectEq('aaa<b>bbb<i>c</i></b><b><i>cc</i>ddd<i>eee</i>fff</b>ggg',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.7',
+    '<p contenteditable>aaa<b>bbb<i>ccc</i>d^dd<i>ee|e</i>fff</b>ggg</p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
+      // 'bbb' is not included.
+      expectEq('B,dd,I,ee', function() { return dumpNodes(nodes) });
+      expectEq('aaa<b>bbb<i>ccc</i>d</b><b>dd<i>eee</i>fff</b>ggg',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
     '<p contenteditable><a>foo<b>^bar|</b></a></p>',
     function(context, selection) {
