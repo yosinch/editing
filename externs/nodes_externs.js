@@ -95,8 +95,11 @@ editing.nodes.normalizeSelection = function(context, selection) {};
  * @return {?Node}
  */
 editing.nodes.previousNode = function(node) {};
+
 /**
+ * @param {!editing.EditingContext} context
  * @param {!editing.ReadOnlySelection} selection
+ * @param {!function(!Node):boolean} predicate
  * @return {!Array.<!Node>}
  */
-editing.nodes.setUpEffectiveNodes = function(selection) {};
+editing.nodes.setUpEffectiveNodes = function(context, selection, predicate) {};

@@ -77,6 +77,13 @@ editing.define('EditingContext', (function() {
 
   /**
    * @this {!EditingContext}
+   * @param {!Element} element
+   * @param {string} name
+   */
+  EditingContext.prototype.removeAttribute = function(element, name) {};
+
+  /**
+   * @this {!EditingContext}
    * @param {!Node} parentNode
    * @param {!Node} oldChild
    */
@@ -101,6 +108,14 @@ editing.define('EditingContext', (function() {
 
   /**
    * @this {!EditingContext}
+   * @param {!Element} element
+   * @param {!Node} refChild
+   * @return {!Node}
+   */
+  EditingContext.prototype.splitNodeLeft = function(element, refChild) {};
+
+  /**
+   * @this {!EditingContext}
    * @param {!Text} node
    * @param {number} offset
    * @return {!Text}
@@ -114,6 +129,14 @@ editing.define('EditingContext', (function() {
    */
   EditingContext.prototype.splitTree = function(treeNode, refNode) {};
 
+
+  /**
+   * @this {!EditingContext}
+   * @param {!Node} treeNode
+   * @param {!Node} refNode
+   * @return {!Node}
+   */
+  EditingContext.prototype.splitTreeLeft = function(treeNode, refNode) {};
 
   /**
    * @this {!EditingContext}
@@ -388,7 +411,8 @@ editing.define('EditingContext', (function() {
   function splitNode(parent, child) {
     if (!parent.parentNode)
       throw new Error('Parent ' + parent + ' must have a parent.');
-    var newParent = parent.cloneNode(false);
+    
+    var newParent = /** @type {!Element} */(parent.cloneNode(false));
     this.removeAttribute(newParent, 'id');
     var sibling = child;
     while (sibling) {
@@ -402,7 +426,7 @@ editing.define('EditingContext', (function() {
   }
 
   /**
-   * @this {!editing.EditingContext}
+   * @this {!EditingContext}
    * @param {!Element} element
    * @param {!Node} refChild
    *
@@ -428,7 +452,8 @@ editing.define('EditingContext', (function() {
       this.appendChild(newElement, child);
       child = nextSibling;
     }
-    this.insertBefore(element.parentNode, newElement, element);
+    this.insertBefore(/** @type {!Node} */(element.parentNode),
+      newElement, element);
     return newElement;
   }
 
@@ -486,10 +511,10 @@ editing.define('EditingContext', (function() {
     var lastNode = refNode;
     for (var runner = refNode.parentNode; runner && runner !== treeNode;
          runner = runner.parentNode) {
-      this.splitNodeLeft(runner, lastNode);
+      this.splitNodeLeft(/** @type {!Element} */(runner), lastNode);
       lastNode = runner;
     }
-    return this.splitNodeLeft(treeNode, lastNode);
+    return this.splitNodeLeft(/** @type {!Element} */(treeNode), lastNode);
   }
 
   /**
