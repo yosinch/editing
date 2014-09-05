@@ -107,11 +107,11 @@ editing.define('nodes', (function() {
       needSplit = needSplit || !!runner.previousSibling;
       runner = runner.parentNode;
     }
-    if (!runner || runner === startNode) {
+    if (runner === startNode) {
       selectedNodes.unshift(null);
       return selectedNodes;
     }
-    if (needSplit && isPhrasing(runner)) {
+    if (runner && needSplit && isPhrasing(runner)) {
       var refNode = startNode;
       while (!refNode.previousSibling)
         refNode = refNode.parentNode;

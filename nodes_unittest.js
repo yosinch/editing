@@ -75,7 +75,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
           // This will always return true.
           return node.nodeName !== 'A';
         });
-      expectEq('(null),bb,I,cc', function() { return dumpNodes(nodes) });
+      expectEq('(null),#document,HTML,BODY,P,B,bb,I,cc', function() {
+        return dumpNodes(nodes)
+      });
       // Nothing will be split.
       expectEq('aaa<b>bbb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
                function() {
@@ -157,9 +159,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.8',
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
-          return node.nodeName !== 'A';
+          return editing.nodes.isPhrasing(node);
         });
-      expectEq('(null),bar', function() { return dumpNodes(nodes) });
+      expectEq('P,bar', function() { return dumpNodes(nodes) });
       var pContents = context.document.body.firstChild;
       expectEq('foo',
                function() {
@@ -227,7 +229,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Junk',
           context, normalizedSelection, function(node) {
             return true;
           });
-      expectEq('(null),bar', function() { return dumpNodes(nodes) });
+      expectEq('(null),#document,HTML,BODY,P,A,B,bar', function() {
+        return dumpNodes(nodes)
+      });
       expectEq('<a href="URL">foo<b>bar</b>baz</a>',
                function() {
                  return context.document.body.firstChild.innerHTML;
