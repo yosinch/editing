@@ -211,6 +211,11 @@ Object.defineProperties(TestRunner.prototype, (function() {
       return CLASS_ORDERS[className] || 9999;
     }
 
+    function padding(text){
+      var PADDING = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
+      return (text + PADDING).substr(0, PADDING.length);
+    }
+
     // To report number of test cases in progress report, we populate
     // |testCasesByClass| here.
     var testCasesByClass = {};
@@ -288,11 +293,10 @@ Object.defineProperties(TestRunner.prototype, (function() {
           li.classList.add(key);
           ulResult.appendChild(li);
           var value = result[key];
-          var filler = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'
           if (result.format == 'html')
-            li.innerHTML = (key + filler).substr(0, 10) + ' ' + value;
+            li.innerHTML = padding(key) + ' ' + value;
           else
-            li.textContent = (key + filler).substr(0, 10) + ' ' + value;
+            li.textContent = padding(key) + ' ' + value;
         });
       });
       liTestCase.classList.add(testCaseClass);
