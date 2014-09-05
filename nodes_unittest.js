@@ -77,6 +77,21 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
       });
     });
 
+testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
+    '<p contenteditable><a>foo<b>^bar</b>baz|</a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return node.nodeName !== 'A';
+          });
+      expectEq('A,foo,B,bar,baz', function() { return dumpNodes(nodes) });
+      expectEq('<a>foo<b>bar</b>baz</a>', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
+    });
+
 //
 // ReadOnlySelection.nodes
 //
