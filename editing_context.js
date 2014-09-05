@@ -382,6 +382,8 @@ editing.define('EditingContext', (function() {
    *
    * Split |parent| at |child|, and returns new node which contains |child|
    * to its sibling nodes.
+   * This function is similar to |splitNodeLeft|, which move child nodes before
+   * |refChild| to new element.
    */
   function splitNode(parent, child) {
     if (!parent.parentNode)
@@ -397,6 +399,37 @@ editing.define('EditingContext', (function() {
     }
     this.insertAfter(parent.parentNode, newParent, parent);
     return newParent;
+  }
+
+  /**
+   * @this {!editing.EditingContext}
+   * @param {!Element} element
+   * @param {!Node} refChild
+   *
+   * Split |element| at |refChild| by moving child nodes before |refChild|
+   * to new element and returns it.
+   *
+   * This function is similar to |splitNode|, which move child nodes after
+   * |refChild| to new element.
+   *
+   * The "id" attribute is in new element.
+   */
+  function splitNodeLeft(element, refChild) {
+    console.assert(refChild.parentNode === element,
+                 'refChild', refChild, ' should be child of ', element);
+    console.assert(refChild !== element.firstChild,
+                   'refChild', refChild, ' must not be a first child of',
+                   element);
+    var newElement = element.cloneNode(false);
+    this.removeAttribute(element, 'id');
+    var child = element.firstChild;
+    while (child !== refChild) {
+      var nextSibling = child.nextSibling;
+      this.appendChild(newElement, child);
+      child = nextSibling;
+    }
+    this.insertBefore(element.parentNode, newElement, element);
+    return newElement;
   }
 
   /**
@@ -482,6 +515,7 @@ editing.define('EditingContext', (function() {
     setEndingSelection: {value: setEndingSelection },
     setStyle: {value: setStyle},
     splitNode: {value: splitNode},
+    splitNodeLeft: {value: splitNodeLeft},
     splitText: {value: splitText},
     splitTree: {value: splitTree},
     // Selection before executing editing command. This |ReadOnlySelection| is

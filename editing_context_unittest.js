@@ -67,6 +67,34 @@ testCaseWithSample('context.splitNode.2',
     });
 
 //
+// splitNodeLeft
+//
+testCaseWithSample('context.splitNodeLeft.1',
+    '<p contenteditable><a>one|<b>two</b>three</a></p>',
+    function(context, selectionIn) {
+      var oldTree = context.document.querySelector('a');
+      var refNode = oldTree.childNodes[1];
+      var newTree = context.splitNodeLeft(oldTree, refNode);
+      expectEq('<a>one</a>',
+               function() { return testing.serializeNode(newTree); });
+      expectEq('<a><b>two</b>three</a>',
+              function() { return testing.serializeNode(oldTree); });
+    });
+
+// We don't copy "id" attribute.
+testCaseWithSample('context.splitNodeLeft.2',
+    '<p contenteditable><a id="foo">one|<b>two</b>three</a></p>',
+    function(context, selectionIn) {
+      var oldTree = context.document.querySelector('a');
+      var refNode = oldTree.childNodes[1];
+      var newTree = context.splitNodeLeft(oldTree, refNode);
+      expectEq('<a id="foo">one</a>',
+               function() { return testing.serializeNode(newTree); });
+      expectEq('<a><b>two</b>three</a>',
+              function() { return testing.serializeNode(oldTree); });
+    });
+
+//
 // splitTree
 //
 testCaseWithSample('context.splitTree.shallow',
