@@ -26,9 +26,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.1',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       expectEq('B,bar,I,baz', function() { return dumpNodes(nodes) });
       expectEq('foo<b>bar<i>baz</i></b>quux', function() {
         return context.document.body.firstChild.innerHTML;
@@ -41,9 +41,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.2',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'SPAN';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'SPAN';
+        });
       expectEq('SPAN,foo, ,SPAN,bar', function() { return dumpNodes(nodes) });
     });
 
