@@ -66,6 +66,34 @@ testCaseWithSample('context.splitNode.2',
       expectEq(newTree, function() { return oldTree.nextSibling; });
     });
 
+// We don't copy "name" attribute for "A".
+testCaseWithSample('context.splitNode.3',
+    '<p contenteditable><a name="foo">one|<b>two</b>three</a></p>',
+    function(context, selectionIn) {
+      var oldTree = context.document.querySelector('a');
+      var refNode = oldTree.childNodes[1];
+      var newTree = context.splitNode(oldTree, refNode);
+      expectEq('<a name="foo">one</a>',
+               function() { return testing.serializeNode(oldTree); });
+      expectEq('<a><b>two</b>three</a>',
+              function() { return testing.serializeNode(newTree); });
+      expectEq(newTree, function() { return oldTree.nextSibling; });
+    });
+
+// We don't copy "name" attribute for "A", but not others
+testCaseWithSample('context.splitNode.4',
+    '<p contenteditable><s name="foo">one|<b>two</b>three</s></p>',
+    function(context, selectionIn) {
+      var oldTree = context.document.querySelector('s');
+      var refNode = oldTree.childNodes[1];
+      var newTree = context.splitNode(oldTree, refNode);
+      expectEq('<s name="foo">one</s>',
+               function() { return testing.serializeNode(oldTree); });
+      expectEq('<s name="foo"><b>two</b>three</s>',
+              function() { return testing.serializeNode(newTree); });
+      expectEq(newTree, function() { return oldTree.nextSibling; });
+    });
+
 //
 // splitNodeLeft
 //
@@ -91,6 +119,32 @@ testCaseWithSample('context.splitNodeLeft.2',
       expectEq('<a id="foo">one</a>',
                function() { return testing.serializeNode(newTree); });
       expectEq('<a><b>two</b>three</a>',
+              function() { return testing.serializeNode(oldTree); });
+    });
+
+// We don't copy "name" attribute for "A".
+testCaseWithSample('context.splitNodeLeft.3',
+    '<p contenteditable><a name="foo">one|<b>two</b>three</a></p>',
+    function(context, selectionIn) {
+      var oldTree = context.document.querySelector('a');
+      var refNode = oldTree.childNodes[1];
+      var newTree = context.splitNodeLeft(oldTree, refNode);
+      expectEq('<a name="foo">one</a>',
+               function() { return testing.serializeNode(newTree); });
+      expectEq('<a><b>two</b>three</a>',
+              function() { return testing.serializeNode(oldTree); });
+    });
+
+// We don't copy "name" attribute for "A", but not others.
+testCaseWithSample('context.splitNodeLeft.4',
+    '<p contenteditable><s name="foo">one|<b>two</b>three</s></p>',
+    function(context, selectionIn) {
+      var oldTree = context.document.querySelector('s');
+      var refNode = oldTree.childNodes[1];
+      var newTree = context.splitNodeLeft(oldTree, refNode);
+      expectEq('<s name="foo">one</s>',
+               function() { return testing.serializeNode(newTree); });
+      expectEq('<s name="foo"><b>two</b>three</s>',
               function() { return testing.serializeNode(oldTree); });
     });
 
