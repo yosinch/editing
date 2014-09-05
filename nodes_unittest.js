@@ -148,7 +148,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.7',
     });
 
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
-    '<p contenteditable><a>foo<b>^bar|</b></a></p>',
+    '<p contenteditable><a href="URL">foo<b>^bar|</b></a></p>',
     function(context, selection) {
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
@@ -156,14 +156,14 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
           context, normalizedSelection, function(node) {
             return node.nodeName !== 'A';
           });
-      expectEq('A,foo,B,bar', function() { return dumpNodes(nodes) });
-      expectEq('<a>foo<b>bar</b></a>', function() {
+      expectEq('A,B,bar', function() { return dumpNodes(nodes) });
+      expectEq('<a href="URL">foo</a><a href="URL"><b>bar</b></a>', function() {
         return context.document.body.firstChild.innerHTML;
       });
     });
 
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
-    '<p contenteditable><a>foo<b><i>^bar|</i></b></a></p>',
+    '<p contenteditable><a href="URL">foo<b><i>^bar|</i></b></a></p>',
     function(context, selection) {
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
@@ -171,14 +171,15 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
           context, normalizedSelection, function(node) {
             return node.nodeName !== 'A';
           });
-      expectEq('A,foo,B,I,bar', function() { return dumpNodes(nodes) });
-      expectEq('<a>foo<b><i>bar</i></b></a>', function() {
-        return context.document.body.firstChild.innerHTML;
-      });
+      expectEq('A,B,I,bar', function() { return dumpNodes(nodes) });
+      expectEq('<a href="URL">foo</a><a href="URL"><b><i>bar</i></b></a>',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
     });
 
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
-    '<p contenteditable><a>foo<b>^bar</b>baz|</a></p>',
+    '<p contenteditable><a href="URL">foo<b>^bar</b>baz|</a></p>',
     function(context, selection) {
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
@@ -186,10 +187,11 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
           context, normalizedSelection, function(node) {
             return node.nodeName !== 'A';
           });
-      expectEq('A,foo,B,bar,baz', function() { return dumpNodes(nodes) });
-      expectEq('<a>foo<b>bar</b>baz</a>', function() {
-        return context.document.body.firstChild.innerHTML;
-      });
+      expectEq('A,B,bar,baz', function() { return dumpNodes(nodes) });
+      expectEq('<a href="URL">foo</a><a href="URL"><b>bar</b>baz</a>',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
     });
 
 //
