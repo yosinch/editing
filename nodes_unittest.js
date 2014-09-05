@@ -26,10 +26,13 @@ testCaseWithSample('nodes.setUpEffectiveNodes.1',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       expectEq('B,bar,I,baz', function() { return dumpNodes(nodes) });
+      expectEq('foo<b>bar<i>baz</i></b>quux', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
     });
 
 testCaseWithSample('nodes.setUpEffectiveNodes.2',
@@ -38,9 +41,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.2',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'SPAN';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'SPAN';
+        });
       expectEq('SPAN,foo, ,SPAN,bar', function() { return dumpNodes(nodes) });
     });
 
@@ -50,9 +53,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       expectEq('B,bb,I,cc', function() { return dumpNodes(nodes) });
       expectEq('aaa<b>b</b><b>bb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
                function() {
@@ -66,10 +69,10 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            // This will always return true.
-            return node.nodeName !== 'A';
-          });
+        context, normalizedSelection, function(node) {
+          // This will always return true.
+          return node.nodeName !== 'A';
+        });
       expectEq('bb,I,cc', function() { return dumpNodes(nodes) });
       // Nothing will be split.
       expectEq('aaa<b>bbb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
@@ -84,9 +87,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.4',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       expectEq('B,bb,I,ccc,dd', function() { return dumpNodes(nodes) });
       expectEq('aaa<b>b</b><b>bb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
                function() {
@@ -100,9 +103,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.5',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       expectEq('B,bb,I,ccc,ddd,I,ee', function() { return dumpNodes(nodes) });
       expectEq('aaa<b>b</b><b>bb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
                function() {
@@ -116,9 +119,9 @@ testCaseWithSample('nodes.setUpEffectiveNodes.6',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       // 'bbb' is not included.
       expectEq('B,I,cc,ddd,I,ee', function() { return dumpNodes(nodes) });
       expectEq('aaa<b>bbb<i>c</i></b><b><i>cc</i>ddd<i>eee</i>fff</b>ggg',
@@ -133,15 +136,60 @@ testCaseWithSample('nodes.setUpEffectiveNodes.7',
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
-          context, normalizedSelection, function(node) {
-            return node.nodeName !== 'B';
-          });
+        context, normalizedSelection, function(node) {
+          return node.nodeName !== 'B';
+        });
       // 'bbb' is not included.
       expectEq('B,dd,I,ee', function() { return dumpNodes(nodes) });
       expectEq('aaa<b>bbb<i>ccc</i>d</b><b>dd<i>eee</i>fff</b>ggg',
                function() {
                  return context.document.body.firstChild.innerHTML;
                });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
+    '<p contenteditable><a>foo<b>^bar|</b></a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return node.nodeName !== 'A';
+          });
+      expectEq('A,foo,B,bar', function() { return dumpNodes(nodes) });
+      expectEq('<a>foo<b>bar</b></a>', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
+    '<p contenteditable><a>foo<b><i>^bar|</i></b></a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return node.nodeName !== 'A';
+          });
+      expectEq('A,foo,B,I,bar', function() { return dumpNodes(nodes) });
+      expectEq('<a>foo<b><i>bar</i></b></a>', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
+    });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
+    '<p contenteditable><a>foo<b>^bar</b>baz|</a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+          context, normalizedSelection, function(node) {
+            return node.nodeName !== 'A';
+          });
+      expectEq('A,foo,B,bar,baz', function() { return dumpNodes(nodes) });
+      expectEq('<a>foo<b>bar</b>baz</a>', function() {
+        return context.document.body.firstChild.innerHTML;
+      });
     });
 
 //

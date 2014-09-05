@@ -93,18 +93,15 @@ editing.define('nodes', (function() {
     if (!selectedNodes.length)
       return [];
 
-    var needSplit = false;
-
     // Add ancestors of start node of selected nodes if all descendant nodes
     // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
     // Note: selection doesn't need to end beyond end tag.
     var startNode = selectedNodes[0];
+    var needSplit = !!startNode.previousSibling;
     var runner = startNode;
 
-    while (runner && predicate(runner)) {
-      needSplit = needSplit || !!runner.previousSibling;
+    while (runner && predicate(runner))
       runner = runner.parentNode;
-    }
     if (!runner || runner === startNode)
       return selectedNodes;
     if (!isEditable(runner))
