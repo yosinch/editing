@@ -82,6 +82,9 @@ editing.define('nodes', (function() {
    * Computes effective nodes for inline formatting commands. |selection|
    * should be normalized. In addition to the selected nodes, this unshifts
    * ancestor nodes until the result of |predicate| is false.
+   *
+   * TODO(hajimehoshi): If |predicate| returns true at any time, only selected
+   * nodes will be returned. Is this OK?
    */
   function setUpEffectiveNodes(context, selection, predicate) {
     if (isText(selection.anchorNode) || isText(selection.focusNode))
