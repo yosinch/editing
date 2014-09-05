@@ -435,10 +435,24 @@ function run(testName) {
     console.log('No such test case', testName);
     return;
   }
+  var PADDING = '          ';
+  var IGNORE_KEYS = new Set(['className', 'format']);
   testRunner.results_ = [];
   testRunner.useTryCatch_ = false;
   testCase.testFunction();
-  testRunner.results_.forEach(function(result) {
-    console.log(result);
+  testRunner.results_.filter(function(result) {
+    return result.className !== 'pass';
+  }).forEach(function(result) {
+    console.log(result.className);
+    Object.keys(result).filter(function(key) {
+      return !IGNORE_KEYS.has(key);
+    }).forEach(function(key) {
+      var value = result[key]
+        .replace(/<span class="[^\u0022]+">/g, '')
+        .replace(new RegExp('</span>', 'g'), '')
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+      console.log(' ', (key + PADDING).substr(0, PADDING.length), value);
+    });
   });
+  return testRunner.results_;
 }
