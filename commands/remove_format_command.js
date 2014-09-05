@@ -15,83 +15,34 @@ editing.defineCommand('removeFormat', (function() {
         'VAR']);
 
   /**
-   * @param {!editing.EditingContext} context
-   * @param {!Array.<!Node>} effectiveNodes
+   * @param {!Node} startNode
+   * @return {?Element}
    */
-  function adjustSelectionEnd(context, effectiveNodes) {
-    var endNode = lastOf(effectiveNodes);
-    console.assert(!endNode.hasChildNodes(), 'endNode', endNode,
-                   'must not have child nodes.');
-    var lastNode = endNode;
-    for (var runner = endNode.parentNode; runner; runner = runner.parentNode) {
-      if (!editing.nodes.isEditable(runner))
-        break;
-      if (!editing.nodes.isElement(runner))
-        continue;
-      var element = /** @type {!Element} */(runner);
-      var child = lastNode;
-      lastNode = element;
-      var nextSibling = child.nextSibling;
-      if (!nextSibling)
-        continue;
-      if (editing.nodes.isPhrasing(element)) {
-        if (!isStyleElement(element))
-          continue;
-        context.splitNode(element, nextSibling);
-        continue;
-      }
-      introduceStyleSpanIfNeeded(context, element, nextSibling);
-    }
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Array.<!Node>} selectedNodes
-   * @return {!Array.<!Node>}
-   */
-  function adjustSlectionStart(context, selectedNodes) {
+  function computeHighestStyleElement(startNode) {
     var styleElement = null;
-    var startNode = selectedNodes[0];
-    var effectiveNodes = selectedNodes;
-    var lastNode = null;
     for (var runner = startNode; runner; runner = runner.parentNode) {
       if (!editing.nodes.isEditable(runner))
         break;
-      var child = lastNode;
-      lastNode = runner;
       if (!editing.nodes.isElement(runner))
         continue;
       var element = /** @type {!Element} */(runner);
-      if (editing.nodes.isPhrasing(element)) {
-        if (isStyleElement(element))
-          styleElement = element;
-        continue;
-      }
-
-      if (!child || element.firstChild === child)
-        continue;
-
-      // Since, |startNode| is middle non-phrasing node, we wrap nodes before
-      // |startNode| within SPAN with STYLE attribute.
-      // See "removeFormat.nested_div_style"
-      if (introduceStyleSpanIfNeeded(context, element, child))
+      if (isStyleElement(element))
         styleElement = element;
     }
+    return styleElement;
+  }
 
-    if (!styleElement || styleElement === startNode)
-      return effectiveNodes;
+  function isStyleElement(node) {
+    if (!editing.nodes.isElement(node))
+      return false;
+    var element = /** @type {!Element} */(node);
+    if (TAG_NAMES_TO_REMOVE.has(element.nodeName))
+      return true;
+    return element.hasAttribute('style');
+  }
 
-    if (startNode.previousSibling && editing.nodes.isPhrasing(styleElement))
-      styleElement = context.splitTree(styleElement, startNode);
-
-    for (var runner = startNode; runner; runner = runner.parentNode) {
-      // TODO(yosin) We should check |Array.prototype.unshift()| whether slow
-      // or not.
-      effectiveNodes.unshift(runner);
-      if (runner == styleElement)
-        break;
-    }
-    return effectiveNodes;
+  function lastOf(array) {
+    return array.length ? array[array.length - 1] : null;
   }
 
   /**
@@ -99,57 +50,73 @@ editing.defineCommand('removeFormat', (function() {
    * @param {!editing.ReadOnlySelection} selection
    * @return {!Array.<!Node>}
    */
-  function prepareForRemoveFormat(context, selection) {
-    console.assert(selection.isRange);
+  function prepareForStyleChange(context, selection) {
     var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return [];
+
     var startNode = selectedNodes[0];
-    var endNode = lastOf(selectedNodes);
-    var effectiveNodes = adjustSlectionStart(context, selectedNodes);
-    adjustSelectionEnd(context, effectiveNodes);
+    var styleElement = computeHighestStyleElement(startNode);
+    var effectiveNodes = selectedNodes.slice();
+    if (styleElement && styleElement != startNode) {
+      for (var runner = startNode.parentNode; runner != styleElement;
+           runner = runner.parentNode) {
+        effectiveNodes.unshift(runner);
+      }
+      effectiveNodes.unshift(styleElement);
+    }
+
+    effectiveNodes = effectiveNodes.map(function(currentNode) {
+      return wrapWithStyleSpanIfNeeded(context, currentNode);
+    });
+
+    if (!styleElement || styleElement == startNode)
+      return effectiveNodes;
+
+    var needSplit = false;
+    var splitable = null;
+    for (var runner = startNode; runner; runner = runner.parentNode) {
+      if (!editing.nodes.isPhrasing(startNode))
+        break;
+      if (isStyleElement(runner))
+        splitable = runner;
+      if (runner === styleElement)
+        break;
+      needSplit = needSplit || !!runner.previousSibling;
+    }
+
+    if (!needSplit || !splitable)
+      return effectiveNodes;
+
+    context.splitTreeLeft(splitable, startNode);
     return effectiveNodes;
-  }
-
-  function lastOf(array) {
-    return array.length ? array[array.length - 1] : null;
-  }
-
-  function isStyleElement(node) {
-    if (!editing.nodes.isElement(node))
-      return false;
-    var element = /** @type {!Element} */(node);
-    if (element.hasAttribute('class'))
-      return false;
-    if (TAG_NAMES_TO_REMOVE.has(element.nodeName))
-      return true;
-    if (!editing.nodes.isPhrasing(element))
-      return false;
-    return element.hasAttribute('style');
   }
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   * @param {!Node} lastNode
-   * @return {boolean}
+   * @param {!Node} node
+   * @return {!Node}
    */
-  function introduceStyleSpanIfNeeded(context, element, lastNode) {
-    console.assert(element === lastNode.parentNode,
-                   'Last node', lastNode, 'must be a child of', element);
+  function wrapWithStyleSpanIfNeeded(context, node) {
+    if (!editing.nodes.isElement(node))
+      return node;
+    var element = /** @type {!Element} */(node);
+    if (editing.nodes.isPhrasing(element))
+      return element;
     var style = element.getAttribute('style');
     if (!style)
-      return false;
+      return element;
     var styleSpan = context.createElement('span');
     styleSpan.setAttribute('style', style);
     var child = element.firstChild;
-    while (child !== lastNode) {
+    while (child) {
       var next = child.nextSibling;
       context.appendChild(styleSpan, child);
       child = next;
     }
-    context.insertBefore(element, styleSpan, lastNode);
-    return true;
+    context.appendChild(element, styleSpan);
+    context.removeAttribute(element, 'style');
+    return styleSpan;
   }
 
   /**
@@ -159,26 +126,36 @@ editing.defineCommand('removeFormat', (function() {
    * @return {boolean}
    */
   function removeFormatCommand(context, userInterface, value) {
-    if (!context.startingSelection.isRange) {
+    /** @const */ var selection = editing.nodes.normalizeSelection(
+        context, context.startingSelection);
+    /** @const */ var selectionTracker = new editing.SelectionTracker(
+        context, selection);
+    var effectiveNodes = prepareForStyleChange(context, selection);
+    if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
       return false;
     }
 
-    /** @const */ var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
-    var selectionTracker = new editing.SelectionTracker(context, selection);
-    var effectiveNodes = prepareForRemoveFormat(context, selection);
-    if (!effectiveNodes.length) {
-      context.setEndingSelection(context.startingSelection);
-      return false;
+    function removeStyle(element, stopChild) {
+      if (TAG_NAMES_TO_REMOVE.has(element.tagName)) {
+        selectionTracker.willUnwrapElement(element, stopChild);
+        context.unwrapElement(element, stopChild);
+        return;
+      }
+      if (!stopChild) {
+        context.removeAttribute(element, 'style');
+        if (element.tagName != 'SPAN' || element.attributes.length)
+          return;
+      }
+      selectionTracker.willUnwrapElement(element, stopChild);
+      context.unwrapElement(element, stopChild);
     }
 
     /** @type {!Array.<!Element>} */ var styleElements = [];
     effectiveNodes.forEach(function(currentNode) {
       var styleElement = lastOf(styleElements);
       if (styleElement && styleElement == currentNode.previousSibling) {
-        selectionTracker.willUnwrapElement(styleElement, null);
-        context.unwrapElement(styleElement, null);
+        removeStyle(styleElement, null);
         styleElements.pop();
       }
 
@@ -190,37 +167,17 @@ editing.defineCommand('removeFormat', (function() {
         }
         return;
       }
-
-      console.assert(editing.nodes.isElement(currentNode),
-                     'Effective nodes contains invalid node', currentNode);
-      var element = /** @type {!Element} */(currentNode);
-
-      if (!editing.nodes.isPhrasing(element)) {
-        if (element.hasAttribute('style'))
-          context.removeAttribute(element, 'style');
+      if (!isStyleElement(currentNode))
         return;
-      }
-
-      if (element.nodeName === 'SPAN' &&
-          element.hasAttribute('style')) {
-        context.removeAttribute(element, 'style');
-        if (!element.attributes.length)
-          styleElements.push(element);
-        return;
-      }
-
-      if (!isStyleElement(element))
-        return;
-      styleElements.push(element);
+      styleElements.push(currentNode);
     });
 
-    var lastNode = lastOf(effectiveNodes);
     while (styleElements.length) {
+      var endNode = lastOf(effectiveNodes);
       var styleElement = styleElements.pop();
-      var stopChild = lastNode.parent == styleElement ? lastNode.nextSibling :
-                                                        null;
-      selectionTracker.willUnwrapElement(styleElement, stopChild);
-      context.unwrapElement(styleElement, stopChild);
+      var stopChild = endNode.parentNode == styleElement ?
+          endNode.nextSibling : null;
+      removeStyle(styleElement, stopChild);
     }
 
     selectionTracker.finishWithStartAsAnchor();
