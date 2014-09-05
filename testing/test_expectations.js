@@ -44,6 +44,8 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'createLink.w3c.47r': {expected: 'fail', reason: IE_IGNORES_A_ATTRS},
 */
     // remove format
+    'removeFormat.w3c.88': {expected: 'fail', reason: 'issue #24'},
+    'removeFormat.w3c.88r': {expected: 'fail', reason: 'issue #24'},
     'removeFormat.w3c.121': {expected: 'fail', reason: 'issue #20'},
     'removeFormat.w3c.121r': {expected: 'fail', reason: 'issue #20'},
     'removeFormat.w3c.122': {expected: 'fail', reason: 'issue #20'},
