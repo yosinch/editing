@@ -387,7 +387,7 @@ editing.define('EditingContext', (function() {
     if (!parent.parentNode)
       throw new Error('Parent ' + parent + ' must have a parent.');
     var newParent = parent.cloneNode(false);
-    newParent.removeAttribute('id');
+    this.removeAttribute(newParent, 'id');
     var sibling = child;
     while (sibling) {
       console.assert(sibling.parentNode === parent);
