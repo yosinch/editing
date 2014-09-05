@@ -130,28 +130,6 @@ editing.defineCommand('CreateLink', (function() {
       anchorElement = null;
     }
 
-    var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
-    if (selection.isCaret) {
-      // If selection is caret, we insert |url| before caret and select it,
-      // then apply "createLink" command.
-      var textNode = context.createTextNode(url);
-      var refChild = selection.anchorNode.childNodes[selection.anchorOffset];
-      if (refChild)
-        context.insertBefore(selection.anchorNode, textNode, refChild);
-      else
-        context.appendChild(selection.anchorNode, textNode);
-      selection = new editing.ReadOnlySelection(
-        selection.anchorNode, selection.anchorOffset,
-        selection.anchorNode, selection.anchorOffset + 1,
-        editing.SelectionDirection.ANCHOR_IS_START);
-    }
-    var effectiveNodes = setUpEffectiveNodes(selection);
-    if (!effectiveNodes.length) {
-      context.setEndingSelection(context.startingSelection);
-      return true;
-    }
-
     var pendingContainers = [];
     var pendingContents = [];
 
@@ -177,74 +155,54 @@ editing.defineCommand('CreateLink', (function() {
       pendingContents = [];
     }
 
+    var selection = editing.nodes.normalizeSelection(
+        context, context.startingSelection);
+    if (selection.isCaret) {
+      // If selection is caret, we insert |url| before caret and select it,
+      // then apply "createLink" command.
+      var textNode = context.createTextNode(url);
+      var refChild = selection.anchorNode.childNodes[selection.anchorOffset];
+      if (refChild)
+        context.insertBefore(selection.anchorNode, textNode, refChild);
+      else
+        context.appendChild(selection.anchorNode, textNode);
+      selection = new editing.ReadOnlySelection(
+        selection.anchorNode, selection.anchorOffset,
+        selection.anchorNode, selection.anchorOffset + 1,
+        editing.SelectionDirection.ANCHOR_IS_START);
+    }
     var selectionTracker = new editing.SelectionTracker(context, selection);
-
-    // Special handling of start node, see w3c.30, w3c.40.
-    var startNode = effectiveNodes[0];
-    var endNode = lastOf(effectiveNodes);
-
-    var outerAnchorElement = startNode.parentNode;
-    while (outerAnchorElement) {
-      if (outerAnchorElement.nodeName === 'A')
-        break;
-      outerAnchorElement = outerAnchorElement.parentNode;
+    var effectiveNodes = editing.nodes.setUpEffectiveNodes(context, selection,
+        function (currentNode) {
+          if (currentNode.nodeName === 'A') {
+            return currentNode.getAttribute('href') === url;
+          }
+          return editing.nodes.isPhrasing(currentNode);
+        });
+    if (!effectiveNodes[0] || !editing.nodes.isPhrasing(effectiveNodes[0]))
+      effectiveNodes.shift();
+    if (!effectiveNodes.length) {
+      context.setEndingSelection(context.startingSelection);
+      return true;
     }
 
-    if (outerAnchorElement) {
-      var isStartOfContents = isStartOf(startNode, outerAnchorElement);
-      if (outerAnchorElement.getAttribute('href') === url) {
-        anchorElement = outerAnchorElement;
-      } else if (editing.nodes.isDescendantOf(endNode, outerAnchorElement)) {
-        // All selected nodes are in |outerAnchorElement|.
-        var isEndOfContents = editing.nodes.lastWithIn(outerAnchorElement) ==
-            endNode;
-        if (isStartOfContents && isEndOfContents) {
-          // Selected nodes === all children of |outerAnchorElement|.
-          anchorElement = outerAnchorElement;
-        } else if (isStartOfContents) {
-          // Move |startNode| to |endNode| before |outerAnchorElement|.
-          for (var child = startNode; child; child = child.nextSibling) {
-            context.insertBefore(outerAnchorElement.parentNode, child,
-                                 outerAnchorElement);
-            if (endNode === child ||
-                editing.nodes.isDescendantOf(endNode, child))
-              break;
-          }
-        } else if (isEndOfContents) {
-          // Move |startNode| and child nodes after |startNode| after
-          // |outerAnchorElement|. See w3c.37.
-          var child = startNode;
-          while (child) {
-            var next = child.nextSibling;
-            context.insertAfter(outerAnchorElement.parentNode, child,
-                                outerAnchorElement);
-            child = next;
-          }
-        } else {
-           // See w3c.34
-          var newAnchor = context.splitTree(outerAnchorElement, startNode);
-          var nextNode = editing.nodes.nextNodeSkippingChildren(endNode);
-          if (nextNode)
-            context.splitTree(newAnchor, nextNode);
-          // Remove attribute from new A element created by |splitTree()|.
-          // See w3c.46 and w3c.47.
-          [].forEach.call(newAnchor.attributes, function(attrNode) {
-            newAnchor.removeAttribute(attrNode.name);
-          });
-          newAnchor.setAttribute('href', url);
-          anchorElement = newAnchor;
-        }
-      } else if (isStartOfContents) {
-        anchorElement = outerAnchorElement;
-      } else {
-        // Move |startNode| and child nodes after |startNode| after
-        // |outerAnchorElement|.
-        var child = startNode;
-        while (child) {
-          var next = child.nextSibling;
-          context.insertAfter(outerAnchorElement.parentNode, child,
-                              outerAnchorElement);
-          child = next;
+    var startNode = effectiveNodes[0];
+    var endNode = lastOf(effectiveNodes);
+    if (startNode.nodeName == 'A') {
+      if (startNode.getAttribute('href') !== url &&
+          endNode.parentNode == startNode && endNode.nextSibling) {
+        // Split staring A element containing end node.
+        // See createLink.Range.AnchorText.2
+        var newAnchor = context.splitNode(startNode, endNode.nextSibling);
+        var originalAnchor = startNode.previousSibling;
+        // Chrome doesn't remove 'name' attribute. See w3c.46.
+        if (startNode.hasAttribute('name')) {
+          context.setAttribute(newAnchor, 'name',
+                               startNode.getAttribute('name'));
+        } else if (originalAnchor && originalAnchor.nodeName === 'A' &&
+                   originalAnchor.hasAttribute('name')) {
+          context.setAttribute(newAnchor, 'name',
+                               originalAnchor.getAttribute('name'));
         }
       }
     }
