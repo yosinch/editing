@@ -23,11 +23,28 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
+   * @param {!Element} element
+   * @return {boolean}
+   * Returns true if all child element is identical phrasing element.
+   */
+  function canUnwrapContents(element) {
+    var firstChild = element.firstChild;
+    if (!firstChild)
+      return false;
+    return [].every.call(element.childNodes, function(child) {
+      return editing.nodes.isElement(child) &&
+             editing.nodes.isPhrasing(child) &&
+             child.nodeName == firstChild.nodeName &&
+             !!child.firstChild;
+    });
+  }
+
+  /**
    * @param {!editing.EditingContext} context
    * @param {?Node} newNode
    * @param {?Node} oldNode
    * @param {?Node} stopNode
-   * @param {!editing.SelectionTracker} selectionTracker
+   * @param {?editing.SelectionTracker} selectionTracker
    *
    * TODO(yosin) We should make |context.unwrapElement| to use |moveChildren|.
    */
@@ -47,7 +64,8 @@ editing.defineCommand('createLink', (function() {
     }
     if (child)
       return;
-    selectionTracker.willRemoveNode(oldParent);
+    if (selectionTracker)
+      selectionTracker.willRemoveNode(oldParent);
     context.removeChild(oldParent.parentNode, oldParent);
   }
 
@@ -104,9 +122,8 @@ editing.defineCommand('createLink', (function() {
       context.setAttribute(anchorElement, 'href', url);
       var parentNode = anchorPhraseNode.parentNode;
       if (!parentNode) {
-        console.log('anchorPhraseNode', anchorPhraseNode,
-                    'should not be in tree.');
-        throw new Error('anchorPhraseNode should be in tree.');
+        throw new Error('anchorPhraseNode ' + anchorPhraseNode +
+                        ' should not be in tree.');
       }
       context.replaceChild(parentNode, anchorElement, anchorPhraseNode);
       context.appendChild(anchorElement, anchorPhraseNode);
@@ -118,8 +135,6 @@ editing.defineCommand('createLink', (function() {
      * @return {boolean}
      */
     function isEffectiveNode(node) {
-      if (node.nodeName === 'A')
-        return node.getAttribute('href') === url;
       return editing.nodes.isPhrasing(node);
     }
 
@@ -186,6 +201,19 @@ editing.defineCommand('createLink', (function() {
     function endAnchorElement() {
       if (!anchorElement)
         return;
+
+      while (canUnwrapContents(anchorElement)) {
+        var wrapper = context.createElement(anchorElement.firstChild.nodeName);
+        context.insertBefore(anchorElement.parentNode, wrapper, anchorElement);
+        context.appendChild(wrapper, anchorElement);
+        [].map.call(anchorElement.childNodes, function(child) {
+          return child;
+        }).forEach(function(child) {
+          var childElement = /** @type {!Element} */(child);
+          moveChildren(context, anchorElement, childElement, null, null);
+        });
+      }
+
       anchorElement = null;
     }
 
@@ -277,6 +305,11 @@ editing.defineCommand('createLink', (function() {
       var currentElement = /** @type {!Element} */(currentNode);
 
       if (currentElement.nodeName === 'A') {
+        if (currentElement.getAttribute('url') !== url &&
+            editing.nodes.isDescendantOf(endNode, currentElement) &&
+            editing.nodes.lastWithIn(currentElement) !== endNode) {
+          context.splitTree(currentElement, editing.nodes.nextNode(endNode));
+        }
         if (!anchorElement) {
           processPendingContents();
           anchorElement = currentElement;
