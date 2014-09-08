@@ -66,7 +66,8 @@ testCaseWithSample('context.splitNode.2',
       expectEq(newTree, function() { return oldTree.nextSibling; });
     });
 
-// We don't copy "name" attribute for "A".
+// We copy "name" attribute for "A" until http://crbug.com/411785 and
+// http://crbug.com/411795
 testCaseWithSample('context.splitNode.3',
     '<p contenteditable><a name="foo">one|<b>two</b>three</a></p>',
     function(context, selectionIn) {
@@ -75,12 +76,13 @@ testCaseWithSample('context.splitNode.3',
       var newTree = context.splitNode(oldTree, refNode);
       expectEq('<a name="foo">one</a>',
                function() { return testing.serializeNode(oldTree); });
-      expectEq('<a><b>two</b>three</a>',
+      expectEq('<a name="foo"><b>two</b>three</a>',
               function() { return testing.serializeNode(newTree); });
       expectEq(newTree, function() { return oldTree.nextSibling; });
     });
 
-// We don't copy "name" attribute for "A", but not others
+// We copy "name" attribute for "A" until http://crbug.com/411785 and
+// http://crbug.com/411795
 testCaseWithSample('context.splitNode.4',
     '<p contenteditable><s name="foo">one|<b>two</b>three</s></p>',
     function(context, selectionIn) {
@@ -122,7 +124,8 @@ testCaseWithSample('context.splitNodeLeft.2',
               function() { return testing.serializeNode(oldTree); });
     });
 
-// We don't copy "name" attribute for "A".
+// We copy "name" attribute for "A" until http://crbug.com/411785 and
+// http://crbug.com/411795
 testCaseWithSample('context.splitNodeLeft.3',
     '<p contenteditable><a name="foo">one|<b>two</b>three</a></p>',
     function(context, selectionIn) {
@@ -131,11 +134,12 @@ testCaseWithSample('context.splitNodeLeft.3',
       var newTree = context.splitNodeLeft(oldTree, refNode);
       expectEq('<a name="foo">one</a>',
                function() { return testing.serializeNode(newTree); });
-      expectEq('<a><b>two</b>three</a>',
+      expectEq('<a name="foo"><b>two</b>three</a>',
               function() { return testing.serializeNode(oldTree); });
     });
 
-// We don't copy "name" attribute for "A", but not others.
+// We copy "name" attribute for "A" until http://crbug.com/411785 and
+// http://crbug.com/411795
 testCaseWithSample('context.splitNodeLeft.4',
     '<p contenteditable><s name="foo">one|<b>two</b>three</s></p>',
     function(context, selectionIn) {
