@@ -103,7 +103,6 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_3',
                });
     });
 
-
 testCaseWithSample('nodes.setUpEffectiveNodes.4',
     '<p contenteditable>aaa<b>b^bb<i>ccc</i>dd|d<i>eee</i>fff</b>ggg</p>',
     function(context, selection) {
@@ -191,6 +190,26 @@ testCaseWithSample('nodes.setUpEffectiveNodes.8',
                  return pContents.lastChild.nodeValue;
                });
     });
+
+testCaseWithSample('nodes.setUpEffectiveNodes.9',
+    // We should not split non-phrasing element.
+    '<p contenteditable><a><b>foo^barbaz|</b></a></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return editing.nodes.isPhrasing(node);
+        });
+      expectEq('P,A,B,barbaz', function() {
+        return dumpNodes(nodes)
+      });
+      expectEq('<a><b>foo</b></a><a><b>barbaz</b></a>',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
 
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
     '<p contenteditable><a href="URL">foo<b>^bar|</b></a></p>',

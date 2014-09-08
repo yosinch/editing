@@ -107,8 +107,8 @@ editing.define('nodes', (function() {
       runner = runner.parentNode;
     }
     while (runner && predicate(runner)) {
-      if (runner.previousSibling && runner.parentNode &&
-          isPhrasing(runner.parentNode)) {
+      if ((needSplits.length || runner.previousSibling) && runner.parentNode &&
+          isElement(runner.parentNode) && isPhrasing(runner.parentNode)) {
         needSplits.push(runner);
       }
       runner = runner.parentNode;
