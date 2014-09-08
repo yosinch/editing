@@ -4,39 +4,51 @@
 
 'use strict';
 
-editing.defineCommand('CreateLink', (function() {
+editing.defineCommand('createLink', (function() {
+  /**
+   * @param {?Node} node1
+   * @param {?Node} node2
+   * @return {boolean}
+   */
+  function canMergeElements(node1, node2) {
+    if (!node1 || !node2 || node1.tagName !== node2.tagName ||
+        !editing.nodes.isElement(node1)) {
+      return false;
+    }
+    var element1 = /** @type {!Element} */(node1);
+    var element2 = /** @type {!Element} */(node2);
+    return [].every.call(element1.attributes, function(attr1) {
+      return attr1.value === element2.getAttribute(attr1.name);
+    });
+  }
 
   /**
-   * @param {!editing.ReadOnlySelection} selection
-   * @return {!Array.<!Node>}
+   * @param {!editing.EditingContext} context
+   * @param {?Node} newNode
+   * @param {?Node} oldNode
+   * @param {?Node} stopNode
+   * @param {!editing.SelectionTracker} selectionTracker
    *
-   * Computes effective nodes for inline formatting commands. |selection|
-   * should be normalized.
+   * TODO(yosin) We should make |context.unwrapElement| to use |moveChildren|.
    */
-  function setUpEffectiveNodes(selection) {
-    console.assert(!editing.nodes.isText(selection.anchorNode));
-    console.assert(!editing.nodes.isText(selection.focusNode));
-    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
-    if (!selectedNodes.length)
-      return selectedNodes;
-    var nodeSet = editing.newSet(selectedNodes);
-    // Add ancestors of start node of selected nodes if all descendant nodes
-    // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
-    // Note: selection doesn't need to end beyond end tag.
-    var startNode = selectedNodes[0];
-    for (var ancestor = startNode.parentNode; ancestor;
-         ancestor = ancestor.parentNode) {
-      if (!editing.nodes.isEditable(ancestor))
-        break;
-      if (ancestor.firstChild !== startNode)
-        break;
-      if (!nodeSet.has(editing.nodes.lastWithIn(ancestor)))
-        break;
-      selectedNodes.unshift(ancestor);
-      nodeSet.add(ancestor);
-      startNode = ancestor;
+  function moveChildren(context, newNode, oldNode, stopNode,
+                        selectionTracker) {
+    console.assert(newNode && editing.nodes.isElement(newNode));
+    console.assert(oldNode && editing.nodes.isElement(oldNode));
+    var newParent = /** @type {!Element} */(newNode);
+    var oldParent = /** @type {!Element} */(oldNode);
+    console.assert(!stopNode || stopNode.parentNode === oldParent,
+                   'stopNode', stopNode, 'must be child of', oldParent);
+    var child = oldParent.firstChild;
+    while (child && child !== stopNode) {
+      var next = child.nextSibling;
+      context.appendChild(newParent, child);
+      child = next;
     }
-    return selectedNodes;
+    if (child)
+      return;
+    selectionTracker.willRemoveNode(oldParent);
+    context.removeChild(oldParent.parentNode, oldParent);
   }
 
   /**
@@ -47,21 +59,68 @@ editing.defineCommand('CreateLink', (function() {
   function createLinkForRange(context, url) {
     console.assert(url !== '');
 
-    function canMerge(node){
-      return node && node.nodeName === 'A' &&
+    /**
+     * @param {!Node} startNode
+     * @param {!Node} endNode
+     */
+    function adjustStartNode(startNode, endNode) {
+      if (!editing.nodes.isElement(startNode))
+        return;
+      var startElement = /** @type {!Element} */(startNode);
+      if (startElement.nodeName != 'A' ||
+          startElement.getAttribute('href') === url ||
+          endNode.parentNode !== startElement || !endNode.nextSibling) {
+        return;
+      }
+
+      // Split staring A element containing end node.
+      // See createLink.Range.AnchorText.2
+      context.splitNode(startElement, endNode.nextSibling);
+
+      // TODO(yosin) We should remove this code fragment once |splitNode|
+      // doesn't copy "name" attribute. See http://crbug.com/411785
+      if (!startElement.hasAttribute('name'))
+        return;
+      context.removeAttribute(startElement, 'name');
+    }
+
+    /**
+     * @param {?Node} node
+     * @return {boolean}
+     */
+    function canMergeAnchor(node){
+      return Boolean(node) && node.nodeName === 'A' &&
              node.getAttribute('href') === url &&
              node.attributes.length === 1;
     }
 
+    /**
+     * @param {!Node} anchorPhraseNode
+     */
     function insertNewAnchorElement(anchorPhraseNode) {
       if (editing.nodes.isWhitespaceNode(anchorPhraseNode))
         return null;
       var anchorElement = context.createElement('a');
       context.setAttribute(anchorElement, 'href', url);
-      context.replaceChild(anchorPhraseNode.parentNode, anchorElement,
-                           anchorPhraseNode);
+      var parentNode = anchorPhraseNode.parentNode;
+      if (!parentNode) {
+        console.log('anchorPhraseNode', anchorPhraseNode,
+                    'should not be in tree.');
+        throw new Error('anchorPhraseNode should be in tree.');
+      }
+      context.replaceChild(parentNode, anchorElement, anchorPhraseNode);
       context.appendChild(anchorElement, anchorPhraseNode);
       return anchorElement;
+    }
+
+    /**
+     * @param {!Node} node
+     * @return {boolean}
+     */
+    function isEffectiveNode(node) {
+      if (node.nodeName === 'A')
+        return node.getAttribute('href') === url;
+      return editing.nodes.isPhrasing(node);
     }
 
     /**
@@ -96,14 +155,14 @@ editing.defineCommand('CreateLink', (function() {
           return;
         }
         var nextSibling = node.nextSibling;
-        if (canMerge(nextSibling)) {
+        if (canMergeAnchor(nextSibling)) {
           // See w3c.26, w3c.30
           anchorElement = nextSibling;
           context.insertBefore(anchorElement, node, anchorElement.firstChild);
           return;
         }
         var previousSibling = node.previousSibling;
-        if (canMerge(previousSibling)) {
+        if (canMergeAnchor(previousSibling)) {
           // See w3c.27
           anchorElement = previousSibling;
           context.appendChild(anchorElement, node);
@@ -171,14 +230,10 @@ editing.defineCommand('CreateLink', (function() {
         selection.anchorNode, selection.anchorOffset + 1,
         editing.SelectionDirection.ANCHOR_IS_START);
     }
+
     var selectionTracker = new editing.SelectionTracker(context, selection);
     var effectiveNodes = editing.nodes.setUpEffectiveNodes(context, selection,
-        function (currentNode) {
-          if (currentNode.nodeName === 'A') {
-            return currentNode.getAttribute('href') === url;
-          }
-          return editing.nodes.isPhrasing(currentNode);
-        });
+                                                           isEffectiveNode);
     if (!effectiveNodes[0] || !editing.nodes.isPhrasing(effectiveNodes[0]))
       effectiveNodes.shift();
     if (!effectiveNodes.length) {
@@ -188,22 +243,18 @@ editing.defineCommand('CreateLink', (function() {
 
     var startNode = effectiveNodes[0];
     var endNode = lastOf(effectiveNodes);
-    if (startNode.nodeName == 'A') {
-      if (startNode.getAttribute('href') !== url &&
-          endNode.parentNode == startNode && endNode.nextSibling) {
-        // Split staring A element containing end node.
-        // See createLink.Range.AnchorText.2
-        var newAnchor = context.splitNode(startNode, endNode.nextSibling);
-        var originalAnchor = startNode.previousSibling;
-        // Chrome doesn't remove 'name' attribute. See w3c.46.
-        if (startNode.hasAttribute('name')) {
-          context.setAttribute(newAnchor, 'name',
-                               startNode.getAttribute('name'));
-        } else if (originalAnchor && originalAnchor.nodeName === 'A' &&
-                   originalAnchor.hasAttribute('name')) {
-          context.setAttribute(newAnchor, 'name',
-                               originalAnchor.getAttribute('name'));
+    adjustStartNode(startNode, endNode);
+
+    {
+      var previous = startNode.previousSibling;
+      if (previous && previous.nodeName == 'A') {
+        if (canMergeAnchor(previous)) {
+          // Merge into previous A, see w3c.20
+          anchorElement = previous;
         }
+      } else if (canMergeElements(previous, startNode)) {
+        // This also cancels split tree by |setUpEffectiveNodes()|.
+        moveChildren(context, previous, startNode, null, selectionTracker);
       }
     }
 
@@ -223,48 +274,52 @@ editing.defineCommand('CreateLink', (function() {
         return;
       }
 
-      if (currentNode.nodeName === 'A') {
+      var currentElement = /** @type {!Element} */(currentNode);
+
+      if (currentElement.nodeName === 'A') {
         if (!anchorElement) {
           processPendingContents();
-          anchorElement = currentNode;
+          anchorElement = currentElement;
           context.setAttribute(anchorElement, 'href', url);
           return;
         }
         console.assert(anchorElement.getAttribute('href') === url);
-        context.setAttribute(currentNode, 'href', url);
-        if (canMerge(currentNode)) {
-          var child = currentNode.firstChild;
-          while (child) {
-            var next = child.nextSibling;
-            context.insertBefore(currentNode.parentNode, child, currentNode);
-            child = next;
-          }
-          selectionTracker.willRemoveNode(currentNode);
-          context.removeChild(currentNode.parentNode, currentNode);
+        context.setAttribute(currentElement, 'href', url);
+        if (canMergeAnchor(currentElement)) {
+          // Unwrap A element.
+          moveChildren(context, currentElement.parentNode, currentElement,
+                       endNode.nextSibling, selectionTracker);
           return;
         }
         processPendingContents();
-        anchorElement = currentNode;
+        anchorElement = currentElement;
       }
 
-      if (editing.nodes.isInteractive(currentNode)) {
+      if (editing.nodes.isInteractive(currentElement)) {
         processPendingContents();
         return;
       }
 
-      if (currentNode.hasChildNodes()) {
-        pendingContainers.push(currentNode);
+      if (currentElement.hasChildNodes()) {
+        pendingContainers.push(currentElement);
         return;
       }
 
       if (pendingContainers.length) {
-        pendingContents.push(currentNode);
-        if (!currentNode.nextSibling)
+        pendingContents.push(currentElement);
+        if (!currentElement.nextSibling)
           moveLastContainerToContents();
         return;
       }
-      wrapByAnchor(currentNode);
+      wrapByAnchor(currentElement);
     });
+
+    // Merge nodes after selection. See w3c.20
+    if (endNode.parentNode === anchorElement &&
+        canMergeAnchor(anchorElement.nextSibling)) {
+      moveChildren(context, anchorElement, anchorElement.nextSibling, null,
+                   selectionTracker);
+    }
 
     // The last effective node is descendant of pending container.
     // Example: foo<b>^bar<i>baz quux</i></b>|mox

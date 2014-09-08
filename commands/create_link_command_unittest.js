@@ -183,5 +183,12 @@ testCaseFor('createLink.createLink.html_starthere', {
   value: 'http://www.google.com'
 });
 
+// Merge into previous A. Like creeateLink.w3c.20
+testCaseFor('createLink.merge_into_previous', {
+  after: '<p contenteditable><a href="URL">123^456|</a></p>',
+  before: '<p contenteditable><a href="URL">123</a>^456|</p>',
+  value: 'URL'
+});
+
 // Create link with range in interactive
 // <a><b>a^b|c</b> => <a><b>a</b></a><a><b>b</b></a><a><b>c</b></a>
