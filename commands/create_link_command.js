@@ -35,6 +35,7 @@ editing.defineCommand('createLink', (function() {
       return editing.nodes.isElement(child) &&
              editing.nodes.isPhrasing(child) &&
              child.nodeName == firstChild.nodeName &&
+             !child.attributes.length &&
              !!child.firstChild;
     });
   }
@@ -69,6 +70,20 @@ editing.defineCommand('createLink', (function() {
     context.removeChild(oldParent.parentNode, oldParent);
   }
 
+  function unwrapAnchorContents(context, anchorElement) {
+    while (canUnwrapContents(anchorElement)) {
+      var wrapper = context.createElement(anchorElement.firstChild.nodeName);
+      context.insertBefore(anchorElement.parentNode, wrapper, anchorElement);
+      context.appendChild(wrapper, anchorElement);
+      [].map.call(anchorElement.childNodes, function(child) {
+        return child;
+      }).forEach(function(child) {
+        var childElement = /** @type {!Element} */(child);
+        moveChildren(context, anchorElement, childElement, null, null);
+      });
+    }
+  }
+
   /**
    * @param {!editing.EditingContext} context
    * @param {string} url
@@ -81,15 +96,19 @@ editing.defineCommand('createLink', (function() {
      * @param {!Node} startNode
      * @param {!Node} endNode
      */
-    function adjustStartNode(startNode, endNode) {
+    function adjustEffectiveStartNode(context, startNode, endNode) {
       if (!editing.nodes.isElement(startNode))
         return;
       var startElement = /** @type {!Element} */(startNode);
-      if (startElement.nodeName != 'A' ||
-          startElement.getAttribute('href') === url ||
-          endNode.parentNode !== startElement || !endNode.nextSibling) {
+      if (startElement.nodeName != 'A')
         return;
-      }
+
+      unwrapAnchorContents(context, startElement);
+      if (startElement.getAttribute('href') === url)
+        return;
+
+      if (endNode.parentNode !== startElement || !endNode.nextSibling)
+        return;
 
       // Split staring A element containing end node.
       // See createLink.Range.AnchorText.2
@@ -201,19 +220,7 @@ editing.defineCommand('createLink', (function() {
     function endAnchorElement() {
       if (!anchorElement)
         return;
-
-      while (canUnwrapContents(anchorElement)) {
-        var wrapper = context.createElement(anchorElement.firstChild.nodeName);
-        context.insertBefore(anchorElement.parentNode, wrapper, anchorElement);
-        context.appendChild(wrapper, anchorElement);
-        [].map.call(anchorElement.childNodes, function(child) {
-          return child;
-        }).forEach(function(child) {
-          var childElement = /** @type {!Element} */(child);
-          moveChildren(context, anchorElement, childElement, null, null);
-        });
-      }
-
+      unwrapAnchorContents(context, anchorElement);
       anchorElement = null;
     }
 
@@ -271,7 +278,7 @@ editing.defineCommand('createLink', (function() {
 
     var startNode = effectiveNodes[0];
     var endNode = lastOf(effectiveNodes);
-    adjustStartNode(startNode, endNode);
+    adjustEffectiveStartNode(context, startNode, endNode);
 
     {
       var previous = startNode.previousSibling;
@@ -287,6 +294,10 @@ editing.defineCommand('createLink', (function() {
     }
 
     effectiveNodes.forEach(function(currentNode) {
+      if (!currentNode.parentNode) {
+        // Unwrapped.
+        return;
+      }
       if (currentNode === anchorElement)
         return;
 
