@@ -97,25 +97,31 @@ editing.define('nodes', (function() {
     // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
     // Note: selection doesn't need to end beyond end tag.
     var startNode = selectedNodes[0];
-    var needSplit = false;
+    var needSplits = [];
     var runner = startNode;
     if (editing.nodes.isText(runner)) {
-      needSplit = !!runner.previousSibling;
+      if (runner.previousSibling && runner.parentNode &&
+          isPhrasing(runner.parentNode)) {
+        needSplits.push(runner);
+      }
       runner = runner.parentNode;
     }
     while (runner && predicate(runner)) {
-      needSplit = needSplit || !!runner.previousSibling;
+      if (runner.previousSibling && runner.parentNode &&
+          isPhrasing(runner.parentNode)) {
+        needSplits.push(runner);
+      }
       runner = runner.parentNode;
     }
     if (runner === startNode) {
       selectedNodes.unshift(null);
       return selectedNodes;
     }
-    if (runner && needSplit && isPhrasing(runner)) {
-      var refNode = startNode;
-      while (!refNode.previousSibling)
-        refNode = refNode.parentNode;
-      runner = context.splitTree(runner, refNode);
+    if (needSplits.length) {
+      var oldTree = needSplits[needSplits.length - 1].parentNode;
+      var newTree = context.splitTree(oldTree, needSplits[0]);
+      if (oldTree == runner)
+        runner = newTree;
     }
 
     var effectiveNodes = selectedNodes;

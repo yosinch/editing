@@ -66,7 +66,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3',
     });
 
 testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
-    '<p contenteditable>aaa<b>b^bb<i>cc|c</i>ddd<i>eee</i>fff</b>ggg</p>',
+    '<p contenteditable>123<b>4^56<i>78|9</i>abc<i>def</i>ghi</b>jkl</p>',
     function(context, selection) {
       var normalizedSelection = editing.nodes.normalizeSelection(
         context, selection);
@@ -75,15 +75,34 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
           // This will always return true.
           return node.nodeName !== 'A';
         });
-      expectEq('(null),#document,HTML,BODY,P,B,bb,I,cc', function() {
+      expectEq('(null),#document,HTML,BODY,P,B,56,I,78', function() {
         return dumpNodes(nodes)
       });
-      // Nothing will be split.
-      expectEq('aaa<b>bbb<i>ccc</i>ddd<i>eee</i>fff</b>ggg',
+      expectEq('123<b>4</b><b>56<i>789</i>abc<i>def</i>ghi</b>jkl',
                function() {
                  return context.document.body.firstChild.innerHTML;
                });
     });
+
+// From createLink.w3c.8
+testCaseWithSample('nodes.setUpEffectiveNodes.3_3',
+    '<p contenteditable><span>123^456|</span><span>789</span></p>',
+    function(context, selection) {
+      var normalizedSelection = editing.nodes.normalizeSelection(
+        context, selection);
+      var nodes = editing.nodes.setUpEffectiveNodes(
+        context, normalizedSelection, function(node) {
+          return editing.nodes.isPhrasing(node);
+        });
+      expectEq('P,SPAN,456', function() {
+        return dumpNodes(nodes)
+      });
+      expectEq('<span>123</span><span>456</span><span>789</span>',
+               function() {
+                 return context.document.body.firstChild.innerHTML;
+               });
+    });
+
 
 testCaseWithSample('nodes.setUpEffectiveNodes.4',
     '<p contenteditable>aaa<b>b^bb<i>ccc</i>dd|d<i>eee</i>fff</b>ggg</p>',
@@ -227,12 +246,12 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Junk',
         context, selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
           context, normalizedSelection, function(node) {
-            return true;
+            return node.nodeName === 'A' || editing.nodes.isPhrasing(node);
           });
-      expectEq('(null),#document,HTML,BODY,P,A,B,bar', function() {
+      expectEq('P,A,B,bar', function() {
         return dumpNodes(nodes)
       });
-      expectEq('<a href="URL">foo<b>bar</b>baz</a>',
+      expectEq('<a href="URL">foo</a><a href="URL"><b>bar</b>baz</a>',
                function() {
                  return context.document.body.firstChild.innerHTML;
                });
