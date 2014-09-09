@@ -278,11 +278,15 @@ editing.defineCommand('createLink', (function() {
 
     var startNode = effectiveNodes[0];
     var endNode = lastOf(effectiveNodes);
+    var previous = startNode.previousSibling;
     adjustEffectiveStartNode(context, startNode, endNode);
 
     {
-      var previous = startNode.previousSibling;
       if (previous && previous.nodeName == 'A') {
+console.log('previous', previous.outerHTML);
+        // When enable this, createLink.createLink.html_starthere is failed.
+        //unwrapAnchorContents(context, previous);
+//console.log('previous', previous.outerHTML);
         if (canMergeAnchor(previous)) {
           // Merge into previous A, see w3c.20
           anchorElement = previous;
@@ -294,6 +298,7 @@ editing.defineCommand('createLink', (function() {
     }
 
     effectiveNodes.forEach(function(currentNode) {
+console.log('forEach', currentNode.outerHTML || currentNode.nodeValue);
       if (!currentNode.parentNode) {
         // Unwrapped.
         return;

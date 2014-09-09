@@ -610,7 +610,7 @@ testCaseFor('createLink.w3c.45r', {
   value: 'http://www.google.com/'
 });
 
-// Note: We should have "name" attribute for "baz", see http://crbug.com/411785
+// Note: We should not have "name" attribute for "baz", see http://crbug.com/411785
 testCaseFor('createLink.w3c.46', {
   after: '<div contenteditable><a name="abc">foo</a><a href="http://www.google.com/">^bar|</a><a name="abc">baz</a></div>',
   before: '<div contenteditable><a name="abc">foo^bar|baz</a></div>',
@@ -618,7 +618,7 @@ testCaseFor('createLink.w3c.46', {
   value: 'http://www.google.com/'
 });
 
-// Note: We should have "name" attribute for "baz", see http://crbug.com/411785
+// Note: We should not have "name" attribute for "baz", see http://crbug.com/411785
 testCaseFor('createLink.w3c.46r', {
   after: '<div contenteditable><a name="abc">foo</a><a href="http://www.google.com/">^bar|</a><a name="abc">baz</a></div>',
   before: '<div contenteditable><a name="abc">foo|bar^baz</a></div>',
@@ -626,7 +626,7 @@ testCaseFor('createLink.w3c.46r', {
   value: 'http://www.google.com/'
 });
 
-// Note: We should have "name" attribute for "baz", see http://crbug.com/411785
+// Note: We should not have "name" attribute for "baz", see http://crbug.com/411785
 testCaseFor('createLink.w3c.47', {
   after: '<div contenteditable><b><a name="abc">foo</a><a href="http://www.google.com/">^bar|</a><a name="abc">baz</a></b></div>',
   before: '<div contenteditable><a name="abc"><b>foo^bar|baz</b></a></div>',
@@ -634,7 +634,7 @@ testCaseFor('createLink.w3c.47', {
   value: 'http://www.google.com/'
 });
 
-// Note: We should have "name" attribute for "baz", see http://crbug.com/411785
+// Note: We should not have "name" attribute for "baz", see http://crbug.com/411785
 testCaseFor('createLink.w3c.47r', {
   after: '<div contenteditable><b><a name="abc">foo</a><a href="http://www.google.com/">^bar|</a><a name="abc">baz</a></b></div>',
   before: '<div contenteditable><a name="abc"><b>foo|bar^baz</b></a></div>',
