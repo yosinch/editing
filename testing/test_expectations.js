@@ -6,21 +6,6 @@
 
 testing.define('TEST_EXPECTATIONS', (function() {
   return {
-    // createLink command
-    'createLink.Caret.InteractiveAtFirst': {expected: 'fail',
-                                            reason: 'issue #16'},
-    'createLink.Caret.InteractiveAtLast': {expected: 'fail',
-                                           reason: 'issue #16'},
-    'createLink.Caret.InteractiveAtMiddle': {expected: 'fail',
-                                             reason: 'issue #16'},
-    'createLink.EndTag': {expected: 'fail', reason: 'issue #16'},
-    'createLink.w3c.42': {expected: 'fail', reason: 'issue #16'},
-    'createLink.w3c.42r': {expected: 'fail', reason: 'issue #16'},
-    'createLink.w3c.43': {expected: 'fail', reason: 'issue #16'},
-    'createLink.w3c.43r': {expected: 'fail', reason: 'issue #16'},
-    'createLink.w3c.47': {expected: 'fail', reason: 'issue #16'},
-    'createLink.w3c.47r': {expected: 'fail', reason: 'issue #16'},
-
     // remove format
     'removeFormat.nested_div_style': {expected: 'fail', reason: 'issue #25'},
     'removeFormat.w3c.88': {expected: 'fail', reason: 'issue #24'},

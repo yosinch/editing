@@ -42,6 +42,43 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
+   * @param {string} url
+   * @param {!Node} anchorPhraseNode
+   */
+  function insertNewAnchorElement(context, url, anchorPhraseNode) {
+    if (editing.nodes.isWhitespaceNode(anchorPhraseNode))
+      return null;
+    var anchorElement = context.createElement('a');
+    context.setAttribute(anchorElement, 'href', url);
+    var parentNode = anchorPhraseNode.parentNode;
+    if (!parentNode) {
+      throw new Error('anchorPhraseNode ' + anchorPhraseNode +
+                      ' should not be in tree.');
+    }
+    context.replaceChild(parentNode, anchorElement, anchorPhraseNode);
+    context.appendChild(anchorElement, anchorPhraseNode);
+    return anchorElement;
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isEffectiveNode(node) {
+    return editing.nodes.isPhrasing(node);
+  }
+
+  /**
+   * @template T
+   * @param {!Array.<T>} array
+   * @return {?T}
+   */
+  function lastOf(array) {
+    return array.length ? array[array.length - 1] : null;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
    * @param {?Node} newNode
    * @param {?Node} oldNode
    * @param {?Node} stopNode
@@ -70,6 +107,64 @@ editing.defineCommand('createLink', (function() {
     context.removeChild(oldParent.parentNode, oldParent);
   }
 
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!editing.ReadOnlySelection} selection
+   * @return {!editing.ReadOnlySelection}
+   *
+   * Reorder A element which contents is phrasing elements.
+   * Example: <a><b><i>foo</i></a> => <b><i><a>foo</a></i></b>
+   */
+  function normalizeSelectedStartNode(context, selection) {
+    if (editing.nodes.isText(selection.anchorNode) ||
+        editing.nodes.isText(selection.focusNode)) {
+      throw new Error('Selection should be normalized.');
+    }
+    var startContainer = selection.startContainer;
+    var anchorElement = null;
+    var elements = [];
+    for (var runner = startContainer;
+         runner && runner.parentNode && editing.nodes.isPhrasing(runner);
+         runner = runner.parentNode) {
+      if (runner.nodeName == 'A') {
+        anchorElement = runner;
+        break;
+      }
+      if (runner.previousSibling || runner.nextSibling)
+        break;
+      elements.push(runner);
+    }
+
+    if (!anchorElement || !elements.length)
+      return selection;
+
+    // Move lowest anchor contents to anchor element.
+    while (startContainer.firstChild) {
+      context.appendChild(anchorElement, startContainer.firstChild);
+    }
+
+    // Move highest content node before anchor element
+    context.insertBefore(anchorElement.parentNode, lastOf(elements),
+                         anchorElement);
+
+    // Move anchor element to lowest
+    context.appendChild(startContainer, anchorElement);
+
+    // Adjust selection
+    var newEndContainer = selection.endContainer == startContainer ?
+        anchorElement : selection.endContainer;
+    if (selection.direction == editing.SelectionDirection.ANCHOR_IS_START) {
+      return new editing.ReadOnlySelection(
+          anchorElement, selection.startOffset,
+          newEndContainer, selection.endOffset,
+          selection.direction);
+    }
+    return new editing.ReadOnlySelection(
+        newEndContainer, selection.endOffset,
+        anchorElement, selection.startOffset,
+        selection.direction);
+  }
+
   function unwrapAnchorContents(context, anchorElement) {
     while (canUnwrapContents(anchorElement)) {
       var wrapper = context.createElement(anchorElement.firstChild.nodeName);
@@ -82,6 +177,35 @@ editing.defineCommand('createLink', (function() {
         moveChildren(context, anchorElement, childElement, null, null);
       });
     }
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {string} url
+   * @return {boolean}
+   * If selection is caret, we insert |url| before caret and select it,
+   * then apply "createLink" command.
+   */
+  function createLinkForCaret(context, url) {
+    console.assert(url !== '');
+    var selection = editing.nodes.normalizeSelection(
+        context, context.startingSelection);
+    var textNode = context.createTextNode(url);
+    var refChild = selection.anchorNode.childNodes[selection.anchorOffset];
+    if (refChild)
+      context.insertBefore(selection.anchorNode, textNode, refChild);
+    else
+      context.appendChild(selection.anchorNode, textNode);
+    selection = new editing.ReadOnlySelection(
+      selection.anchorNode, selection.anchorOffset,
+      selection.anchorNode, selection.anchorOffset + 1,
+      editing.SelectionDirection.ANCHOR_IS_START);
+    var anchorElement = context.createElement('A');
+    context.setAttribute(anchorElement, 'href', url);
+    context.insertBefore(textNode.parentNode, anchorElement, textNode);
+    context.appendChild(anchorElement, textNode);
+    context.setEndingSelection(selection);
+    return true;
   }
 
   /**
@@ -116,8 +240,6 @@ editing.defineCommand('createLink', (function() {
 
       // TODO(yosin) We should remove this code fragment once |splitNode|
       // doesn't copy "name" attribute. See http://crbug.com/411785
-      if (!startElement.hasAttribute('name'))
-        return;
       context.removeAttribute(startElement, 'name');
     }
 
@@ -129,56 +251,6 @@ editing.defineCommand('createLink', (function() {
       return Boolean(node) && node.nodeName === 'A' &&
              node.getAttribute('href') === url &&
              node.attributes.length === 1;
-    }
-
-    /**
-     * @param {!Node} anchorPhraseNode
-     */
-    function insertNewAnchorElement(anchorPhraseNode) {
-      if (editing.nodes.isWhitespaceNode(anchorPhraseNode))
-        return null;
-      var anchorElement = context.createElement('a');
-      context.setAttribute(anchorElement, 'href', url);
-      var parentNode = anchorPhraseNode.parentNode;
-      if (!parentNode) {
-        throw new Error('anchorPhraseNode ' + anchorPhraseNode +
-                        ' should not be in tree.');
-      }
-      context.replaceChild(parentNode, anchorElement, anchorPhraseNode);
-      context.appendChild(anchorElement, anchorPhraseNode);
-      return anchorElement;
-    }
-
-    /**
-     * @param {!Node} node
-     * @return {boolean}
-     */
-    function isEffectiveNode(node) {
-      return editing.nodes.isPhrasing(node);
-    }
-
-    /**
-     * @param {Node} node
-     * @param {!Node} other
-     * @return boolean
-     */
-    function isStartOf(node, other) {
-      for (var runner = node; runner; runner = runner.parentNode) {
-        if (runner.previousSibling)
-          return false;
-        if (runner === other)
-          return true;
-      }
-      return false;
-    }
-
-    /**
-     * @template T
-     * @param {!Array.<T>} array
-     * @return {?T}
-     */
-    function lastOf(array) {
-      return array.length ? array[array.length - 1] : null;
     }
 
     var anchorElement = null;
@@ -202,7 +274,7 @@ editing.defineCommand('createLink', (function() {
           context.appendChild(anchorElement, node);
           return;
         }
-        anchorElement = insertNewAnchorElement(node);
+        anchorElement = insertNewAnchorElement(context, url, node);
         return;
       }
       if (editing.nodes.isDescendantOf(node, anchorElement)) {
@@ -251,20 +323,14 @@ editing.defineCommand('createLink', (function() {
 
     var selection = editing.nodes.normalizeSelection(
         context, context.startingSelection);
-    if (selection.isCaret) {
-      // If selection is caret, we insert |url| before caret and select it,
-      // then apply "createLink" command.
-      var textNode = context.createTextNode(url);
-      var refChild = selection.anchorNode.childNodes[selection.anchorOffset];
-      if (refChild)
-        context.insertBefore(selection.anchorNode, textNode, refChild);
-      else
-        context.appendChild(selection.anchorNode, textNode);
-      selection = new editing.ReadOnlySelection(
-        selection.anchorNode, selection.anchorOffset,
-        selection.anchorNode, selection.anchorOffset + 1,
-        editing.SelectionDirection.ANCHOR_IS_START);
-    }
+    // TODO(yosin) We should not use |computeSelectedNodes()| to check
+    // whether selection contains nodes or not. See createLink.EndTag.
+    if (!editing.nodes.computeSelectedNodes(selection).length)
+      return createLinkForCaret(context, url);
+
+    // TODO(yosin) We should reorder content elements for caret, once Chrome
+    // does so.
+    selection = normalizeSelectedStartNode(context, selection);
 
     var selectionTracker = new editing.SelectionTracker(context, selection);
     var effectiveNodes = editing.nodes.setUpEffectiveNodes(context, selection,
@@ -320,6 +386,9 @@ editing.defineCommand('createLink', (function() {
             editing.nodes.isDescendantOf(endNode, currentElement) &&
             editing.nodes.lastWithIn(currentElement) !== endNode) {
           context.splitTree(currentElement, editing.nodes.nextNode(endNode));
+          // TODO(yosin) We should remove this code fragment once |splitNode|
+          // doesn't copy "name" attribute. See http://crbug.com/411785
+          context.removeAttribute(currentElement, 'name');
         }
         if (!anchorElement) {
           processPendingContents();
@@ -388,6 +457,10 @@ editing.defineCommand('createLink', (function() {
       context.setEndingSelection(context.startingSelection);
       return true;
     }
+
+    if (context.startingSelection.isCaret)
+      return createLinkForCaret(context,url);
+
     return createLinkForRange(context, url);
   }
 
