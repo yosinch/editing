@@ -70,9 +70,17 @@ editing.defineCommand('InsertOrderedList', (function() {
       context.appendChild(newNode, childNode);
     });
     // TODO(hajimehoshi): Copy attributes
-    context.insertBefore(node.parentNode, newNode, node);
-    context.removeChild(node.parentNode, node);
+    context.replaceChild(node.parentNode, newNode, node);
     return newNode;
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isList(node) {
+    return editing.nodes.isElement(node) &&
+      (node.nodeName === 'OL' || node.nodeName === 'UL');
   }
 
   /**
@@ -82,7 +90,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   function isInList(node) {
     var currentNode = node.parentNode
     while (currentNode) {
-      if (currentNode.nodeName === 'OL' || currentNode.nodeName === 'UL')
+      if (isList(currentNode))
         return true;
       currentNode = currentNode.parentNode;
     }
@@ -205,7 +213,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       });
     } else {
       var list = context.createElement('ol');
-      if (0 < selection.startOffset) {
+      if (selection.startOffset) {
         insertListAfter =
           selection.startContainer.childNodes[selection.startOffset - 1];
         while (insertListAfter !== null &&
