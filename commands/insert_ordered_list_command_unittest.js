@@ -4,6 +4,8 @@
 
 'use strict';
 
-testCaseFor('insertOrderedList', 'a' {
-  before: '',
+testCaseFor('insertOrderedList.crbug.412680', {
+  before: '<div contenteditable>^foo<hr>bar|</div>',
+  after: '<div contenteditable><ul><li>foo</li></ul><hr><ul><li>bar</li></ul></div>',
+  sampleId: 'crbug/412680',
 });
