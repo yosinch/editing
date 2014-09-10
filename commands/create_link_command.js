@@ -34,7 +34,7 @@ editing.defineCommand('createLink', (function() {
     return [].every.call(element.childNodes, function(child) {
       return editing.nodes.isElement(child) &&
              editing.nodes.isPhrasing(child) &&
-             child.nodeName == firstChild.nodeName &&
+             child.nodeName === firstChild.nodeName &&
              !child.attributes.length &&
              !!child.firstChild;
     });
@@ -126,7 +126,7 @@ editing.defineCommand('createLink', (function() {
     for (var runner = startContainer;
          runner && runner.parentNode && editing.nodes.isPhrasing(runner);
          runner = runner.parentNode) {
-      if (runner.nodeName == 'A') {
+      if (runner.nodeName === 'A') {
         anchorElement = runner;
         break;
       }
@@ -151,9 +151,9 @@ editing.defineCommand('createLink', (function() {
     context.appendChild(startContainer, anchorElement);
 
     // Adjust selection
-    var newEndContainer = selection.endContainer == startContainer ?
+    var newEndContainer = selection.endContainer === startContainer ?
         anchorElement : selection.endContainer;
-    if (selection.direction == editing.SelectionDirection.ANCHOR_IS_START) {
+    if (selection.direction === editing.SelectionDirection.ANCHOR_IS_START) {
       return new editing.ReadOnlySelection(
           anchorElement, selection.startOffset,
           newEndContainer, selection.endOffset,
@@ -165,6 +165,10 @@ editing.defineCommand('createLink', (function() {
         selection.direction);
   }
 
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} anchorElement
+   */
   function unwrapAnchorContents(context, anchorElement) {
     while (canUnwrapContents(anchorElement)) {
       var wrapper = context.createElement(anchorElement.firstChild.nodeName);
@@ -224,7 +228,7 @@ editing.defineCommand('createLink', (function() {
       if (!editing.nodes.isElement(startNode))
         return;
       var startElement = /** @type {!Element} */(startNode);
-      if (startElement.nodeName != 'A')
+      if (startElement.nodeName !== 'A')
         return;
 
       unwrapAnchorContents(context, startElement);
@@ -254,10 +258,14 @@ editing.defineCommand('createLink', (function() {
     }
 
     var anchorElement = null;
+    /**
+     * @param {!Node} node
+     * Wraps |node| by A element.
+     */
     function wrapByAnchor(node) {
       if (!anchorElement) {
         if (!editing.nodes.isVisibleNode(node)) {
-          // We don't have leading whitespaces in anchor element.
+          // We don't want to have leading whitespaces in anchor element.
           return;
         }
         var nextSibling = node.nextSibling;
@@ -270,7 +278,7 @@ editing.defineCommand('createLink', (function() {
         var previousSibling = node.previousSibling;
         if (canMergeAnchor(previousSibling)) {
           // See w3c.27
-          anchorElement = previousSibling;
+          anchorElement = /** @type {!Element} */(previousSibling);
           context.appendChild(anchorElement, node);
           return;
         }
@@ -348,7 +356,7 @@ editing.defineCommand('createLink', (function() {
 
     {
       var previous = startNode.previousSibling;
-      if (previous && previous.nodeName == 'A') {
+      if (previous && previous.nodeName === 'A') {
         if (canMergeAnchor(previous)) {
           // Merge into previous A, see w3c.20
           anchorElement = previous;
@@ -360,11 +368,7 @@ editing.defineCommand('createLink', (function() {
     }
 
     effectiveNodes.forEach(function(currentNode) {
-      if (!currentNode.parentNode) {
-        // Unwrapped.
-        return;
-      }
-      if (currentNode === anchorElement)
+      if (!currentNode.parentNode || currentNode === anchorElement)
         return;
 
       var lastPendingContainer = lastOf(pendingContainers);
@@ -449,13 +453,9 @@ editing.defineCommand('createLink', (function() {
    * @return {boolean}
    */
   function createLinkCommand(context, userInterface, url) {
-    if (url === '') {
+    if (url === '' || context.startingSelection.isEmpty) {
       context.setEndingSelection(context.startingSelection);
       return false;
-    }
-    if (context.startingSelection.isEmpty) {
-      context.setEndingSelection(context.startingSelection);
-      return true;
     }
 
     if (context.startingSelection.isCaret)
