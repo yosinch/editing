@@ -5,7 +5,19 @@
 'use strict';
 
 editing.defineCommand('Unlink', (function() {
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isEffectiveNode(node) {
+    return node.nodeName !== 'A';
+  }
 
+  /**
+   * @template T
+   * @param {!Array.<T>} array
+   * @return {?T}
+   */
   function lastOf(array) {
     return array.length ? array[array.length - 1] : null;
   }
@@ -20,10 +32,8 @@ editing.defineCommand('Unlink', (function() {
     /** @const */ var selection = context.normalizeSelection(
         context.startingSelection);
     var selectionTracker = new editing.SelectionTracker(context, selection);
-    var effectiveNodes = editing.nodes.setUpEffectiveNodes(
-        context, selection, function(node) {
-          return node.nodeName !== 'A';
-        });
+    var effectiveNodes = context.setUpEffectiveNodes(selection,
+                                                     isEffectiveNode);
     if (!effectiveNodes[0])
       effectiveNodes.shift();
     if (!effectiveNodes.length) {

@@ -89,11 +89,3 @@ editing.nodes.nodeIndex = function(node) {};
  * @return {?Node}
  */
 editing.nodes.previousNode = function(node) {};
-
-/**
- * @param {!editing.EditingContext} context
- * @param {!editing.ReadOnlySelection} selection
- * @param {!function(!Node):boolean} predicate
- * @return {!Array.<!Node>}
- */
-editing.nodes.setUpEffectiveNodes = function(context, selection, predicate) {};

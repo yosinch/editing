@@ -336,8 +336,8 @@ editing.defineCommand('createLink', (function() {
     selection = normalizeSelectedStartNode(context, selection);
 
     var selectionTracker = new editing.SelectionTracker(context, selection);
-    var effectiveNodes = editing.nodes.setUpEffectiveNodes(context, selection,
-                                                           isEffectiveNode);
+    var effectiveNodes = context.setUpEffectiveNodes(selection,
+                                                     isEffectiveNode);
     if (!effectiveNodes[0] || !editing.nodes.isPhrasing(effectiveNodes[0]))
       effectiveNodes.shift();
     if (!effectiveNodes.length) {

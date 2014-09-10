@@ -469,6 +469,66 @@ editing.define('EditingContext', (function() {
   }
 
   /**
+   * @this {!editing.EditingContext} context
+   * @param {!editing.ReadOnlySelection} selection
+   * @param {!function(!Node):boolean} predicate
+   * @return {!Array.<!Node>}
+   *
+   * Computes effective nodes for inline formatting commands. |selection|
+   * should be normalized. In addition to the selected nodes, this unshifts
+   * ancestor nodes until the result of |predicate| is false.
+   *
+   * If |predicate| always returns true until reaching the top node, this
+   * returns null and the following selected nodes.
+   */
+  function setUpEffectiveNodes(selection, predicate) {
+    console.assert(selection.isNormalized);
+    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
+    if (!selectedNodes.length)
+      return [null];
+
+    // Add ancestors of start node of selected nodes if all descendant nodes
+    // in selected range, e.g. <a>^foo<b>bar</b>|</a>.
+    // Note: selection doesn't need to end beyond end tag.
+    var startNode = selectedNodes[0];
+    var needSplits = [];
+    var runner = startNode;
+    if (editing.nodes.isText(runner)) {
+      if (runner.previousSibling && runner.parentNode &&
+          editing.nodes.isPhrasing(runner.parentNode)) {
+        needSplits.push(runner);
+      }
+      runner = runner.parentNode;
+    }
+    while (runner && predicate(runner)) {
+      if ((needSplits.length || runner.previousSibling) && runner.parentNode &&
+          editing.nodes.isElement(runner.parentNode) &&
+          editing.nodes.isPhrasing(runner.parentNode)) {
+        needSplits.push(runner);
+      }
+      runner = runner.parentNode;
+    }
+    if (runner === startNode) {
+      selectedNodes.unshift(null);
+      return selectedNodes;
+    }
+    if (needSplits.length) {
+      var oldTree = needSplits[needSplits.length - 1].parentNode;
+      var newTree = this.splitTree(oldTree, needSplits[0]);
+      if (oldTree == runner)
+        runner = newTree;
+    }
+
+    var effectiveNodes = selectedNodes;
+    for (var ancestor = startNode.parentNode; ancestor != runner;
+         ancestor = ancestor.parentNode) {
+      effectiveNodes.unshift(ancestor);
+    }
+    effectiveNodes.unshift(runner);
+    return effectiveNodes;
+  }
+
+  /**
    * @this {!EditingContext}
    * @param {!Node} parent
    * @param {!Node} child
@@ -482,7 +542,7 @@ editing.define('EditingContext', (function() {
   function splitNode(parent, child) {
     if (!parent.parentNode)
       throw new Error('Parent ' + parent + ' must have a parent.');
-    
+
     var newParent = /** @type {!Element} */(parent.cloneNode(false));
     this.removeAttribute(newParent, 'id');
     /*
@@ -652,6 +712,7 @@ editing.define('EditingContext', (function() {
     setAttribute: {value: setAttribute},
     setEndingSelection: {value: setEndingSelection },
     setStyle: {value: setStyle},
+    setUpEffectiveNodes: {value: setUpEffectiveNodes},
     splitNode: {value: splitNode},
     splitNodeLeft: {value: splitNodeLeft},
     splitText: {value: splitText},

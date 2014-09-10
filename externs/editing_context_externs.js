@@ -22,7 +22,8 @@ editing.EditingContext.prototype.editor;
  * @param {!Node} parentNode
  * @param {!Node} newChild
  */
-editing.EditingContext.prototype.appendChild = function(parentNode, newChild) {};
+editing.EditingContext.prototype.appendChild = function(parentNode,
+                                                        newChild) {};
 
 /**
  * @this {!editing.EditingContext}
@@ -87,7 +88,8 @@ editing.EditingContext.prototype.removeAttribute = function(element, name) {};
  * @param {?Node} parentNode
  * @param {!Node} oldChild
  */
-editing.EditingContext.prototype.removeChild = function(parentNode, oldChild) {};
+editing.EditingContext.prototype.removeChild = function(parentNode,
+                                                        oldChild) {};
 
 /**
  * @this {!editing.EditingContext}
@@ -104,13 +106,23 @@ editing.EditingContext.prototype.replaceChild = function(
  * @param {string} name
  * @param {string} newValue
  */
-editing.EditingContext.prototype.setAttribute = function(element, name, newValue) {};
+editing.EditingContext.prototype.setAttribute = function(element, name,
+                                                         newValue) {};
 
 /**
  * @this {!editing.EditingContext}
  * @param {!editing.ReadOnlySelection} selection
  */
 editing.EditingContext.prototype.setEndingSelection = function(selection) {};
+
+/**
+ * @this {!editing.EditingContext} context
+ * @param {!editing.ReadOnlySelection} selection
+ * @param {!function(!Node):boolean} predicate
+ * @return {!Array.<!Node>}
+ */
+editing.EditingContext.prototype.setUpEffectiveNodes = function(selection,
+                                                                predicate) {};
 
 /**
  * @this {!editing.EditingContext}
