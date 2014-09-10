@@ -18,6 +18,58 @@ function dumpNodes(nodes) {
 }
 
 //
+// normalizeSelection
+//
+testCaseWithSample('context.normalizeSelection.splitTextCaret',
+  '<p contenteditable>ab|cd</p>', function(context, selectionIn) {
+  var selection = context.normalizeSelection(selectionIn);
+  expectTrue(function() { return selection.isCaret; });
+  expectFalse(function() { return selection.isEmpty; });
+  expectFalse(function() { return selection.isRange; });
+  expectEq('P', function() { return selection.anchorNode.nodeName; });
+  expectEq(1, function() { return selection.anchorOffset; });
+  expectEq('P', function() { return selection.focusNode.nodeName; });
+  expectEq(1, function() { return selection.focusOffset; });
+});
+
+testCaseWithSample('context.normalizeSelection.splitTextCaretInTree',
+  '<p contenteditable><b>bold_1<i>italic_1<s>strike_1|strike_2</s>italic_2</i>bold_2</b></p>',
+  function(context, selectionIn) {
+    var selection = context.normalizeSelection(selectionIn);
+    expectTrue(function() { return selection.isCaret; });
+    expectFalse(function() { return selection.isEmpty; });
+    expectFalse(function() { return selection.isRange; });
+    expectEq('S', function() { return selection.anchorNode.nodeName; });
+    expectEq(1, function() { return selection.anchorOffset; });
+    expectEq('S', function() { return selection.focusNode.nodeName; });
+    expectEq(1, function() { return selection.focusOffset; });
+  });
+
+testCaseWithSample('context.normalizeSelection.splitTextAnchorFocus',
+  '<p contenteditable>a^bc|d</p>', function(context, selectionIn) {
+    var selection = context.normalizeSelection(selectionIn);
+    expectFalse(function() { return selection.isCaret; });
+    expectFalse(function() { return selection.isEmpty; });
+    expectTrue(function() { return selection.isRange; });
+    expectEq('P', function() { return selection.anchorNode.nodeName; });
+    expectEq(1, function() { return selection.anchorOffset; });
+    expectEq('P', function() { return selection.focusNode.nodeName; });
+    expectEq(2, function() { return selection.focusOffset; });
+  });
+
+testCaseWithSample('context.normalizeSelection.splitTextFocusAnchor',
+  '<p contenteditable>a|bc^d</p>', function(context, selectionIn) {
+    var selection = context.normalizeSelection(selectionIn);
+    expectFalse(function() { return selection.isCaret; });
+    expectFalse(function() { return selection.isEmpty; });
+    expectTrue(function() { return selection.isRange; });
+    expectEq('P', function() { return selection.anchorNode.nodeName; });
+    expectEq(2, function() { return selection.anchorOffset; });
+    expectEq('P', function() { return selection.focusNode.nodeName; });
+    expectEq(1, function() { return selection.focusOffset; });
+  });
+
+//
 // removeAttribute
 //
 testCaseWithSample('context.removeAttribute.1',
@@ -158,7 +210,7 @@ testCaseWithSample('context.splitNodeLeft.4',
 testCaseWithSample('context.splitTree.shallow',
     '<p contenteditable><e1>one</e1>|<e2>two</e2><e3>three</e3></p>',
     function(context, selectionIn) {
-      var selection = editing.nodes.normalizeSelection(context, selectionIn);
+      var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode;
       var newTree = context.splitTree(oldTree, refNode);
@@ -171,7 +223,7 @@ testCaseWithSample('context.splitTree.shallow',
 testCaseWithSample('context.splitTree.deep',
     '<p contenteditable><b>bold1<i>italic1<s>strike1|strike2</s>italic2</i>bold2</b></p>',
     function(context, selectionIn) {
-      var selection = editing.nodes.normalizeSelection(context, selectionIn);
+      var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode.parentNode.parentNode;
       var newTree = context.splitTree(oldTree, refNode);
@@ -187,7 +239,7 @@ testCaseWithSample('context.splitTree.deep',
 testCaseWithSample('context.splitTreeLeft.shallow',
     '<p contenteditable><e1>one</e1>|<e2>two</e2><e3>three</e3></p>',
     function(context, selectionIn) {
-      var selection = editing.nodes.normalizeSelection(context, selectionIn);
+      var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode;
       var newTree = context.splitTreeLeft(oldTree, refNode);
@@ -200,7 +252,7 @@ testCaseWithSample('context.splitTreeLeft.shallow',
 testCaseWithSample('context.splitTreeLeft.deep',
     '<p contenteditable><b>bold1<i>italic1<s>strike1|strike2</s>italic2</i>bold2</b></p>',
     function(context, selectionIn) {
-      var selection = editing.nodes.normalizeSelection(context, selectionIn);
+      var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode.parentNode.parentNode;
       var newTree = context.splitTreeLeft(oldTree, refNode);

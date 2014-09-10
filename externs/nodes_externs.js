@@ -85,12 +85,6 @@ editing.nodes.nextNodeSkippingChildren = function(node) {};
 editing.nodes.nodeIndex = function(node) {};
 
 /**
- * @param {!editing.EditingContext} context
- * @param {!editing.ReadOnlySelection} selection
- */
-editing.nodes.normalizeSelection = function(context, selection) {};
-
-/**
  * @param {?Node} node
  * @return {?Node}
  */

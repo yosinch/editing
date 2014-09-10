@@ -42,8 +42,8 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @return {boolean}
    */
   function createInsertOrderedListCommand(context, userInterface, value) {
-    /** @const */ var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
+    /** @const */ var selection = context.normalizeSelection(
+        context.startingSelection);
 
     /** @const @type {!Node} */
     var node = selection.focusNode;

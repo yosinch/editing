@@ -17,7 +17,7 @@ function expectOnContextResult(expectedResult, context) {
 testCaseWithSample('SelectionTracker.finish.1',
   '<p contenteditable>^abcd|</p>', function(context, selection) {
   var tracker = new editing.SelectionTracker(context,
-      editing.nodes.normalizeSelection(context, selection));
+      context.normalizeSelection(selection));
   tracker.finish();
   expectOnContextResult('<p contenteditable>^abcd|</p>', context);
 });
@@ -25,7 +25,7 @@ testCaseWithSample('SelectionTracker.finish.1',
 testCaseWithSample('SelectionTracker.finish.2',
   '<p contenteditable>|abcd^</p>', function(context, selection) {
   var tracker = new editing.SelectionTracker(context,
-      editing.nodes.normalizeSelection(context, selection));
+      context.normalizeSelection(selection));
   tracker.finish();
   expectOnContextResult('<p contenteditable>|abcd^</p>', context);
 });
@@ -36,7 +36,7 @@ testCaseWithSample('SelectionTracker.finish.2',
 testCaseWithSample('SelectionTracker.finishWithStartAsAnchor.1',
   '<p contenteditable>^abcd|</p>', function(context, selection) {
   var tracker = new editing.SelectionTracker(context,
-      editing.nodes.normalizeSelection(context, selection));
+      context.normalizeSelection(selection));
   tracker.finishWithStartAsAnchor();
   expectOnContextResult('<p contenteditable>^abcd|</p>', context);
 });
@@ -44,7 +44,7 @@ testCaseWithSample('SelectionTracker.finishWithStartAsAnchor.1',
 testCaseWithSample('SelectionTracker.finishWithStartAsAnchor.2',
   '<p contenteditable>|abcd^</p>', function(context, selection) {
   var tracker = new editing.SelectionTracker(context,
-      editing.nodes.normalizeSelection(context, selection));
+      context.normalizeSelection(selection));
   tracker.finishWithStartAsAnchor();
   expectOnContextResult('<p contenteditable>^abcd|</p>', context);
 });

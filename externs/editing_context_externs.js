@@ -71,6 +71,12 @@ editing.EditingContext.prototype.operations;
 
 /**
  * @this {!editing.EditingContext}
+ * @param {!editing.ReadOnlySelection} selection
+ */
+editing.EditingContext.prototype.normalizeSelection = function(selection) {};
+
+/**
+ * @this {!editing.EditingContext}
  * @param {!Element} element
  * @param {string} name
  */

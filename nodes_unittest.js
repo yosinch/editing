@@ -25,8 +25,7 @@ function dumpNodes(nodes) {
 testCaseWithSample('nodes.setUpEffectiveNodes.1',
     '<p contenteditable>foo<b>^bar<i>baz</i></b>|quux</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'B';
@@ -40,8 +39,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.1',
 testCaseWithSample('nodes.setUpEffectiveNodes.2',
     '<p contenteditable><span style="font-weight: bold">^foo</span> <span>bar|</span></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'SPAN';
@@ -52,8 +50,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.2',
 testCaseWithSample('nodes.setUpEffectiveNodes.3',
     '<p contenteditable>aaa<b>b^bb<i>cc|c</i>ddd<i>eee</i>fff</b>ggg</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'B';
@@ -68,8 +65,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3',
 testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
     '<p contenteditable>123<b>4^56<i>78|9</i>abc<i>def</i>ghi</b>jkl</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           // This will always return true.
@@ -88,8 +84,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_2',
 testCaseWithSample('nodes.setUpEffectiveNodes.3_3',
     '<p contenteditable><span>123^456|</span><span>789</span></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return editing.nodes.isPhrasing(node);
@@ -106,8 +101,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.3_3',
 testCaseWithSample('nodes.setUpEffectiveNodes.4',
     '<p contenteditable>aaa<b>b^bb<i>ccc</i>dd|d<i>eee</i>fff</b>ggg</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'B';
@@ -122,8 +116,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.4',
 testCaseWithSample('nodes.setUpEffectiveNodes.5',
     '<p contenteditable>aaa<b>b^bb<i>ccc</i>ddd<i>ee|e</i>fff</b>ggg</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'B';
@@ -138,8 +131,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.5',
 testCaseWithSample('nodes.setUpEffectiveNodes.6',
     '<p contenteditable>aaa<b>bbb<i>c^cc</i>ddd<i>ee|e</i>fff</b>ggg</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'B';
@@ -155,8 +147,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.6',
 testCaseWithSample('nodes.setUpEffectiveNodes.7',
     '<p contenteditable>aaa<b>bbb<i>ccc</i>d^dd<i>ee|e</i>fff</b>ggg</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return node.nodeName !== 'B';
@@ -173,8 +164,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.8',
     // We should not split non-phrasing element.
     '<p contenteditable>foo^bar|baz</p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return editing.nodes.isPhrasing(node);
@@ -195,8 +185,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.9',
     // We should not split non-phrasing element.
     '<p contenteditable><a><b>foo^barbaz|</b></a></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
         context, normalizedSelection, function(node) {
           return editing.nodes.isPhrasing(node);
@@ -214,8 +203,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.9',
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
     '<p contenteditable><a href="URL">foo<b>^bar|</b></a></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
           context, normalizedSelection, function(node) {
             return node.nodeName !== 'A';
@@ -229,8 +217,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting',
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
     '<p contenteditable><a href="URL">foo<b><i>^bar|</i></b></a></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
           context, normalizedSelection, function(node) {
             return node.nodeName !== 'A';
@@ -245,8 +232,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.2',
 testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
     '<p contenteditable><a href="URL">foo<b>^bar</b>baz|</a></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
           context, normalizedSelection, function(node) {
             return node.nodeName !== 'A';
@@ -261,8 +247,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Nesting.3',
 testCaseWithSample('nodes.setUpEffectiveNodes.Junk',
     '<p contenteditable><a href="URL">foo<b>^bar|</b>baz</a></p>',
     function(context, selection) {
-      var normalizedSelection = editing.nodes.normalizeSelection(
-        context, selection);
+      var normalizedSelection = context.normalizeSelection(selection);
       var nodes = editing.nodes.setUpEffectiveNodes(
           context, normalizedSelection, function(node) {
             return node.nodeName === 'A' || editing.nodes.isPhrasing(node);
@@ -282,8 +267,7 @@ testCaseWithSample('nodes.setUpEffectiveNodes.Junk',
 testCaseWithSample('nodes.computeSelectedNodes.NodesText',
   '<p contenteditable>^abcd|</p>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('abcd', function() { return dumpNodes(nodes); });
 });
@@ -291,8 +275,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesText',
 testCaseWithSample('nodes.computeSelectedNodes.NodesTextPartial',
   '<p contenteditable>ab^c|d</p>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('c', function() { return dumpNodes(nodes); });
   });
@@ -300,8 +283,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTextPartial',
 testCaseWithSample('nodes.computeSelectedNodes.NodesTree',
   '<p contenteditable><e1><e2>e2Before<e3>^e3</e3>e2After</e2>e1After|</e1></p>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('e3,e2After,e1After', function() { return dumpNodes(nodes); });
   });
@@ -309,8 +291,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree',
 testCaseWithSample('nodes.computeSelectedNodes.NodesTree2',
   '<p contenteditable>^abcd<b>efg</b>|</p>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('abcd,B,efg', function() { return dumpNodes(nodes); });
   });
@@ -318,8 +299,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree2',
 testCaseWithSample('nodes.computeSelectedNodes.NodesTree3',
   '<p contenteditable>ab^cd<b>efg</b>|</p>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('cd,B,efg', function() { return dumpNodes(nodes); });
   });
@@ -327,8 +307,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree3',
 testCaseWithSample('nodes.computeSelectedNodes.NodesTree4',
   '<p contenteditable><e1><e2>e2Before<e3>^e3</e3>e2After</e2><e4>e4|</e4></e1></p>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('e3,e2After,E4,e4', function() { return dumpNodes(nodes); });
   });
@@ -336,8 +315,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree4',
 testCaseWithSample('nodes.computeSelectedNodes.Nodes.Tree.Empty',
   '<div contenteditable><span>foo^</span><span>|bar</span></div>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('', function() { return dumpNodes(nodes); });
   });
@@ -345,8 +323,7 @@ testCaseWithSample('nodes.computeSelectedNodes.Nodes.Tree.Empty',
 testCaseWithSample('nodes.computeSelectedNodes.NodesTreeUL',
   '<div contenteditable>^<ul><li>one</li><li>two</li></ul>|</div>',
   function(context, selection) {
-    var normalizedSelection = editing.nodes.normalizeSelection(
-      context, selection);
+    var normalizedSelection = context.normalizeSelection(selection);
     var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
     expectEq('UL,LI,one,LI,two', function() { return dumpNodes(nodes); });
   });
@@ -401,55 +378,3 @@ testCaseWithSample('nodes.isWhitespaceNode', '', function(context, selection) {
   expectFalse(function () { return editing.nodes.isWhitespaceNode(textB); });
   expectTrue(function () { return editing.nodes.isWhitespaceNode(textC); });
 });
-
-//
-// normalizeSelection
-//
-testCaseWithSample('nodes.normalizeSelection.splitTextCaret',
-  '<p contenteditable>ab|cd</p>', function(context, selectionIn) {
-  var selection = editing.nodes.normalizeSelection(context, selectionIn);
-  expectTrue(function() { return selection.isCaret; });
-  expectFalse(function() { return selection.isEmpty; });
-  expectFalse(function() { return selection.isRange; });
-  expectEq('P', function() { return selection.anchorNode.nodeName; });
-  expectEq(1, function() { return selection.anchorOffset; });
-  expectEq('P', function() { return selection.focusNode.nodeName; });
-  expectEq(1, function() { return selection.focusOffset; });
-});
-
-testCaseWithSample('nodes.normalizeSelection.splitTextCaretInTree',
-  '<p contenteditable><b>bold_1<i>italic_1<s>strike_1|strike_2</s>italic_2</i>bold_2</b></p>',
-  function(context, selectionIn) {
-    var selection = editing.nodes.normalizeSelection(context, selectionIn);
-    expectTrue(function() { return selection.isCaret; });
-    expectFalse(function() { return selection.isEmpty; });
-    expectFalse(function() { return selection.isRange; });
-    expectEq('S', function() { return selection.anchorNode.nodeName; });
-    expectEq(1, function() { return selection.anchorOffset; });
-    expectEq('S', function() { return selection.focusNode.nodeName; });
-    expectEq(1, function() { return selection.focusOffset; });
-  });
-
-testCaseWithSample('nodes.normalizeSelection.splitTextAnchorFocus',
-  '<p contenteditable>a^bc|d</p>', function(context, selectionIn) {
-    var selection = editing.nodes.normalizeSelection(context, selectionIn);
-    expectFalse(function() { return selection.isCaret; });
-    expectFalse(function() { return selection.isEmpty; });
-    expectTrue(function() { return selection.isRange; });
-    expectEq('P', function() { return selection.anchorNode.nodeName; });
-    expectEq(1, function() { return selection.anchorOffset; });
-    expectEq('P', function() { return selection.focusNode.nodeName; });
-    expectEq(2, function() { return selection.focusOffset; });
-  });
-
-testCaseWithSample('nodes.normalizeSelection.splitTextFocusAnchor',
-  '<p contenteditable>a|bc^d</p>', function(context, selectionIn) {
-    var selection = editing.nodes.normalizeSelection(context, selectionIn);
-    expectFalse(function() { return selection.isCaret; });
-    expectFalse(function() { return selection.isEmpty; });
-    expectTrue(function() { return selection.isRange; });
-    expectEq('P', function() { return selection.anchorNode.nodeName; });
-    expectEq(2, function() { return selection.anchorOffset; });
-    expectEq('P', function() { return selection.focusNode.nodeName; });
-    expectEq(1, function() { return selection.focusOffset; });
-  });

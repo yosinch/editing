@@ -373,80 +373,6 @@ editing.define('nodes', (function() {
   }
 
   /**
-   * @param {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
-   */
-  function normalizeSelection(context, selection) {
-    if (selection.isEmpty)
-      return selection;
-
-    var anchorNode = selection.anchorNode;
-    var anchorOffset = selection.anchorOffset;
-    var focusNode = selection.focusNode;
-    var focusOffset = selection.focusOffset;
-
-    /**
-     * @param {?Node} node
-     * @param {number} offset
-     */
-    function splitIfNeeded(node, offset) {
-      if (!node)
-        return;
-      if (!isText(node) || !offset)
-        return;
-      var textNode = /** @type {!Text} */(node);
-      var text = node.nodeValue;
-      if (text.length == offset)
-        return;
-      if (!offset || offset >= text.length) {
-        throw new Error('Offset ' + offset + ' must be grater than zero and ' +
-                        'less than ' + text.length + ' for ' + node);
-      }
-      var newTextNode = context.splitText(textNode, offset);
-      if (anchorNode === node && anchorOffset >= offset) {
-        anchorNode = newTextNode;
-        anchorOffset -= offset;
-      }
-      if (focusNode === node && focusOffset >= offset) {
-        focusNode = newTextNode;
-        focusOffset -= offset;
-      }
-    }
-
-    /**
-     * @param {?Node} node
-     * @param {number} offset
-     */
-    function useContainerIfPossible(node, offset) {
-      if (!node)
-        return;
-      if (!isText(node))
-        return;
-      var container = node.parentNode;
-      var offsetInContainer = nodeIndex(node);
-      if (anchorNode === node && anchorOffset == offset) {
-        anchorNode = container;
-        anchorOffset = offset ? offsetInContainer + 1 : offsetInContainer;
-      }
-      if (focusNode === node && focusOffset == offset) {
-        focusNode = container;
-        focusOffset = offset ? offsetInContainer + 1 : offsetInContainer;
-      }
-    }
-
-    // Split text boundary point
-    splitIfNeeded(anchorNode, anchorOffset);
-    splitIfNeeded(focusNode, focusOffset);
-
-    // Convert text node + offset to container node + offset.
-    useContainerIfPossible(anchorNode, anchorOffset);
-    useContainerIfPossible(focusNode, focusOffset);
-    return new editing.ReadOnlySelection(anchorNode, anchorOffset,
-                                         focusNode, focusOffset,
-                                         selection.direction);
-  }
-
-  /**
    * @param {!Node} current
    * @return {?Node}
    */
@@ -494,7 +420,6 @@ editing.define('nodes', (function() {
     nextAncestorOrSibling: {value: nextAncestorOrSibling},
     nextNodeSkippingChildren: {value: nextNodeSkippingChildren},
     nodeIndex: {value: nodeIndex},
-    normalizeSelection: {value: normalizeSelection},
     previousNode: {value: previousNode},
     previousNodeSkippingChildren: {value: previousNodeSkippingChildren},
     setUpEffectiveNodes: {value: setUpEffectiveNodes},

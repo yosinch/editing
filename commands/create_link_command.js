@@ -189,8 +189,7 @@ editing.defineCommand('createLink', (function() {
    */
   function createLinkForCaret(context, url) {
     console.assert(url !== '');
-    var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
+    var selection = context.normalizeSelection(context.startingSelection);
     var textNode = context.createTextNode(url);
     var refChild = selection.anchorNode.childNodes[selection.anchorOffset];
     if (refChild)
@@ -326,8 +325,7 @@ editing.defineCommand('createLink', (function() {
       pendingContents = [];
     }
 
-    var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
+    var selection = context.normalizeSelection(context.startingSelection);
     // TODO(yosin) We should not use |computeSelectedNodes()| to check
     // whether selection contains nodes or not. See createLink.EndTag.
     if (!editing.nodes.computeSelectedNodes(selection).length)

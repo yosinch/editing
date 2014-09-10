@@ -126,8 +126,8 @@ editing.defineCommand('removeFormat', (function() {
    * @return {boolean}
    */
   function removeFormatCommand(context, userInterface, value) {
-    /** @const */ var selection = editing.nodes.normalizeSelection(
-        context, context.startingSelection);
+    /** @const */ var selection = context.normalizeSelection(
+        context.startingSelection);
     /** @const */ var selectionTracker = new editing.SelectionTracker(
         context, selection);
     var effectiveNodes = prepareForStyleChange(context, selection);
