@@ -87,8 +87,7 @@ editing.define('nodes', (function() {
    * returns null and the following selected nodes.
    */
   function setUpEffectiveNodes(context, selection, predicate) {
-    if (isText(selection.anchorNode) || isText(selection.focusNode))
-      throw new Error('Selection should be normalized.');
+    console.assert(selection.isNormalized);
     var selectedNodes = computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return [null];

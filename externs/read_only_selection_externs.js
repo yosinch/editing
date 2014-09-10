@@ -47,6 +47,9 @@ editing.ReadOnlySelection.prototype.isCaret;
 editing.ReadOnlySelection.prototype.isEmpty;
 
 /** @type {boolean} */
+editing.ReadOnlySelection.prototype.isNormalized;
+
+/** @type {boolean} */
 editing.ReadOnlySelection.prototype.isRange;
 
 /** @type {!Node} */

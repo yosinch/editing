@@ -91,6 +91,17 @@ editing.define('ReadOnlySelection', (function() {
    * @this {!ReadOnlySelection}
    * @return {boolean}
    */
+  function isNormalized() {
+    if (this.isEmpty)
+      return true;
+    return !editing.nodes.isText(this.anchorNode_) &&
+           !editing.nodes.isText(this.focusNode_);
+  }
+
+  /**
+   * @this {!ReadOnlySelection}
+   * @return {boolean}
+   */
   function isRange() {
     return !this.isEmpty && !this.isCaret;
   }
@@ -130,6 +141,7 @@ editing.define('ReadOnlySelection', (function() {
     focusOffset_: {writable: true},
     isCaret: {get: isCaret},
     isEmpty: {get: isEmpty},
+    isNormalized: {get: isNormalized},
     isRange: {get: isRange},
     startContainer: {get: startContainer},
     startOffset: {get: startOffset},

@@ -116,10 +116,7 @@ editing.defineCommand('createLink', (function() {
    * Example: <a><b><i>foo</i></a> => <b><i><a>foo</a></i></b>
    */
   function normalizeSelectedStartNode(context, selection) {
-    if (editing.nodes.isText(selection.anchorNode) ||
-        editing.nodes.isText(selection.focusNode)) {
-      throw new Error('Selection should be normalized.');
-    }
+    console.assert(selection.isNormalized);
     var startContainer = selection.startContainer;
     var anchorElement = null;
     var elements = [];
