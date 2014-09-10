@@ -102,10 +102,9 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @param {!editing.ReadOnlySelection} selection
    */
   function wrapByOrderedList(context, selection) {
-    var effectiveNodes = editing.nodes.setUpEffectiveNodes(
-      context, selection, function(node) {
-        return editing.nodes.isText(node) || isPhrasingElement(node);
-      });
+    var effectiveNodes = context.setUpEffectiveNodes(selection, function(node) {
+      return editing.nodes.isText(node) || isPhrasingElement(node);
+    });
 
     // The outermost node is a container node or null. Remove this.
     if (effectiveNodes.length)
