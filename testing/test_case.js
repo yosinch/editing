@@ -189,8 +189,8 @@ function testCaseFor(testCaseName, data) {
             commandName, Boolean(data['userInferface']), data['value'] || '');
         if (actualReturnValue != sampleReturnValue) {
           testRunner.record('incompatible_return', {
-              actual: sampleReturnValue,
-              expected: actualReturnValue
+              actual: actualReturnValue,
+              current: sampleReturnValue
           });
         }
 
