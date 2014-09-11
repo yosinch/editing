@@ -70,18 +70,6 @@ testCaseFor('insertOrderedList.w3c.6r', {
   sampleId: '6r'
 });
 
-testCaseFor('insertOrderedList.w3c.7', {
-  after: '<div contenteditable>foo<br>^bar<br><ol><li>baz|</li></ol></div>',
-  before: '<div contenteditable>foo<ol><li>^bar</li></ol>baz|</div>',
-  sampleId: 7
-});
-
-testCaseFor('insertOrderedList.w3c.7r', {
-  after: '<div contenteditable>foo<br>^bar<br><ol><li>baz|</li></ol></div>',
-  before: '<div contenteditable>foo<ol><li>|bar</li></ol>baz^</div>',
-  sampleId: '7r'
-});
-
 testCaseFor('insertOrderedList.w3c.12', {
   after: '<div contenteditable><table><tbody><tr><td>foo</td><td><ol><li>^b|ar</li></ol></td><td>baz</td></tr></tbody></table></div>',
   before: '<div contenteditable><table><tbody><tr><td>foo</td><td>b^a|r</td><td>baz</td></tr></tbody></table></div>',
@@ -272,30 +260,6 @@ testCaseFor('insertOrderedList.w3c.27r', {
   after: '<div contenteditable><p><ol><li>^foo</li><li>bar|</li></ol></p><blockquote><p>baz</p></blockquote></div>',
   before: '<div contenteditable><p>|foo</p><blockquote><p>bar^</p><p>baz</p></blockquote></div>',
   sampleId: '27r'
-});
-
-testCaseFor('insertOrderedList.w3c.28', {
-  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
-  before: '<div contenteditable><ol><li>foo</li><li>^bar|</li><li>baz</li></ol></div>',
-  sampleId: 28
-});
-
-testCaseFor('insertOrderedList.w3c.28r', {
-  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
-  before: '<div contenteditable><ol><li>foo</li><li>|bar^</li><li>baz</li></ol></div>',
-  sampleId: '28r'
-});
-
-testCaseFor('insertOrderedList.w3c.29', {
-  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
-  before: '<div contenteditable><ol><li>foo</li><li>^bar|</li><li>baz</li></ol></div>',
-  sampleId: 29
-});
-
-testCaseFor('insertOrderedList.w3c.29r', {
-  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
-  before: '<div contenteditable><ol><li>foo</li><li>|bar^</li><li>baz</li></ol></div>',
-  sampleId: '29r'
 });
 
 testCaseFor('insertOrderedList.w3c.30', {

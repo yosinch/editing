@@ -25,22 +25,53 @@ editing.defineCommand('InsertOrderedList', (function() {
   }
 
   /**
+   * @param {!Node} node
+   * @return boolean
+   */
+  function isListMergeableContainer(node) {
+    // TODO(hajimehoshi): Add div, main, and so on.
+    var name = node.nodeName;
+    return name === 'P' || name === 'BLOCKQUOTE';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return boolean
+   */
+  function isContainer(node) {
+    var name = node.nodeName;
+    return name === 'TR' || name === 'TD' || name === 'TH' ||
+      isListMergeableContainer(node);
+  }
+
+  /**
    * @param {!NodeList|!Array.<!Node>} nodes
    * @return {!Array.<!Node>}
    */
-  function getSuccessiveSiblings(nodes) {
+  function getTopNodes(nodes) {
+
+    function getChildTopNodes(node) {
+      if (!isContainer(node))
+        return [node];
+      return [].reduce.call(node.childNodes, function(nodes, node) {
+        return nodes.concat(getChildTopNodes(node));
+      }, []);
+    }
+
     if (!nodes.length)
       return [];
-    var result = [];
-    for (var node = nodes[0]; node; node = node.nextSibling) {
-      if (![].some.call(nodes, function(currentNode) {
-        return currentNode === node
-      })) {
-        break;
+    var topNodes = [].filter.call(nodes, function(node) {
+      for (var ancestor = node.parentNode; ancestor;
+           ancestor = ancestor.parentNode) {
+        if ([].indexOf.call(nodes, ancestor) !== -1)
+          return false;
       }
-      result.push(node);
-    }
-    return result;
+      return true;
+    })
+    topNodes = [].reduce.call(topNodes, function(nodes, node) {
+      return nodes.concat(getChildTopNodes(node));
+    }, []);
+    return topNodes;
   }
 
   /**
@@ -59,18 +90,20 @@ editing.defineCommand('InsertOrderedList', (function() {
   }
 
   /**
-   * @param {!editing.Context} context
+   * @param {!editing.EditingContext} context
    * @param {!Node} node
    * @param {string} name
    * @return {!Node}
    */
   function replaceNodeName(context, node, name) {
+    console.assert(node.parentNode);
     var newNode = context.createElement(name);
     [].forEach.call(node.childNodes, function(childNode) {
       context.appendChild(newNode, childNode);
     });
     // TODO(hajimehoshi): Copy attributes
-    context.replaceChild(node.parentNode, newNode, node);
+    var parent = /** @type {!Node} */(node.parentNode);
+    context.replaceChild(parent, newNode, node);
     return newNode;
   }
 
@@ -95,6 +128,72 @@ editing.defineCommand('InsertOrderedList', (function() {
       currentNode = currentNode.parentNode;
     }
     return false;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Array.<!Node>} nodes
+   * @return {Node} list
+   */
+  function listify(context, nodes) {
+    if (!nodes.length)
+      return null;
+
+    var list = context.createElement('ol');
+    var listItem = context.createElement('li');
+
+    context.appendChild(list, listItem);
+    var firstNode = nodes[0];
+    var parentNode = /** @type {!Node} */(firstNode.parentNode);
+    console.assert(parentNode);
+    context.replaceChild(parentNode, list, firstNode);
+
+    nodes.forEach(function(node) {
+      context.appendChild(listItem, node);
+    });
+
+    return list;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Node} node
+   */
+  function unlistify(context, node) {
+    var listItemNode = node;
+    while (listItemNode && listItemNode.nodeName !== 'LI')
+      listItemNode = listItemNode.parentNode;
+    if (!listItemNode)
+      return;
+
+    console.assert(listItemNode.parentNode.nodeName === 'OL');
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Array.<!Node>} listNodes
+   * @return {Node}
+   */
+  function mergeLists(context, listNodes) {
+    if (!listNodes.length)
+      return null;
+    if (listNodes.length === 1)
+      return listNodes[0];
+
+    var firstList = listNodes[0];
+    var parent = firstList.parentNode;
+    listNodes.slice(1).forEach(function(listNode) {
+      console.assert(listNode.nodeName === 'OL');
+      [].forEach.call(listNode.childNodes, function(listItemNode) {
+        console.assert(listItemNode.nodeName === 'LI' ||
+                       listItemNode.nodeName === 'DD' ||
+                       listItemNode.nodeName === 'DT');
+        context.appendChild(firstList, listItemNode);
+      });
+      context.removeChild(listNode.parentNode, listNode);
+    });
+
+    return firstList;
   }
 
   /**
@@ -155,114 +254,137 @@ editing.defineCommand('InsertOrderedList', (function() {
       effectiveNodes.push(nextSibling);
     }
 
-    // Determine where the new list should be located if needed.
-    // TODO(hajimehoshi): Better name
-    var insertListAfter = null;
-    var startElement = effectiveNodes[0];
-    if (!isInList(startElement))
-      insertListAfter = startElement.previousSibling;
-
-    var successiveSiblings = getSuccessiveSiblings(effectiveNodes);
-    var container = effectiveNodes[0].parentNode;
-
-    // Construct the list.
-    var existingLists = successiveSiblings.filter(function(node) {
-      if (!editing.nodes.isElement(node))
-        return false;
-      return node.nodeName === 'OL' || node.nodeName === 'UL';
-    });
-
-    if (existingLists.length) {
-      // TODO(hajimehoshi): Consider the case when two ore more lists exist.
-      var list = existingLists[0];
-      var originalList = list;
-      var listIndex = editing.nodes.nodeIndex(list);
-
-      if (successiveSiblings[0] === list && list.nodeName === 'OL') {
-        // If the first item is the list, clear the list format.
-        var br = context.createElement('br');
-        context.insertBefore(list.parentNode, br, list);
-        [].forEach.call(list.childNodes, function(listItemNode) {
-          [].forEach.call(listItemNode.childNodes, function(node) {
-            context.insertBefore(list.parentNode, node, list);
-          });
-          var br = context.createElement('br');
-          context.insertBefore(list.parentNode, br, list);
-          insertListAfter = br;
-        });
-        while (list.firstChild)
-          context.removeChild(list, list.firstChild);
-      } else if (list.nodeName === 'UL') {
-        list = replaceNodeName(context, list, 'OL');
+    // Devide the top nodes into groups: the successive text nodes should be in
+    // the same group. Otherwise, the node is in a single group.
+    var topNodes = getTopNodes(effectiveNodes);
+    var topNodeGroups = [];
+    topNodes.forEach(function(node) {
+      if (!topNodeGroups.length) {
+        topNodeGroups.push([node]);
+        return true;
       }
-      context.removeChild(container, list);
-
-      var originalListFound = false;
-      successiveSiblings.forEach(function(node, i) {
-        if (node === originalList) {
-          originalListFound = true;
+      var lastGroup =
+        topNodeGroups[topNodeGroups.length - 1];
+      if (editing.nodes.isText(node)) {
+        var lastNode = lastGroup[lastGroup.length - 1];
+        if (editing.nodes.isText(lastNode) &&
+            lastNode === node.previousSibling) {
+          lastGroup.push(node);
           return true;
         }
-        var listItem = context.createElement('li');
-        context.appendChild(listItem, node);
-        if (!originalListFound)
-          context.insertBefore(list, listItem, list.childNodes[i]);
-        else
-          context.appendChild(list, listItem);
-      });
-    } else {
-      var list = context.createElement('ol');
-      if (selection.startOffset) {
-        insertListAfter =
-          selection.startContainer.childNodes[selection.startOffset - 1];
-        while (insertListAfter !== null &&
-               editing.nodes.isText(insertListAfter)) {
-          insertListAfter = insertListAfter.previousSibling;
-        }
+      }
+      topNodeGroups.push([node]);
+    });
+
+    var topNodesAfterListifying = [];
+    topNodeGroups.forEach(function(nodes) {
+      if (nodes.length === 1 && isBreakElement(nodes[0])) {
+        context.removeChild(nodes[0].parentNode, nodes[0]);
+        return true;
+      }
+      if (nodes.length === 1 && isList(nodes[0])) {
+        topNodesAfterListifying.push(nodes[0]);
+        return true;
       }
 
-      var nodeGroups = splitNodes(successiveSiblings, function(node) {
-        if (editing.nodes.isText(node))
-          return false;
-        return !isPhrasingElement(node) || isBreakElement(node);
-      })
+      // w3c.24, w3c.25: <dd> in a list is obviously illegal but Chrome offers
+      // this result.
+      if (nodes.length === 1 &&
+          (nodes[0].nodeName === 'DD' || nodes[0].nodeName === 'DT')) {
+        var dd = nodes[0];
+        var list = context.createElement('ol');
+        context.replaceChild(dd.parentNode, list, dd);
+        context.appendChild(list, dd);
+        topNodesAfterListifying.push(list);
+        return;
+      }
 
-      nodeGroups.forEach(function(nodes) {
-        var listItem = context.createElement('li');
-        nodes.forEach(function(node) {
-          if (isBreakElement(node)) {
-            context.removeChild(node.parentNode, node);
-            return true;
+      var newNode = listify(context, nodes);
+      console.assert(newNode);
+      topNodesAfterListifying.push(newNode);
+    });
+
+    topNodesAfterListifying.forEach(function(node) {
+      // Already merged with its siblings.
+      if (!node.parentNode)
+        return true;
+
+      if (node.nodeName !== 'OL')
+        return true;
+
+      var listsToBeMerged = [node];
+
+      // Append the followers.
+      var previousSiblingNode = node.previousSibling;
+      while (previousSiblingNode && previousSiblingNode.nodeName === 'OL') {
+        listsToBeMerged.unshift(previousSiblingNode);
+        previousSiblingNode = previousSiblingNode.previousSibling;
+      }
+
+      // Append the followings.
+      var nextSiblingNode = node.nextSibling;
+      while (nextSiblingNode && nextSiblingNode.nodeName === 'OL') {
+        listsToBeMerged.push(nextSiblingNode);
+        nextSiblingNode = nextSiblingNode.nextSibling;
+      }
+
+      var newList = mergeLists(context, listsToBeMerged);
+      console.assert(newList);
+
+      // Remove <br> just after the new list.
+      if (newList.nextSibling && isBreakElement(newList.nextSibling)) {
+        var breakElement = newList.nextSibling;
+        context.removeChild(breakElement.parentNode, breakElement);
+      }
+
+      // In definition list, the new list can be a sibling to other items.
+      if (newList.parentElement.nodeName === 'DD' ||
+          newList.parentElement.nodeName === 'DT') {
+        var definitionListItem = newList.parentElement;
+        var parentNode = /** @type {!Node} */(definitionListItem.parentNode);
+        console.assert(parentNode);
+        context.replaceChild(parentNode, newList, definitionListItem);
+      }
+    });
+
+    // Merge lists beyond <p> and so on.
+    var lists = topNodesAfterListifying.filter(function(node) {
+      return !!node.parentNode && node.nodeName === 'OL';
+    });
+    lists.forEach(function(node) {
+      // Already merged with other lists.
+      if (!node.parentNode)
+        return true;
+
+      if (!isListMergeableContainer(node.parentNode))
+        return true;
+
+      var listsToBeMerged = [node];
+
+      var nextSiblingNode = node.parentNode.nextSibling;
+      while (nextSiblingNode) {
+        var stopped = false;
+        // TODO(hajimehoshi): Not enough in case of nesting <blockquote>.
+        [].forEach.call(nextSiblingNode.childNodes, function(node) {
+          if (lists.indexOf(node) === -1) {
+            stopped = false;
+            return false;
           }
-          context.appendChild(listItem, node);
+          listsToBeMerged.push(node);
         });
-        context.appendChild(list, listItem);
+        if (stopped)
+          break;
+        nextSiblingNode = nextSiblingNode.nextSibling;
+      }
+
+      var listParents = listsToBeMerged.map(function(node) {
+        return node.parentNode;
       });
-    }
-
-    // Insert the list.
-    if (container.childNodes.length) {
-      if (insertListAfter)
-        context.insertAfter(container, list, insertListAfter);
-      else
-        context.insertBefore(container, list, container.firstChild);
-    } else {
-      context.appendChild(container, list);
-    }
-
-    // Remove <br> just after the new list.
-    if (list.nextSibling && isBreakElement(list.nextSibling)) {
-      var breakElement = list.nextSibling;
-      context.removeChild(breakElement.parentNode, breakElement);
-    }
-
-    // In definition list, the new list can be a sibling to other items.
-    if (list.parentElement.nodeName === 'DD' ||
-        list.parentElement.nodeName === 'DT') {
-      var definitionListItem = list.parentElement;
-      context.replaceChild(
-        definitionListItem.parentNode, list,definitionListItem);
-    }
+      mergeLists(context, listsToBeMerged);
+      listParents.slice(1).forEach(function(node) {
+        context.removeChild(node.parentNode, node);
+      });
+    });
   }
 
   /**

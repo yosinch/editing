@@ -7,6 +7,42 @@
 
 'use strict';
 
+testCaseFor('insertOrderedList.w3c.7', {
+  after: '<div contenteditable>foo<br>^bar<br><ol><li>baz|</li></ol></div>',
+  before: '<div contenteditable>foo<ol><li>^bar</li></ol>baz|</div>',
+  sampleId: 7
+});
+
+testCaseFor('insertOrderedList.w3c.7r', {
+  after: '<div contenteditable>foo<br>^bar<br><ol><li>baz|</li></ol></div>',
+  before: '<div contenteditable>foo<ol><li>|bar</li></ol>baz^</div>',
+  sampleId: '7r'
+});
+
+testCaseFor('insertOrderedList.w3c.28', {
+  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
+  before: '<div contenteditable><ol><li>foo</li><li>^bar|</li><li>baz</li></ol></div>',
+  sampleId: 28
+});
+
+testCaseFor('insertOrderedList.w3c.28r', {
+  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
+  before: '<div contenteditable><ol><li>foo</li><li>|bar^</li><li>baz</li></ol></div>',
+  sampleId: '28r'
+});
+
+testCaseFor('insertOrderedList.w3c.29', {
+  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
+  before: '<div contenteditable><ol><li>foo</li><li>^bar|</li><li>baz</li></ol></div>',
+  sampleId: 29
+});
+
+testCaseFor('insertOrderedList.w3c.29r', {
+  after: '<div contenteditable><ol><li>foo</li></ol>^bar|<br><ol><li>baz</li></ol></div>',
+  before: '<div contenteditable><ol><li>foo</li><li>|bar^</li><li>baz</li></ol></div>',
+  sampleId: '29r'
+});
+
 testCaseFor('insertOrderedList.w3c.33', {
   after: '<div contenteditable><ol><li>^foo|</li></ol></div>',
   before: '<div contenteditable><ol><ol><li>^foo|</li></ol></ol></div>',
