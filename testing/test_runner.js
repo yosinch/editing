@@ -461,7 +461,7 @@ function run(testName) {
     Object.keys(result).filter(function(key) {
       return !IGNORE_KEYS.has(key);
     }).forEach(function(key) {
-      var value = result[key]
+      var value = String(result[key])
         .replace(/<span class="[^\u0022]+">/g, '')
         .replace(new RegExp('</span>', 'g'), '')
         .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
