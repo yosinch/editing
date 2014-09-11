@@ -142,8 +142,9 @@ editing.EditingContext.prototype.splitText = function(node, offset) {};
 
 /**
   * @this {!editing.EditingContext}
+  * @param {!Node} treeNode
   * @param {!Node} refNode
-  * @return {!Node}
+  * @return {!Element}
  */
 editing.EditingContext.prototype.splitTree = function(treeNode, refNode) {};
 
