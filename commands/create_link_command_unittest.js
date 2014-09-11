@@ -21,6 +21,21 @@ testCase('createLink.NoUrl', function() {
   sample.finish();
 });
 
+// not editable
+testCaseFor('createLink.not_editable.1', {
+  after:'ab|cd',
+  before: 'ab|cd',
+  returnValue: false,
+  value: 'URL'
+});
+
+testCaseFor('createLink.not_editable.2', {
+  after:'a^b|cd',
+  before: 'a^b|cd',
+  returnValue: false,
+  value: 'URL'
+});
+
 // Simple createLink
 // <b>foo|bar</b> => <b>foo^<a>url</a>|bar</b>
 testCaseFor('createLink.CaretAtFirst', {
@@ -178,8 +193,8 @@ testCaseFor('createLink.Range.42.3', {
 
 // Taken from "LayoutTests/editing/execCommand/createLink.html"
 testCaseFor('createLink.createLink.html_starthere', {
-  after: '<div contenteditable="true" id="test3">This line starts out with <a href="http://www.apple.com"><b>a</b></a><a href="http://www.google.com"><span id="starthere">^ link</span> in the middle. The second half of this paragraph, starting|</a> after the bold "a" should end up being a link to google.com.</div>',
-  before: '<div contenteditable="true" id="test3">This line starts out with <a href="http://www.apple.com"><b>a</b><span id="starthere">^ link</span></a> in the middle. The second half of this paragraph, starting| after the bold "a" should end up being a link to google.com.</div>',
+  after: '<div contenteditable="true" id="test3">012<a href="http://www.apple.com"><b>345</b></a><a href="http://www.google.com"><span id="starthere">^ 678</span> 9A|</a>B</div>',
+  before: '<div contenteditable="true" id="test3">012<a href="http://www.apple.com"><b>345</b><span id="starthere">^ 678</span></a> 9A|B</div>',
   value: 'http://www.google.com'
 });
 
@@ -190,5 +205,36 @@ testCaseFor('createLink.merge_into_previous', {
   value: 'URL'
 });
 
-// Create link with range in interactive
-// <a><b>a^b|c</b> => <a><b>a</b></a><a><b>b</b></a><a><b>c</b></a>
+// LayoutTests/editing/execCommand/unlink.html
+testCaseFor('createLink.layout_tests_editing_exec_command_unlink', {
+  after: '<p contenteditable><span id="test4end"><a href="URL">^3|</a></span></p>',
+  before: '<p contenteditable><span id="test4end">^3|</span></p>',
+  value: 'URL'
+});
+
+// Chrome doesn't replace A elements without attributes.
+testCaseFor('createLink.abc.1', {
+  after: '<p contenteditable><b><a>1</a><a href="URL">^2|</a><a>3</a></b></p>',
+  before: '<p contenteditable><a><b>1^2|3</b></a></p>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.abc.2', {
+  after: '<p contenteditable><b><a href="URL">^123|</a></b></p>',
+  before: '<p contenteditable><a><b>^123|</b></a></p>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.abc.3', {
+  after: '<p contenteditable><a href="URL">^123456789|</a></p>',
+  before: '<p contenteditable>^123<a>456</a>789|</p>',
+  value: 'URL'
+});
+
+// content ends with newline
+// http://crbug.com/413156 Can't extend selection beyond whitespace
+testCaseFor('createLink.newline.1', {
+  after: '<div contenteditable><a href="URL">^123|</a></div>',
+  before: '<div contenteditable>^123\n|</div>',
+  value: 'URL'
+});

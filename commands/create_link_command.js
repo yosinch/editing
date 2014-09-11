@@ -6,6 +6,19 @@
 
 editing.defineCommand('createLink', (function() {
   /**
+   * @param {?Node} node
+   * @param {string} url
+   * @return {boolean}
+   */
+  function canMergeAnchor(node, url){
+    console.assert(url !== '');
+    if (!node || node.nodeName !== 'A')
+      return false;
+    var element = /** @type {!Element} */(node);
+    return getAnchorUrl(element) === url && element.attributes.length === 1;
+  }
+
+  /**
    * @param {?Node} node1
    * @param {?Node} node2
    * @return {boolean}
@@ -23,11 +36,14 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {!Element} element
+   * @param {!Node} node
    * @return {boolean}
    * Returns true if all child element is identical phrasing element.
    */
-  function canUnwrapContents(element) {
+  function canUnwrapContents(node) {
+    if (!editing.nodes.isElement(node))
+      return false;
+    var element = /** @type {!Element} */(node);
     var firstChild = element.firstChild;
     if (!firstChild)
       return false;
@@ -35,9 +51,17 @@ editing.defineCommand('createLink', (function() {
       return editing.nodes.isElement(child) &&
              editing.nodes.isPhrasing(child) &&
              child.nodeName === firstChild.nodeName &&
-             !child.attributes.length &&
              !!child.firstChild;
     });
+  }
+
+  /**
+   * @param {!Element} anchorElement
+   * @return {?string}
+   */
+  function getAnchorUrl(anchorElement) {
+    console.assert(anchorElement.nodeName === 'A');
+    return anchorElement.getAttribute('href');
   }
 
   /**
@@ -49,7 +73,7 @@ editing.defineCommand('createLink', (function() {
     if (editing.nodes.isWhitespaceNode(anchorPhraseNode))
       return null;
     var anchorElement = context.createElement('a');
-    context.setAttribute(anchorElement, 'href', url);
+    setAnchorUrl(context, anchorElement, url);
     var parentNode = anchorPhraseNode.parentNode;
     if (!parentNode) {
       throw new Error('anchorPhraseNode ' + anchorPhraseNode +
@@ -66,6 +90,14 @@ editing.defineCommand('createLink', (function() {
    */
   function isEffectiveNode(node) {
     return editing.nodes.isPhrasing(node);
+  }
+
+  /**
+   * @param {?Node} node
+   * @return {boolean}
+   */
+  function isAnchorElement(node) {
+    return Boolean(node) && node.nodeName === 'A';
   }
 
   /**
@@ -123,7 +155,7 @@ editing.defineCommand('createLink', (function() {
     for (var runner = startContainer;
          runner && runner.parentNode && editing.nodes.isPhrasing(runner);
          runner = runner.parentNode) {
-      if (runner.nodeName === 'A') {
+      if (isAnchorElement(runner)) {
         anchorElement = runner;
         break;
       }
@@ -165,18 +197,35 @@ editing.defineCommand('createLink', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
+   * @param {string} url
+   */
+  function setAnchorUrl(context, anchorElement, url) {
+    console.assert(anchorElement.nodeName === 'A');
+    context.setAttribute(anchorElement, 'href', url);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} anchorElement
+   */
+  function unwrapAnchorContent(context, anchorElement) {
+    var firstContent = /** @type {!Element} */(anchorElement.firstChild);
+    console.assert(editing.nodes.isElement(firstContent));
+    context.insertBefore(anchorElement.parentNode, firstContent,
+                         anchorElement);
+    while (firstContent.firstChild) {
+      context.appendChild(anchorElement, firstContent.firstChild);
+    }
+    context.appendChild(firstContent, anchorElement);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} anchorElement
    */
   function unwrapAnchorContents(context, anchorElement) {
     while (canUnwrapContents(anchorElement)) {
-      var wrapper = context.createElement(anchorElement.firstChild.nodeName);
-      context.insertBefore(anchorElement.parentNode, wrapper, anchorElement);
-      context.appendChild(wrapper, anchorElement);
-      [].map.call(anchorElement.childNodes, function(child) {
-        return child;
-      }).forEach(function(child) {
-        var childElement = /** @type {!Element} */(child);
-        moveChildren(context, anchorElement, childElement, null, null);
-      });
+      unwrapAnchorContent(context, anchorElement);
     }
   }
 
@@ -201,7 +250,7 @@ editing.defineCommand('createLink', (function() {
       selection.anchorNode, selection.anchorOffset + 1,
       editing.SelectionDirection.ANCHOR_IS_START);
     var anchorElement = context.createElement('A');
-    context.setAttribute(anchorElement, 'href', url);
+    setAnchorUrl(context, anchorElement, url);
     context.insertBefore(textNode.parentNode, anchorElement, textNode);
     context.appendChild(anchorElement, textNode);
     context.setEndingSelection(selection);
@@ -216,43 +265,6 @@ editing.defineCommand('createLink', (function() {
   function createLinkForRange(context, url) {
     console.assert(url !== '');
 
-    /**
-     * @param {!Node} startNode
-     * @param {!Node} endNode
-     */
-    function adjustEffectiveStartNode(context, startNode, endNode) {
-      if (!editing.nodes.isElement(startNode))
-        return;
-      var startElement = /** @type {!Element} */(startNode);
-      if (startElement.nodeName !== 'A')
-        return;
-
-      unwrapAnchorContents(context, startElement);
-      if (startElement.getAttribute('href') === url)
-        return;
-
-      if (endNode.parentNode !== startElement || !endNode.nextSibling)
-        return;
-
-      // Split staring A element containing end node.
-      // See createLink.Range.AnchorText.2
-      context.splitNode(startElement, endNode.nextSibling);
-
-      // TODO(yosin) We should remove this code fragment once |splitNode|
-      // doesn't copy "name" attribute. See http://crbug.com/411785
-      context.removeAttribute(startElement, 'name');
-    }
-
-    /**
-     * @param {?Node} node
-     * @return {boolean}
-     */
-    function canMergeAnchor(node){
-      return Boolean(node) && node.nodeName === 'A' &&
-             node.getAttribute('href') === url &&
-             node.attributes.length === 1;
-    }
-
     var anchorElement = null;
     /**
      * @param {!Node} node
@@ -265,14 +277,14 @@ editing.defineCommand('createLink', (function() {
           return;
         }
         var nextSibling = node.nextSibling;
-        if (canMergeAnchor(nextSibling)) {
+        if (canMergeAnchor(nextSibling, url)) {
           // See w3c.26, w3c.30
           anchorElement = nextSibling;
           context.insertBefore(anchorElement, node, anchorElement.firstChild);
           return;
         }
         var previousSibling = node.previousSibling;
-        if (canMergeAnchor(previousSibling)) {
+        if (canMergeAnchor(previousSibling, url)) {
           // See w3c.27
           anchorElement = /** @type {!Element} */(previousSibling);
           context.appendChild(anchorElement, node);
@@ -281,14 +293,17 @@ editing.defineCommand('createLink', (function() {
         anchorElement = insertNewAnchorElement(context, url, node);
         return;
       }
+
       if (editing.nodes.isDescendantOf(node, anchorElement)) {
         // See w3c.44
         return;
       }
+
       if (node.parentNode === anchorElement.parentNode) {
         context.appendChild(anchorElement, node);
         return;
       }
+
       endAnchorElement();
       wrapByAnchor(node);
     }
@@ -331,7 +346,7 @@ editing.defineCommand('createLink', (function() {
     if (!editing.nodes.computeSelectedNodes(selection).length)
       return createLinkForCaret(context, url);
 
-    // TODO(yosin) We should reorder content elements for caret, once Chrome
+    // TODO(yosin) We should reorder content elements for caret, since Chrome
     // does so.
     selection = normalizeSelectedStartNode(context, selection);
 
@@ -347,12 +362,10 @@ editing.defineCommand('createLink', (function() {
 
     var startNode = effectiveNodes[0];
     var endNode = lastOf(effectiveNodes);
-    adjustEffectiveStartNode(context, startNode, endNode);
-
     {
       var previous = startNode.previousSibling;
-      if (previous && previous.nodeName === 'A') {
-        if (canMergeAnchor(previous)) {
+      if (isAnchorElement(previous)) {
+        if (canMergeAnchor(previous, url)) {
           // Merge into previous A, see w3c.20
           anchorElement = previous;
         }
@@ -362,8 +375,10 @@ editing.defineCommand('createLink', (function() {
       }
     }
 
+    /** @type {?Element} */ var lastAnchorElement = null;
+    /** @type {?string} */ var lastUrl = null;
     effectiveNodes.forEach(function(currentNode) {
-      if (!currentNode.parentNode || currentNode === anchorElement)
+      if (currentNode === anchorElement)
         return;
 
       var lastPendingContainer = lastOf(pendingContainers);
@@ -379,25 +394,18 @@ editing.defineCommand('createLink', (function() {
       }
 
       var currentElement = /** @type {!Element} */(currentNode);
-
-      if (currentElement.nodeName === 'A') {
-        if (currentElement.getAttribute('url') !== url &&
-            editing.nodes.isDescendantOf(endNode, currentElement) &&
-            editing.nodes.lastWithIn(currentElement) !== endNode) {
-          context.splitTree(currentElement, editing.nodes.nextNode(endNode));
-          // TODO(yosin) We should remove this code fragment once |splitNode|
-          // doesn't copy "name" attribute. See http://crbug.com/411785
-          context.removeAttribute(currentElement, 'name');
-        }
+      if (isAnchorElement(currentElement)) {
+        lastAnchorElement = /** @type {!Element} */(currentElement);
+        lastUrl = getAnchorUrl(currentElement);
         if (!anchorElement) {
           processPendingContents();
           anchorElement = currentElement;
-          context.setAttribute(anchorElement, 'href', url);
+          setAnchorUrl(context, anchorElement, url);
           return;
         }
-        console.assert(anchorElement.getAttribute('href') === url);
-        context.setAttribute(currentElement, 'href', url);
-        if (canMergeAnchor(currentElement)) {
+        console.assert(getAnchorUrl(anchorElement) === url);
+        setAnchorUrl(context, currentElement, url);
+        if (canMergeAnchor(currentElement, url)) {
           // Unwrap A element.
           moveChildren(context, currentElement.parentNode, currentElement,
                        endNode.nextSibling, selectionTracker);
@@ -426,9 +434,9 @@ editing.defineCommand('createLink', (function() {
       wrapByAnchor(currentElement);
     });
 
-    // Merge nodes after selection. See w3c.20
     if (endNode.parentNode === anchorElement &&
-        canMergeAnchor(anchorElement.nextSibling)) {
+        canMergeAnchor(anchorElement.nextSibling, url)) {
+      // Merge nodes after selection. See w3c.20
       moveChildren(context, anchorElement, anchorElement.nextSibling, null,
                    selectionTracker);
     }
@@ -437,6 +445,28 @@ editing.defineCommand('createLink', (function() {
     // Example: foo<b>^bar<i>baz quux</i></b>|mox
     // where the last effective node is "baz quux".
     processPendingContents();
+
+    // In case of we select anchor element partially, we need to split it,
+    // e.g. <a>^foo|bar</a>
+    if (lastAnchorElement && lastUrl !== url) {
+      var element = /** @type {!Element} */(lastAnchorElement);
+      var nextNode = editing.nodes.nextNode(endNode);
+      if (nextNode &&
+          editing.nodes.isDescendantOf(nextNode, element)) {
+        var newAnchorElement = context.splitTree(element, nextNode);
+        // TODO(yosin) We should remove this code fragment once |splitNode|
+        // doesn't copy "name" attribute. See http://crbug.com/411785
+        context.removeAttribute(element, 'name');
+        if (lastUrl) {
+          setAnchorUrl(context, newAnchorElement,
+                       /** @type {string} */(lastUrl));
+        } else {
+          context.removeAttribute(newAnchorElement, 'href');
+        }
+      }
+      unwrapAnchorContents(context, element);
+    }
+
     selectionTracker.finishWithStartAsAnchor();
     return true;
   }
@@ -448,12 +478,13 @@ editing.defineCommand('createLink', (function() {
    * @return {boolean}
    */
   function createLinkCommand(context, userInterface, url) {
-    if (url === '' || context.startingSelection.isEmpty) {
-      context.setEndingSelection(context.startingSelection);
+    var selection = context.startingSelection;
+    if (url === '' || !selection.isEditable) {
+      context.setEndingSelection(selection);
       return false;
     }
 
-    if (context.startingSelection.isCaret)
+    if (selection.isCaret)
       return createLinkForCaret(context,url);
 
     return createLinkForRange(context, url);
