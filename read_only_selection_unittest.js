@@ -19,6 +19,29 @@ testCaseWithSample('ReadOnlySelection.directionFocusIsStart',
     return selection.direction; });
 });
 
+///
+// isEditable
+//
+testCaseWithSample('ReadOnlySelection.isEditable.1',
+  '<p contenteditable>|abcd</p>', function(context, selection) {
+  expectTrue(function() { return selection.isEditable; });
+});
+
+testCaseWithSample('ReadOnlySelection.isEditable.2',
+  '<p contenteditable>|abcd^</p>', function(context, selection) {
+  expectTrue(function() { return selection.isEditable; });
+});
+
+testCaseWithSample('ReadOnlySelection.isEditable.3',
+  '|abcd', function(context, selection) {
+  expectFalse(function() { return selection.isEditable; });
+});
+
+testCaseWithSample('ReadOnlySelection.isEditable.4',
+  '^abcd|', function(context, selection) {
+  expectFalse(function() { return selection.isEditable; });
+});
+
 //
 // isNormalized
 //

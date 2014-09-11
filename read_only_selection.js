@@ -83,6 +83,21 @@ editing.define('ReadOnlySelection', (function() {
    * @this {!ReadOnlySelection}
    * @return {boolean}
    */
+  function isEditable() {
+    if (!this.anchorNode_)
+      return false;
+    if (editing.nodes.isElement(this.anchorNode_))
+      return editing.nodes.isContentEditable(this.anchorNode_);
+    var parentNode = this.anchorNode_.parentNode;
+    if (!parentNode)
+      return false;
+    return editing.nodes.isContentEditable(parentNode);
+  }
+
+  /**
+   * @this {!ReadOnlySelection}
+   * @return {boolean}
+   */
   function isEmpty() {
     return !this.anchorNode_;
   }
@@ -140,6 +155,7 @@ editing.define('ReadOnlySelection', (function() {
     focusOffset: {get: function () { return this.focusOffset_; }},
     focusOffset_: {writable: true},
     isCaret: {get: isCaret},
+    isEditable: {get: isEditable},
     isEmpty: {get: isEmpty},
     isNormalized: {get: isNormalized},
     isRange: {get: isRange},
