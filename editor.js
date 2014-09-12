@@ -189,7 +189,17 @@ editing.define('Editor', (function() {
       return;
     }
     domSelection.collapse(selection.anchorNode, selection.anchorOffset);
-    domSelection.extend(selection.focusNode, selection.focusOffset);
+
+    // Chrome throws an IndexError for Selection.extend() when specifying to
+    // middle or beyond trailing whitespaces, http://crbug.com/413156
+    // Following code is work around of that.
+    if (!editing.nodes.isText(selection.focusNode)) {
+      domSelection.extend(selection.focusNode, selection.focusOffset);
+      return;
+    }
+    var trimmed = selection.focusNode.nodeValue.trimRight();
+    domSelection.extend(selection.focusNode,
+                        Math.min(selection.focusOffset, trimmed.length));
   }
 
   /**
