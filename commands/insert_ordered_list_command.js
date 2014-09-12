@@ -174,10 +174,7 @@ editing.defineCommand('InsertOrderedList', (function() {
     var listItemNode = node;
     while (listItemNode && !isListItem(listItemNode))
       listItemNode = listItemNode.parentNode;
-    if (!listItemNode)
-      return;
-
-    console.assert(listItemNode.parentNode.nodeName === 'OL');
+    console.assert(listItemNode || listItemNode.parentNode.nodeName === 'OL');
   }
 
   /**
