@@ -5,9 +5,9 @@
 'use strict';
 
 //
-// setDomSeleciton
+// setDomSelection
 //
-testCaseWithSample('editor.setDomSeleciton.caret.1',
+testCaseWithSample('editor.setDomSelection.caret.1',
   '<p contenteditable>|0123</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -19,7 +19,7 @@ testCaseWithSample('editor.setDomSeleciton.caret.1',
     expectEq(0, function() { return domSelection.focusOffset; });
   });
 
-testCaseWithSample('editor.setDomSeleciton.caret.2',
+testCaseWithSample('editor.setDomSelection.caret.2',
   '<p contenteditable>0|123</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -31,7 +31,7 @@ testCaseWithSample('editor.setDomSeleciton.caret.2',
     expectEq(1, function() { return domSelection.focusOffset; });
   });
 
-testCaseWithSample('editor.setDomSeleciton.caret.3',
+testCaseWithSample('editor.setDomSelection.caret.3',
   '<p contenteditable>0123|</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -43,7 +43,7 @@ testCaseWithSample('editor.setDomSeleciton.caret.3',
     expectEq(4, function() { return domSelection.focusOffset; });
   });
 
-testCaseWithSample('editor.setDomSeleciton.caret.4',
+testCaseWithSample('editor.setDomSelection.caret.4',
   '<p contenteditable>| 0123</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -55,7 +55,7 @@ testCaseWithSample('editor.setDomSeleciton.caret.4',
     expectEq(1, function() { return domSelection.focusOffset; });
   });
 
-testCaseWithSample('editor.setDomSeleciton.caret.5',
+testCaseWithSample('editor.setDomSelection.caret.5',
   '<p contenteditable>0123 |</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -67,7 +67,7 @@ testCaseWithSample('editor.setDomSeleciton.caret.5',
     expectEq(4, function() { return domSelection.focusOffset; });
   });
 
-testCaseWithSample('editor.setDomSeleciton.range.1',
+testCaseWithSample('editor.setDomSelection.range.1',
   '<p contenteditable>^0123|</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -79,7 +79,7 @@ testCaseWithSample('editor.setDomSeleciton.range.1',
     expectEq(4, function() { return domSelection.focusOffset; });
   });
 
-testCaseWithSample('editor.setDomSeleciton.range.2',
+testCaseWithSample('editor.setDomSelection.range.2',
   '<p contenteditable>0^12|3</p>',
   function(context, selection) {
     var editor = context.editor;
@@ -93,7 +93,7 @@ testCaseWithSample('editor.setDomSeleciton.range.2',
 
 // Chrome does canonicalization to move boundary points to skip leading and
 // trailing spaces.
-testCaseWithSample('editor.setDomSeleciton.range.3',
+testCaseWithSample('editor.setDomSelection.range.3',
   '<p contenteditable>^ 0123 |</p>',
   function(context, selection) {
     var editor = context.editor;
