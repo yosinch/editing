@@ -11,6 +11,7 @@ python checker.py --compiler %closure_jar% --out_dir %TMP% ^
     externs/html5_externs.js ^
     externs/editing_externs.js ^
     externs/editing_context_externs.js ^
+    externs/editing_style_externs.js ^
     externs/editor_externs.js ^
     externs/nodes_externs.js ^
     externs/operations_externs.js ^

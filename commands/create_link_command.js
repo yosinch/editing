@@ -56,6 +56,57 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function expandInlineStyle(context, element) {
+    if (context.shouldUseCSS) {
+      expandInlineStyleWithCSS(context, element);
+      return;
+    }
+    expandInlineStyleWithoutCSS(context, element);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function expandInlineStyleWithCSS(context, element) {
+    var style = new editing.EditingStyle(element.style);
+    if (!style.hasStyle)
+      return;
+    var styleElemnt = context.createElement('span');
+    style.properties.forEach(function(property) {
+      context.setStyle(styleElemnt, property.name, property.value);
+      context.removeStyle(element, property.name);
+    });
+    while (element.firstChild)
+      context.appendChild(styleElemnt, element.firstChild);
+    context.appendChild(element, styleElemnt);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function expandInlineStyleWithoutCSS(context, element) {
+    var style = new editing.EditingStyle(element.style);
+    if (!style.hasStyle)
+      return;
+    style.properties.forEach(function(property) {
+      var tagName = editing.EditingStyle.computeTagName(property);
+      if (!tagName)
+        return;
+      var styleElemnt = context.createElement(tagName);
+      while (element.firstChild)
+        context.appendChild(styleElemnt, element.firstChild);
+      context.appendChild(element, styleElemnt);
+console.log('expandInlineStyleWithoutCSS', element.parentNode.outerHTML);
+      context.removeStyle(element, property.name);
+    });
+  }
+
+  /**
    * @param {!Element} anchorElement
    * @return {?string}
    */
@@ -85,19 +136,19 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {!Node} node
-   * @return {boolean}
-   */
-  function isEffectiveNode(node) {
-    return editing.nodes.isPhrasing(node);
-  }
-
-  /**
    * @param {?Node} node
    * @return {boolean}
    */
   function isAnchorElement(node) {
     return Boolean(node) && node.nodeName === 'A';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isEffectiveNode(node) {
+    return editing.nodes.isPhrasing(node);
   }
 
   /**
@@ -378,6 +429,7 @@ editing.defineCommand('createLink', (function() {
     /** @type {?Element} */ var lastAnchorElement = null;
     /** @type {?string} */ var lastUrl = null;
     effectiveNodes.forEach(function(currentNode) {
+console.log('forEach', currentNode);
       if (currentNode === anchorElement)
         return;
 
@@ -395,6 +447,7 @@ editing.defineCommand('createLink', (function() {
 
       var currentElement = /** @type {!Element} */(currentNode);
       if (isAnchorElement(currentElement)) {
+        expandInlineStyle(context, currentElement);
         lastAnchorElement = /** @type {!Element} */(currentElement);
         lastUrl = getAnchorUrl(currentElement);
         if (!anchorElement) {

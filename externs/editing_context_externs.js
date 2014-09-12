@@ -93,6 +93,14 @@ editing.EditingContext.prototype.removeChild = function(parentNode,
 
 /**
  * @this {!editing.EditingContext}
+ * @param {!Element} element
+ * @param {string} propertyName
+ */
+editing.EditingContext.prototype.removeStyle = function(element,
+                                                        propertyName) {};
+
+/**
+ * @this {!editing.EditingContext}
  * @param {!Node} parentNode
  * @param {!Node} newChild
  * @param {!Node} oldChild
@@ -114,6 +122,15 @@ editing.EditingContext.prototype.setAttribute = function(element, name,
  * @param {!editing.ReadOnlySelection} selection
  */
 editing.EditingContext.prototype.setEndingSelection = function(selection) {};
+
+/**
+ * @this {!editing.EditingContext}
+ * @param {!Element} element
+ * @param {string} propertyName
+ * @param {string} propertyValue
+ */
+editing.EditingContext.prototype.setStyle = function(element, propertyName,
+                                                     propertyValue) {};
 
 /**
  * @this {!editing.EditingContext} context

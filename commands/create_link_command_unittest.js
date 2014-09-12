@@ -258,3 +258,57 @@ testCaseFor('createLink.trailing_whitespaces.2', {
   before: '<div contenteditable>^123 | </div>',
   value: 'URL'
 });
+
+// A element with STYLE attribute
+testCaseFor('createLink.style.1', {
+  after: '<div contenteditable><a href="URL">^hello <b>world</b></a>|</div>',
+  before: '<div contenteditable>^hello <a href="URL" style="font-weight: bold">world</a>|</div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.1.css', {
+  after: ' <div contenteditable><a href="URL">^hello <span style="font-weight: bold">world|</span></a></div>',
+  before: '<div contenteditable>^hello <a href="URL" style="font-weight: bold">world</a>|</div>',
+  styleWithCSS: true,
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.2', {
+  after: '<div contenteditable><a href="URL">^hello |<i>world</b></i></div>',
+  before: '<div contenteditable>^hello <a href="URL" style="font-style: italic">world</a>|</div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.2.css', {
+  after: '<div contenteditable><a href="URL">^hello |<i>world</b></i></div>',
+  before: '<div contenteditable>^hello |<a href="URL" style="font-style: italic">world</a></div>',
+  styleWithCSS: true,
+  value: 'URL'
+});
+
+// If there are more than one inline style, we don't convert it to elemnt.
+testCaseFor('createLink.style.3', {
+  after: '<div contenteditable><a href="URL">^hello <b><i>world|</i></b></a></div>',
+  before: '<div contenteditable>^hello <a href="URL" style="font-weight: bold; font-style: italic">world</a>|</div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.3.css', {
+  after: '<div contenteditable><a href="URL">^hello <b><i>world|</i></b></a></div>',
+  before: '<div contenteditable>^hello <a href="URL" style="font-weight: bold; font-style: italic">world</a>|</div>',
+  styleWithCSS: true,
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.4', {
+  after: '<div contenteditable><b><a href="URL">^hello|</a></b><a href="URL" style="font-weight: bold"> world</a></div>',
+  before: '<div contenteditable><a href="URL" style="font-weight: bold">^hello| world</a></div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.4.css', {
+  after: '<div contenteditable><span style="font-weight: bold"><a href="URL">^hello|</a></span><a href="URL" style="font-weight: bold"> world</a></div>',
+  before: '<div contenteditable><a href="URL" style="font-weight: bold">^hello| world</a></div>',
+  styleWithCSS: true,
+  value: 'URL'
+});
