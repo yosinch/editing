@@ -245,7 +245,7 @@ editing.defineCommand('InsertOrderedList', (function() {
     var listCandidate = listAncestors[listAncestors.length - 1].parentNode;
     if (listCandidate && isList(listCandidate)) {
       effectiveNodes = listAncestors.reverse().concat(effectiveNodes);
-      effectiveNodes.push(listCandiddate);
+      effectiveNodes.push(listCandidate);
     }
 
     // Extend the tailing text nodes.
@@ -343,7 +343,8 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
 
       // In definition list, the new list can be a sibling to other items.
-      if (canContentOfDL(newList.parentElement)) {
+      var parent = /** @type {!Node} */(newList.parentElement);
+      if (canContentOfDL(parent)) {
         var definitionListItem = newList.parentElement;
         var parentNode = /** @type {!Node} */(definitionListItem.parentNode);
         console.assert(parentNode);

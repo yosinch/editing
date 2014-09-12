@@ -575,7 +575,7 @@ editing.define('EditingContext', (function() {
     return effectiveNodes;
   }
 
-  /*
+  /**
    * @this {!EditingContext}
    * @return {boolean}
    */
