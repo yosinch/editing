@@ -119,8 +119,19 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @return {boolean}
    */
   function isList(node) {
-    return editing.nodes.isElement(node) &&
-      (node.nodeName === 'OL' || node.nodeName === 'UL');
+    var name = node.nodeName;
+    return editing.nodes.isElement(node) && (name === 'OL' || name === 'UL');
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isListItem(node) {
+    var name = node.nodeName;
+    // <dd> and <dt> are originally not list items, but Chrome treats them as
+    // list items when executing insert*List (w3c.24, w3c.25).
+    return name === 'LI' || name === 'DD' || name === 'DT';
   }
 
   /**
@@ -191,9 +202,7 @@ editing.defineCommand('InsertOrderedList', (function() {
     listNodes.slice(1).forEach(function(listNode) {
       console.assert(listNode.nodeName === 'OL');
       [].forEach.call(listNode.childNodes, function(listItemNode) {
-        console.assert(listItemNode.nodeName === 'LI' ||
-                       listItemNode.nodeName === 'DD' ||
-                       listItemNode.nodeName === 'DT');
+        console.assert(isListItem(listItemNode));
         context.appendChild(firstList, listItemNode);
       });
       context.removeChild(listNode.parentNode, listNode);
@@ -294,8 +303,7 @@ editing.defineCommand('InsertOrderedList', (function() {
           return true;
         }
 
-        // w3c.24, w3c.25: <dd> in a list is obviously illegal but Chrome offers
-        // this result.
+        // Chrome treats <dd> and <dt> as list items (w3c.24, w3c.25).
         if (nodes.length === 1 &&
             (nodes[0].nodeName === 'DD' || nodes[0].nodeName === 'DT')) {
           var dd = nodes[0];
