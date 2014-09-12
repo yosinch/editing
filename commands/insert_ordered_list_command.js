@@ -222,8 +222,8 @@ editing.defineCommand('InsertOrderedList', (function() {
       if ([].every.call(childNodes, function(node) {
         return editing.nodes.isText(node) || isPhrasingElement(node);
       })) {
-        [].forEach.call(childNodes, function(node) {
-          effectiveNodes.push(node);
+        effectiveNodes = [].map.call(childNodes, function(node) {
+          return node;
         });
       } else {
         return;
