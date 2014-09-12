@@ -368,8 +368,9 @@ editing.defineCommand('InsertOrderedList', (function() {
 
       var listsToBeMerged = [node];
 
-      var nextSiblingNode = node.parentNode.nextSibling;
-      while (nextSiblingNode) {
+      for (var nextSiblingNode = node.parentNode.nextSibling;
+           nextSiblingNode;
+           nextSiblingNode = nextSiblingNode.nextSibling) {
         // TODO(hajimehoshi): Not enough in case of nesting <blockquote>.
         var stopped = [].every.call(nextSiblingNode.childNodes, function(node) {
           if (lists.indexOf(node) === -1)
@@ -378,7 +379,6 @@ editing.defineCommand('InsertOrderedList', (function() {
         });
         if (stopped)
           break;
-        nextSiblingNode = nextSiblingNode.nextSibling;
       }
 
       var listParents = listsToBeMerged.map(function(node) {
