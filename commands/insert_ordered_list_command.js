@@ -83,20 +83,6 @@ editing.defineCommand('InsertOrderedList', (function() {
   }
 
   /**
-   * @param {!NodeList|!Array.<!Node>} nodes
-   * @return {!Array.<!Array.<!Node>>}
-   */
-  function splitNodes(nodes, predicate) {
-    var result = [];
-    [].forEach.call(nodes, function(node) {
-      if (!result.length || predicate(node))
-        result.push([])
-      result[result.length - 1].push(node);
-    })
-    return result;
-  }
-
-  /**
    * @param {!editing.EditingContext} context
    * @param {!Node} node
    * @param {string} name
@@ -129,9 +115,19 @@ editing.defineCommand('InsertOrderedList', (function() {
    */
   function isListItem(node) {
     var name = node.nodeName;
-    // <dd> and <dt> are originally not list items, but Chrome treats them as
-    // list items when executing insert*List (w3c.24, w3c.25).
-    return name === 'LI' || name === 'DD' || name === 'DT';
+    return name === 'LI';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   *
+   * Returns true if |node| can be treated as a list item even if |node| is not
+   * a <li>. See w3c.24 and w3c.25.
+   */
+  function isPseudoListItem(node) {
+    var name = node.nodeName;
+    return name === 'DD' || name === 'DT';
   }
 
   /**
@@ -178,7 +174,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    */
   function unlistify(context, node) {
     var listItemNode = node;
-    while (listItemNode && listItemNode.nodeName !== 'LI')
+    while (listItemNode && !isListItem(listItemNode))
       listItemNode = listItemNode.parentNode;
     if (!listItemNode)
       return;
@@ -202,7 +198,8 @@ editing.defineCommand('InsertOrderedList', (function() {
     listNodes.slice(1).forEach(function(listNode) {
       console.assert(listNode.nodeName === 'OL');
       [].forEach.call(listNode.childNodes, function(listItemNode) {
-        console.assert(isListItem(listItemNode));
+        console.assert(isListItem(listItemNode) ||
+                       isPseudoListItem(listItemNode));
         context.appendChild(firstList, listItemNode);
       });
       context.removeChild(listNode.parentNode, listNode);
@@ -246,14 +243,14 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     // Extend as far as the closest list if exists.
-    var currentNode = effectiveNodes[0];
-    if (isInList(currentNode)) {
-      for (;;) {
-        effectiveNodes.unshift(currentNode);
-        if (currentNode.nodeName === 'OL' || currentNode.nodeName === 'UL')
-          break;
-        currentNode = currentNode.parentNode;
-      }
+    var listAncestors =
+      editing.nodes.ancestorsUntil(effectiveNodes[0], function(node) {
+        return !isList(node);
+      });
+    var listCandidate = listAncestors[listAncestors.length - 1].parentNode;
+    if (listCandidate && isList(listCandidate)) {
+      effectiveNodes = listAncestors.reverse().concat(effectiveNodes);
+      effectiveNodes.push(listCandiddate);
     }
 
     // Extend the tailing text nodes.
@@ -279,7 +276,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         if (editing.nodes.isText(lastNode) &&
             lastNode === node.previousSibling) {
           lastGroup.push(node);
-          return true;
+          return;
         }
       }
       topNodeGroups.push([node]);
@@ -296,20 +293,17 @@ editing.defineCommand('InsertOrderedList', (function() {
 
         if (isBreakElement(node)) {
           context.removeChild(nodes[0].parentNode, node);
-          return true;
+          return;
         }
         if (isList(node)) {
           listItemCandidatesAfterListifying.push(node);
-          return true;
+          return;
         }
-
-        // Chrome treats <dd> and <dt> as list items (w3c.24, w3c.25).
-        if (nodes.length === 1 &&
-            (nodes[0].nodeName === 'DD' || nodes[0].nodeName === 'DT')) {
-          var dd = nodes[0];
+        if (nodes.length === 1 && isPseudoListItem(nodes[0])) {
+          var listItem = nodes[0];
           var list = context.createElement('ol');
-          context.replaceChild(dd.parentNode, list, dd);
-          context.appendChild(list, dd);
+          context.replaceChild(listItem.parentNode, list, listItem);
+          context.appendChild(list, listItem);
           listItemCandidatesAfterListifying.push(list);
           return;
         }
@@ -323,25 +317,25 @@ editing.defineCommand('InsertOrderedList', (function() {
     listItemCandidatesAfterListifying.forEach(function(node) {
       // Already merged with its siblings.
       if (!node.parentNode)
-        return true;
+        return;
 
       if (node.nodeName !== 'OL')
-        return true;
+        return;
 
       var listsToBeMerged = [node];
 
       // Append the followers.
-      var previousSiblingNode = node.previousSibling;
-      while (previousSiblingNode && previousSiblingNode.nodeName === 'OL') {
+      for (var previousSiblingNode = node.previousSibling;
+           previousSiblingNode && previousSiblingNode.nodeName === 'OL';
+           previousSiblingNode = previousSiblingNode.previousSibling) {
         listsToBeMerged.unshift(previousSiblingNode);
-        previousSiblingNode = previousSiblingNode.previousSibling;
       }
 
       // Append the followings.
-      var nextSiblingNode = node.nextSibling;
-      while (nextSiblingNode && nextSiblingNode.nodeName === 'OL') {
+      for (var nextSiblingNode = node.nextSibling;
+           nextSiblingNode && nextSiblingNode.nodeName === 'OL';
+           nextSiblingNode = nextSiblingNode.nextSibling) {
         listsToBeMerged.push(nextSiblingNode);
-        nextSiblingNode = nextSiblingNode.nextSibling;
       }
 
       var newList = mergeLists(context, listsToBeMerged);
@@ -354,8 +348,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
 
       // In definition list, the new list can be a sibling to other items.
-      if (newList.parentElement.nodeName === 'DD' ||
-          newList.parentElement.nodeName === 'DT') {
+      if (isPseudoListItem(newList.parentElement)) {
         var definitionListItem = newList.parentElement;
         var parentNode = /** @type {!Node} */(definitionListItem.parentNode);
         console.assert(parentNode);
@@ -379,13 +372,10 @@ editing.defineCommand('InsertOrderedList', (function() {
 
       var nextSiblingNode = node.parentNode.nextSibling;
       while (nextSiblingNode) {
-        var stopped = false;
         // TODO(hajimehoshi): Not enough in case of nesting <blockquote>.
-        [].forEach.call(nextSiblingNode.childNodes, function(node) {
-          if (lists.indexOf(node) === -1) {
-            stopped = false;
+        var stopped = [].every.call(nextSiblingNode.childNodes, function(node) {
+          if (lists.indexOf(node) === -1)
             return false;
-          }
           listsToBeMerged.push(node);
         });
         if (stopped)

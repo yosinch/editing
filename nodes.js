@@ -32,6 +32,20 @@ editing.define('nodes', (function() {
   });
 
   /**
+   * @param {!Node} node
+   * @param {function(!Node):boolean} predicate
+   * @return {!Array.<!Node>}
+   */
+  function ancestorsUntil(node, predicate) {
+    var result = [];
+    for (var ancestor = node.parentNode; ancestor && predicate(ancestor);
+         ancestor = ancestor.parentNode) {
+      result.push(ancestor);
+    }
+    return result;
+  }
+
+  /**
    * @param {!Node} node1
    * @param {!Node} node2
    * @return {?Node}
@@ -343,6 +357,7 @@ editing.define('nodes', (function() {
   }
 
   return Object.defineProperties({}, {
+    ancestorsUntil: {value: ancestorsUntil},
     commonAncestor: {value: commonAncestor},
     computeSelectedNodes: {value: computeSelectedNodes},
     isContentEditable: {value: isContentEditable},
