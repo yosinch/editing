@@ -6,6 +6,12 @@
 
 testing.define('TEST_EXPECTATIONS', (function() {
   return {
+    // insert ordered list
+    'insertOrderedList.w3c.26': {expected: 'fail', reason: 'issue #39'},
+    'insertOrderedList.w3c.26r': {expected: 'fail', reason: 'issue #39'},
+    'insertOrderedList.w3c.27': {expected: 'fail', reason: 'issue #39'},
+    'insertOrderedList.w3c.27r': {expected: 'fail', reason: 'issue #39'},
+
     // remove format
     'removeFormat.nested_div_style': {expected: 'fail', reason: 'issue #25'},
     'removeFormat.w3c.88': {expected: 'fail', reason: 'issue #24'},
