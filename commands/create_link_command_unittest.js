@@ -231,10 +231,30 @@ testCaseFor('createLink.abc.3', {
   value: 'URL'
 });
 
-// content ends with newline
+// Selection ends at leading whitespaces
 // http://crbug.com/413156 Can't extend selection beyond whitespace
-testCaseFor('createLink.newline.1', {
-  after: '<div contenteditable><a href="URL">^123|</a></div>',
-  before: '<div contenteditable>^123\n|</div>',
+testCaseFor('createLink.leading_whitespaces.1', {
+  after: '<div contenteditable><a href="URL"> ^123|</a></div>',
+  before: '<div contenteditable> ^123|</div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.leading_whitespaces.2', {
+  after: '<div contenteditable><a href="URL"> ^123|</a></div>',
+  before: '<div contenteditable>^ 123|</div>',
+  value: 'URL'
+});
+
+// Selection ends at trailing whitespaces
+// http://crbug.com/413156 Can't extend selection beyond whitespace
+testCaseFor('createLink.trailing_whitespaces.1', {
+  after: '<div contenteditable><a href="URL">^123| </a></div>',
+  before: '<div contenteditable>^123 |</div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.trailing_whitespaces.2', {
+  after: '<div contenteditable><a href="URL">^123|  </a></div>',
+  before: '<div contenteditable>^123 | </div>',
   value: 'URL'
 });
