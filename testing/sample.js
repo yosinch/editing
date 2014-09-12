@@ -26,14 +26,22 @@ testing.define('Sample', (function() {
       return;
     var beforeText = previousSibling.textContent;
     previousSibling.textContent = beforeText + node.textContent;
-    node.parentNode.removeChild(node);
+    var containerNode = node.parentNode;
+    var nodeIndex = indexOfNode(node);
+    containerNode.removeChild(node);
     if (selection.anchorNode === node) {
       selection.anchorNode = previousSibling;
       selection.anchorOffset += beforeText.length;
+    } else if (selection.anchorNode === containerNode &&
+               selection.anchorOffset >= nodeIndex) {
+      --selection.anchorOffset;
     }
     if (selection.focusNode === node) {
       selection.focusNode = previousSibling;
       selection.focusOffset += beforeText.length;
+    } else if (selection.focusNode === containerNode &&
+               selection.focusOffset >= nodeIndex) {
+      --selection.focusOffset;
     }
   }
 

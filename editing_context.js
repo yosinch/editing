@@ -338,12 +338,20 @@ editing.define('EditingContext', (function() {
 
       // Split text node for using container and offset in container as
       // boundary points.
+      var containerNode = textNode.parentNode;
+      var nodeIndex = editing.nodes.nodeIndex(textNode);
       var newTextNode = context.splitText(textNode, offset);
-      if (anchorNode === node && anchorOffset >= offset) {
+      if (anchorNode === containerNode) {
+        if (anchorOffset >= nodeIndex)
+          ++anchorOffset;
+      } else if (anchorNode === node && anchorOffset >= offset) {
         anchorNode = newTextNode;
         anchorOffset -= offset;
       }
-      if (focusNode === node && focusOffset >= offset) {
+      if (focusNode === containerNode) {
+        if (focusOffset >= nodeIndex)
+          ++focusOffset;
+      } else if (focusNode === node && focusOffset >= offset) {
         focusNode = newTextNode;
         focusOffset -= offset;
       }
@@ -430,6 +438,16 @@ editing.define('EditingContext', (function() {
     var operation = new editing.ReplaceChild(parentNode, newChild, oldChild);
     this.operations_.push(operation);
     operation.execute();
+  }
+
+  /**
+   * @this {!EditingContext}
+   * @param {!Element} element
+   * @param {string} propertyName
+   */
+  function removeStyle(element, propertyName) {
+    console.assert(editing.nodes.isElement(element));
+    this.setStyle(element, propertyName, '');
   }
 
   /**
@@ -745,6 +763,7 @@ editing.define('EditingContext', (function() {
     normalizeSelection: {value: normalizeSelection},
     removeAttribute: {value: removeAttribute},
     removeChild: {value: removeChild},
+    removeStyle: {value: removeStyle},
     replaceChild: {value: replaceChild},
     setAttribute: {value: setAttribute},
     setEndingSelection: {value: setEndingSelection },
