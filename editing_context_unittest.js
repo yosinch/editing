@@ -356,6 +356,18 @@ testCaseWithSample('context.setUpEffectiveNodes.Junk',
     });
 
 //
+// shouldUseCSS
+//
+testCaseWithSample('context.shouldUseCSS',
+    '<p contenteditable>012|</p>', function(context) {
+  context.document.execCommand('styleWithCSS', false, true);
+  expectTrue(function() { return context.shouldUseCSS; });
+
+  context.document.execCommand('styleWithCSS', false, false);
+  expectFalse(function() { return context.shouldUseCSS; });
+});
+
+//
 // splitNode
 //
 testCaseWithSample('context.splitNode.1',

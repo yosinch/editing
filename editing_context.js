@@ -557,6 +557,14 @@ editing.define('EditingContext', (function() {
     return effectiveNodes;
   }
 
+  /*
+   * @this {!EditingContext}
+   * @return {boolean}
+   */
+  function shouldUseCSS() {
+    return this.document.queryCommandValue('styleWithCSS') === 'true';
+  }
+
   /**
    * @this {!EditingContext}
    * @param {!Node} parent
@@ -742,6 +750,7 @@ editing.define('EditingContext', (function() {
     setEndingSelection: {value: setEndingSelection },
     setStyle: {value: setStyle},
     setUpEffectiveNodes: {value: setUpEffectiveNodes},
+    shouldUseCSS: {get: shouldUseCSS},
     splitNode: {value: splitNode},
     splitNodeLeft: {value: splitNodeLeft},
     splitText: {value: splitText},
