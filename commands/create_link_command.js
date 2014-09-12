@@ -72,17 +72,16 @@ editing.defineCommand('createLink', (function() {
    * @param {!Element} element
    */
   function expandInlineStyleWithCSS(context, element) {
-    var style = new editing.EditingStyle(element.style);
+    var style = new editing.EditingStyle(element);
     if (!style.hasStyle)
       return;
-    var styleElemnt = context.createElement('span');
+    var styleElement = context.createElement('span');
     style.properties.forEach(function(property) {
-      context.setStyle(styleElemnt, property.name, property.value);
+      context.setStyle(styleElement, property.name, property.value);
       context.removeStyle(element, property.name);
     });
-    while (element.firstChild)
-      context.appendChild(styleElemnt, element.firstChild);
-    context.appendChild(element, styleElemnt);
+    moveAllChildren(context, styleElement, element);
+    context.appendChild(element, styleElement);
   }
 
   /**
@@ -90,18 +89,15 @@ editing.defineCommand('createLink', (function() {
    * @param {!Element} element
    */
   function expandInlineStyleWithoutCSS(context, element) {
-    var style = new editing.EditingStyle(element.style);
+    var style = new editing.EditingStyle(element);
     if (!style.hasStyle)
       return;
     style.properties.forEach(function(property) {
-      var tagName = editing.EditingStyle.computeTagName(property);
-      if (!tagName)
+      var styleElement = editing.EditingStyle.createElement(context, property);
+      if (!styleElement)
         return;
-      var styleElemnt = context.createElement(tagName);
-      while (element.firstChild)
-        context.appendChild(styleElemnt, element.firstChild);
-      context.appendChild(element, styleElemnt);
-console.log('expandInlineStyleWithoutCSS', element.parentNode.outerHTML);
+      moveAllChildren(context, styleElement, element);
+      context.appendChild(element, styleElement);
       context.removeStyle(element, property.name);
     });
   }
@@ -158,6 +154,16 @@ console.log('expandInlineStyleWithoutCSS', element.parentNode.outerHTML);
    */
   function lastOf(array) {
     return array.length ? array[array.length - 1] : null;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} newElement
+   * @param {!Element} oldElement
+   */
+  function moveAllChildren(context, newElement, oldElement) {
+    while (oldElement.firstChild)
+      context.appendChild(newElement, oldElement.firstChild);
   }
 
   /**
@@ -429,7 +435,6 @@ console.log('expandInlineStyleWithoutCSS', element.parentNode.outerHTML);
     /** @type {?Element} */ var lastAnchorElement = null;
     /** @type {?string} */ var lastUrl = null;
     effectiveNodes.forEach(function(currentNode) {
-console.log('forEach', currentNode);
       if (currentNode === anchorElement)
         return;
 
@@ -447,9 +452,16 @@ console.log('forEach', currentNode);
 
       var currentElement = /** @type {!Element} */(currentNode);
       if (isAnchorElement(currentElement)) {
-        expandInlineStyle(context, currentElement);
-        lastAnchorElement = /** @type {!Element} */(currentElement);
+        lastAnchorElement = currentElement;
         lastUrl = getAnchorUrl(currentElement);
+        if (currentElement.hasAttribute('style') &&
+            endNode.nextSibling &&
+            editing.nodes.isDescendantOf(endNode, currentElement)) {
+          // If |currentElement| contains |endNode| and |currentElement| has
+          // STYLE attribute, we split it. See |createLink.style.4|.
+          context.splitTree(currentElement, endNode.nextSibling);
+        }
+        expandInlineStyle(context, currentElement);
         if (!anchorElement) {
           processPendingContents();
           anchorElement = currentElement;
@@ -460,7 +472,10 @@ console.log('forEach', currentNode);
         setAnchorUrl(context, currentElement, url);
         if (canMergeAnchor(currentElement, url)) {
           // Unwrap A element.
-          moveChildren(context, currentElement.parentNode, currentElement,
+          var contentElement = editing.nodes.isDescendantOf(currentElement,
+                                                            anchorElement) ?
+              currentElement.parentNode : anchorElement;
+          moveChildren(context, contentElement, currentElement,
                        endNode.nextSibling, selectionTracker);
           return;
         }

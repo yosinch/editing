@@ -99,6 +99,15 @@ editing.define('EditingContext', (function() {
       parentNode, newChild, oldChild) {};
 
   /**
+   * @this {!editing.EditingContext}
+   * @param {!Element} element
+   * @param {string} propertyName
+   * @param {string} propertyValue
+   */
+  EditingContext.prototype.setStyle = function(element, propertyName,
+                                               propertyValue) {};
+
+  /**
    * @this {!EditingContext}
    * @param {!Node} parent
    * @param {!Node} child
@@ -315,25 +324,29 @@ editing.define('EditingContext', (function() {
       // canonicalization.
       // TODO(yosin) Once http://crbug.com/346613 is fixed, we don't need to
       // have this code fragment.
-      var trimLeft = text.trimLeft();
-      var visibleLeft = text.length - trimLeft.length;
-      if (offset <= visibleLeft) {
-        // |node| has leading whitespaces,
-        if (anchorNode === node && anchorOffset === offset)
-          anchorOffset = 0;
-        if (focusNode === node && focusOffset === offset)
-          focusOffset = 0;
-        return;
+      if (!node.previousSibling) {
+        var trimLeft = text.trimLeft();
+        var visibleLeft = text.length - trimLeft.length;
+        if (offset <= visibleLeft) {
+          // |node| has leading whitespaces,
+          if (anchorNode === node && anchorOffset === offset)
+            anchorOffset = 0;
+          if (focusNode === node && focusOffset === offset)
+            focusOffset = 0;
+          return;
+        }
       }
-      var trimRight = text.trimRight();
-      var visibleRight = trimRight.length;
-      if (offset >= visibleRight) {
-        // |node| has trailing whitespaces,
-        if (anchorNode === node && anchorOffset === offset)
-          anchorOffset = text.length;
-        if (focusNode === node && focusOffset === offset)
-          focusOffset = text.length;
-        return;
+      if (!node.nextSibling) {
+        var trimRight = text.trimRight();
+        var visibleRight = trimRight.length;
+        if (offset >= visibleRight) {
+          // |node| has trailing whitespaces,
+          if (anchorNode === node && anchorOffset === offset)
+            anchorOffset = text.length;
+          if (focusNode === node && focusOffset === offset)
+            focusOffset = text.length;
+          return;
+        }
       }
 
       // Split text node for using container and offset in container as

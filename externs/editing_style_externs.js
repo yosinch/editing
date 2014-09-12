@@ -10,10 +10,11 @@
 editing.EditingStyle = function(element) {};
 
 /**
+ * @param {editing.EditingContext} context
  * @param {{name: string, value: string}} property
- * @return {string}
+ * @return {?Element}
  */
-editing.EditingStyle.computeTagName = function(property) {};
+editing.EditingStyle.createElement = function(context, property) {};
 
 /**
  * @type {boolean}
@@ -24,8 +25,3 @@ editing.EditingStyle.prototype.hasStyle;
  * @type {!Array.<{name: string, value: string}>}
  */
 editing.EditingStyle.prototype.properties;
-
-/**
- * @type {!Array.<string>}
- */
-editing.EditingStyle.prototype.tagNames;

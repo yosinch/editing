@@ -5,37 +5,80 @@
 'use strict';
 
 editing.define('EditingStyle', (function() {
-  /** @const */ var STYLE_DESCRIPTIONS = {
+  /** @const */ var CSS_PROPRTY_DATA = {
     'font-style': {
-      propertyValue: 'italic',
-      tagName: 'i'
+      priority: 2,
+      tagNames: {'italic': 'i'}
     },
     'font-weight': {
-      propertyValue: 'bold',
-      tagName: 'b'
+      priority: 1,
+      tagNames: {'bold': 'b'},
+    },
+    'text-decoration': {
+      priority: 3,
+      tagNames: {
+        'line-through': 's',
+        'underline': 'u'
+      }
     }
+  };
+  Object.keys(CSS_PROPRTY_DATA).forEach(function(propertyName) {
+    CSS_PROPRTY_DATA[propertyName].propertyName = propertyName;
+  });
+
+  /** @const */ var TAG_NAME_DATA = {
+    'b': {
+      propertyName: 'font-weight',
+      propertyValue: 'bold'
+    },
+    'em': {
+      propertyName: 'font-style',
+      propertyValue: 'italic'
+    },
+    'i': {
+      propertyName: 'font-style',
+      propertyValue: 'italic'
+    },
+    's': {
+      propertyName: 'text-decoration',
+      propertyValue: 'line-through'
+    },
+    'strike': {
+      propertyName: 'text-decoration',
+      propertyValue: 'line-through'
+    },
+    'strong': {
+      propertyName: 'font-weight',
+      propertyValue: 'bold'
+    },
+    'u': {
+      propertyName: 'text-decoration',
+      propertyValue: 'underline'
+    },
   };
 
   /**
    * @constructor
    * @final
-   * @param {!CSSStyleDeclaration} domStyle
+   * @param {!Element}
    */
-  function EditingStyle(domStyle) {
-    this.domStyle_ = domStyle;
+  function EditingStyle(element) {
+    this.domStyle_ = element.style;
     Object.seal(this);
   }
 
   /**
    * @param {{name: string, value: string}} property
-   * @return {string}
+   * @return {?Element}
    */
-  EditingStyle.computeTagName = function(property) {
-    var description = STYLE_DESCRIPTIONS[property.name];
-    if (!description)
-      return '';
-    return description.propertyValue === property.value ? description.tagName :
-                                                         '';
+  EditingStyle.createElement = function(context, property) {
+    var data = CSS_PROPRTY_DATA[property.name];
+    if (!data)
+      return null;
+    var tagName = data.tagNames[property.value];
+    if (!tagName)
+      return null;
+    return context.createElement(tagName);
   };
 
   /**
@@ -43,7 +86,7 @@ editing.define('EditingStyle', (function() {
    * @return {boolean}
    */
   function isKnownProperty(propertyName) {
-    return propertyName in STYLE_DESCRIPTIONS;
+    return propertyName in CSS_PROPRTY_DATA;
   };
 
   /**
@@ -61,13 +104,16 @@ editing.define('EditingStyle', (function() {
   function properties() {
     var domStyle = this.domStyle_;
     return [].map.call(domStyle, function(propertyName) {
-      var description = STYLE_DESCRIPTIONS[propertyName];
-      if (!description)
+      return CSS_PROPRTY_DATA[propertyName];
+    }).filter(function(data) {
+      return data;
+    }).sort(function(data1, data2) {
+      return data2.priority - data1.priority;
+    }).map(function(data) {
+      var propertyValue = domStyle[data.propertyName];
+      if (!(propertyValue in data.tagNames))
         return undefined;
-      var propertyValue = domStyle[propertyName];
-      if (propertyValue !== description.propertyValue)
-        return undefined;
-      return {name: propertyName, value: propertyValue}
+      return {name: data.propertyName, value: propertyValue}
     }).filter(function(property) {
       return property;
     });
