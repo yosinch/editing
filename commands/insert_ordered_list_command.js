@@ -68,7 +68,7 @@ editing.defineCommand('InsertOrderedList', (function() {
 
     if (!nodes.length)
       return [];
-    var topNodes = [].filter.call(nodes, function(node) {
+    var listItemCandidates = [].filter.call(nodes, function(node) {
       for (var ancestor = node.parentNode; ancestor;
            ancestor = ancestor.parentNode) {
         if ([].indexOf.call(nodes, ancestor) !== -1)
@@ -76,10 +76,9 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
       return true;
     })
-    topNodes = [].reduce.call(topNodes, function(nodes, node) {
+    return [].reduce.call(listItemCandidates, function(nodes, node) {
       return nodes.concat(getChildListItemCandidates(node));
     }, []);
-    return topNodes;
   }
 
   /**
@@ -114,8 +113,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @return {boolean}
    */
   function isListItem(node) {
-    var name = node.nodeName;
-    return name === 'LI';
+    return node.nodeName === 'LI';
   }
 
   /**
@@ -125,7 +123,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    * Returns true if |node| can be treated as a list item even if |node| is not
    * a <li>. See w3c.24 and w3c.25.
    */
-  function isPseudoListItem(node) {
+  function canContentOfDL(node) {
     var name = node.nodeName;
     return name === 'DD' || name === 'DT';
   }
@@ -199,7 +197,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       console.assert(listNode.nodeName === 'OL');
       [].forEach.call(listNode.childNodes, function(listItemNode) {
         console.assert(isListItem(listItemNode) ||
-                       isPseudoListItem(listItemNode));
+                       canContentOfDL(listItemNode));
         context.appendChild(firstList, listItemNode);
       });
       context.removeChild(listNode.parentNode, listNode);
@@ -263,14 +261,14 @@ editing.defineCommand('InsertOrderedList', (function() {
     // Devide the top nodes into groups: the successive text nodes should be in
     // the same group. Otherwise, the node is in a single group.
     var listItemCandidates = getListItemCandidates(effectiveNodes);
-    var topNodeGroups = [];
+    var listItemCandidateGroups = [];
     listItemCandidates.forEach(function(node) {
-      if (!topNodeGroups.length) {
-        topNodeGroups.push([node]);
+      if (!listItemCandidateGroups.length) {
+        listItemCandidateGroups.push([node]);
         return true;
       }
       var lastGroup =
-        topNodeGroups[topNodeGroups.length - 1];
+        listItemCandidateGroups[listItemCandidateGroups.length - 1];
       if (editing.nodes.isText(node)) {
         var lastNode = lastGroup[lastGroup.length - 1];
         if (editing.nodes.isText(lastNode) &&
@@ -279,11 +277,11 @@ editing.defineCommand('InsertOrderedList', (function() {
           return;
         }
       }
-      topNodeGroups.push([node]);
+      listItemCandidateGroups.push([node]);
     });
 
     var listItemCandidatesAfterListifying = [];
-    topNodeGroups.forEach(function(nodes) {
+    listItemCandidateGroups.forEach(function(nodes) {
       if (!nodes.length)
         return;
 
@@ -299,7 +297,7 @@ editing.defineCommand('InsertOrderedList', (function() {
           listItemCandidatesAfterListifying.push(node);
           return;
         }
-        if (nodes.length === 1 && isPseudoListItem(nodes[0])) {
+        if (nodes.length === 1 && canContentOfDL(nodes[0])) {
           var listItem = nodes[0];
           var list = context.createElement('ol');
           context.replaceChild(listItem.parentNode, list, listItem);
@@ -348,7 +346,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
 
       // In definition list, the new list can be a sibling to other items.
-      if (isPseudoListItem(newList.parentElement)) {
+      if (canContentOfDL(newList.parentElement)) {
         var definitionListItem = newList.parentElement;
         var parentNode = /** @type {!Node} */(definitionListItem.parentNode);
         console.assert(parentNode);
