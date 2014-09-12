@@ -89,8 +89,7 @@ editing.define('Editor', (function() {
         "') this time, because it is called recursively in" +
         " document.execCommand('" + this.currentContext_.name + "')");
     }
-    if (!this.selection_)
-      throw new Error('Editor must have a selection.');
+    this.selection_ = this.getDomSelection();
     var context = this.createContext(name, this.selection_);
     this.currentContext_ = context;
     var succeeded = false;
@@ -149,13 +148,6 @@ editing.define('Editor', (function() {
         domSeleciton.anchorNode, domSeleciton.anchorOffset,
         domSeleciton.focusNode, domSeleciton.focusOffset,
         direction());
-  }
-
-  /**
-   * @this {!Editor}
-   */
-  function loadDomSelection() {
-    this.selection_ = this.getDomSelection();
   }
 
   /**
@@ -231,7 +223,6 @@ editing.define('Editor', (function() {
     document_: {writable: true},
     execCommand: {value: execCommand},
     getDomSelection: {value: getDomSelection },
-    loadDomSelection: {value: loadDomSelection},
     selection: {get: function() { return this.selection_; }},
     selection_: {writable: true},
     setDomSelection: {value: setDomSelection },
