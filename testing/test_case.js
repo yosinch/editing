@@ -231,14 +231,20 @@ function testCaseFor(testCaseName, data) {
             // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
             // canonicalized selection rather than resulted selection.
             {selection: editor.getDomSelection()});
-        if (undoResult == data.before) {
+        sample2.execCommand('undo');
+        var sampleUndoResult = testing.serializeNode(
+            sample2.document.body.firstChild, {
+            selection: sample2.endingSelection,
+            visibleTextNode: false
+        });
+        if (undoResult == sampleUndoResult) {
           testRunner.pass('undo');
-        } else if (stripMarker(undoResult) == stripMarker(data.before)) {
+        } else if (stripMarker(undoResult) == stripMarker(sampleUndoResult)) {
           testRunner.warn('undo_selection', {
             format: 'html',
             before: pretty(data.before),
-            current: pretty(sampleResult),
-            new: pretty(actualResult2)
+            current: pretty(sampleUndoResult),
+            new: pretty(undoResult)
           });
           return;
         } else {
