@@ -128,6 +128,10 @@ function testCaseFor(testCaseName, data) {
   testCase(testCaseName, function() {
     var sample = new testing.Sample(data.before);
     var sample2 = new testing.Sample(data.before);
+    sample.document.execCommand('styleWithCSS', false,
+                                Boolean(data['styleWithCSS']));
+    sample2.document.execCommand('styleWithCSS', false,
+                                 Boolean(data['styleWithCSS']));
     try {
       var editor = editing.Editor.getOrCreate(sample.document);
       editor.setDomSelection(sample.startingSelection);
