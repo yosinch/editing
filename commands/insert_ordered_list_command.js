@@ -38,23 +38,31 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @param {!Node} node
    * @return boolean
    */
-  function isContainer(node) {
+  function isTableCell(node) {
     var name = node.nodeName;
     return name === 'TR' || name === 'TD' || name === 'TH' ||
-      isListMergeableContainer(node);
+      name === 'COLGROUP' || name === 'TBODY' || name === 'THEAD';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return boolean
+   */
+  function isContainer(node) {
+    return isTableCell(node) || isListMergeableContainer(node);
   }
 
   /**
    * @param {!NodeList|!Array.<!Node>} nodes
    * @return {!Array.<!Node>}
    */
-  function getTopNodes(nodes) {
+  function getListItemCandidates(nodes) {
 
-    function getChildTopNodes(node) {
+    function getChildListItemCandidates(node) {
       if (!isContainer(node))
         return [node];
       return [].reduce.call(node.childNodes, function(nodes, node) {
-        return nodes.concat(getChildTopNodes(node));
+        return nodes.concat(getChildListItemCandidates(node));
       }, []);
     }
 
@@ -69,7 +77,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       return true;
     })
     topNodes = [].reduce.call(topNodes, function(nodes, node) {
-      return nodes.concat(getChildTopNodes(node));
+      return nodes.concat(getChildListItemCandidates(node));
     }, []);
     return topNodes;
   }
@@ -80,11 +88,10 @@ editing.defineCommand('InsertOrderedList', (function() {
    */
   function splitNodes(nodes, predicate) {
     var result = [];
-    var siblings = [];
     [].forEach.call(nodes, function(node) {
-      if (result.length === 0 || predicate(node))
+      if (!result.length || predicate(node))
         result.push([])
-      result[result.length-1].push(node);
+      result[result.length - 1].push(node);
     })
     return result;
   }
@@ -121,11 +128,10 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @return {boolean}
    */
   function isInList(node) {
-    var currentNode = node.parentNode
-    while (currentNode) {
+    for (var currentNode = node.parentNode; currentNode;
+         currentNode = currentNode.parentNode) {
       if (isList(currentNode))
         return true;
-      currentNode = currentNode.parentNode;
     }
     return false;
   }
@@ -224,18 +230,15 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     // Extend the heading text nodes.
-    for (;;) {
-      var previousSibling = effectiveNodes[0].previousSibling;
-      if (!previousSibling)
-        break;
-      if (!editing.nodes.isText(previousSibling))
-        break;
-      effectiveNodes.unshift(previousSibling);
+    for (var sibling = effectiveNodes[0].previousSibling;
+         sibling && editing.nodes.isText(sibling);
+         sibling = sibling.previousSibling) {
+      effectiveNodes.unshift(sibling);
     }
 
     // Extend as far as the closest list if exists.
-    if (isInList(effectiveNodes[0])) {
-      var currentNode = effectiveNodes[0];
+    var currentNode = effectiveNodes[0];
+    if (isInList(currentNode)) {
       for (;;) {
         effectiveNodes.unshift(currentNode);
         if (currentNode.nodeName === 'OL' || currentNode.nodeName === 'UL')
@@ -245,20 +248,17 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     // Extend the tailing text nodes.
-    for (;;) {
-      var nextSibling = effectiveNodes[effectiveNodes.length - 1].nextSibling;
-      if (!nextSibling)
-        break;
-      if (!editing.nodes.isText(nextSibling))
-        break;
-      effectiveNodes.push(nextSibling);
+    for (var sibling = effectiveNodes[effectiveNodes.length - 1].nextSibling;
+         sibling && editing.nodes.isText(sibling);
+         sibling = sibling.nextSibling) {
+      effectiveNodes.push(sibling);
     }
 
     // Devide the top nodes into groups: the successive text nodes should be in
     // the same group. Otherwise, the node is in a single group.
-    var topNodes = getTopNodes(effectiveNodes);
+    var listItemCandidates = getListItemCandidates(effectiveNodes);
     var topNodeGroups = [];
-    topNodes.forEach(function(node) {
+    listItemCandidates.forEach(function(node) {
       if (!topNodeGroups.length) {
         topNodeGroups.push([node]);
         return true;
@@ -276,35 +276,43 @@ editing.defineCommand('InsertOrderedList', (function() {
       topNodeGroups.push([node]);
     });
 
-    var topNodesAfterListifying = [];
+    var listItemCandidatesAfterListifying = [];
     topNodeGroups.forEach(function(nodes) {
-      if (nodes.length === 1 && isBreakElement(nodes[0])) {
-        context.removeChild(nodes[0].parentNode, nodes[0]);
-        return true;
-      }
-      if (nodes.length === 1 && isList(nodes[0])) {
-        topNodesAfterListifying.push(nodes[0]);
-        return true;
-      }
-
-      // w3c.24, w3c.25: <dd> in a list is obviously illegal but Chrome offers
-      // this result.
-      if (nodes.length === 1 &&
-          (nodes[0].nodeName === 'DD' || nodes[0].nodeName === 'DT')) {
-        var dd = nodes[0];
-        var list = context.createElement('ol');
-        context.replaceChild(dd.parentNode, list, dd);
-        context.appendChild(list, dd);
-        topNodesAfterListifying.push(list);
+      if (!nodes.length)
         return;
+
+      var node = nodes[0];
+      if (editing.nodes.isElement(node)) {
+        console.assert(nodes.length === 1);
+
+        if (isBreakElement(node)) {
+          context.removeChild(nodes[0].parentNode, node);
+          return true;
+        }
+        if (isList(node)) {
+          listItemCandidatesAfterListifying.push(node);
+          return true;
+        }
+
+        // w3c.24, w3c.25: <dd> in a list is obviously illegal but Chrome offers
+        // this result.
+        if (nodes.length === 1 &&
+            (nodes[0].nodeName === 'DD' || nodes[0].nodeName === 'DT')) {
+          var dd = nodes[0];
+          var list = context.createElement('ol');
+          context.replaceChild(dd.parentNode, list, dd);
+          context.appendChild(list, dd);
+          listItemCandidatesAfterListifying.push(list);
+          return;
+        }
       }
 
       var newNode = listify(context, nodes);
       console.assert(newNode);
-      topNodesAfterListifying.push(newNode);
+      listItemCandidatesAfterListifying.push(newNode);
     });
 
-    topNodesAfterListifying.forEach(function(node) {
+    listItemCandidatesAfterListifying.forEach(function(node) {
       // Already merged with its siblings.
       if (!node.parentNode)
         return true;
@@ -348,16 +356,16 @@ editing.defineCommand('InsertOrderedList', (function() {
     });
 
     // Merge lists beyond <p> and so on.
-    var lists = topNodesAfterListifying.filter(function(node) {
+    var lists = listItemCandidatesAfterListifying.filter(function(node) {
       return !!node.parentNode && node.nodeName === 'OL';
     });
     lists.forEach(function(node) {
       // Already merged with other lists.
       if (!node.parentNode)
-        return true;
+        return;
 
       if (!isListMergeableContainer(node.parentNode))
-        return true;
+        return;
 
       var listsToBeMerged = [node];
 
