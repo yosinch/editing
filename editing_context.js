@@ -304,12 +304,40 @@ editing.define('EditingContext', (function() {
         return;
       var textNode = /** @type {!Text} */(node);
       var text = node.nodeValue;
-      if (text.length == offset)
+      if (!offset || text.length === offset)
         return;
-      if (!offset || offset >= text.length) {
+      if (offset > text.length) {
         throw new Error('Offset ' + offset + ' must be grater than zero and ' +
                         'less than ' + text.length + ' for ' + node);
       }
+
+      // We include leading and trailing whiespaces for canceling selection
+      // canonicalization.
+      // TODO(yosin) Once http://crbug.com/346613 is fixed, we don't need to
+      // have this code fragment.
+      var trimLeft = text.trimLeft();
+      var visibleLeft = text.length - trimLeft.length;
+      if (offset <= visibleLeft) {
+        // |node| has leading whitespaces,
+        if (anchorNode === node && anchorOffset === offset)
+          anchorOffset = 0;
+        if (focusNode === node && focusOffset === offset)
+          focusOffset = 0;
+        return;
+      }
+      var trimRight = text.trimRight();
+      var visibleRight = trimRight.length;
+      if (offset >= visibleRight) {
+        // |node| has trailing whitespaces,
+        if (anchorNode === node && anchorOffset === offset)
+          anchorOffset = text.length;
+        if (focusNode === node && focusOffset === offset)
+          focusOffset = text.length;
+        return;
+      }
+
+      // Split text node for using container and offset in container as
+      // boundary points.
       var newTextNode = context.splitText(textNode, offset);
       if (anchorNode === node && anchorOffset >= offset) {
         anchorNode = newTextNode;
@@ -347,6 +375,7 @@ editing.define('EditingContext', (function() {
     // Convert text node + offset to container node + offset.
     useContainerIfPossible(anchorNode, anchorOffset);
     useContainerIfPossible(focusNode, focusOffset);
+
     return new editing.ReadOnlySelection(anchorNode, anchorOffset,
                                          focusNode, focusOffset,
                                          selection.direction);
@@ -526,6 +555,14 @@ editing.define('EditingContext', (function() {
     }
     effectiveNodes.unshift(runner);
     return effectiveNodes;
+  }
+
+  /*
+   * @this {!EditingContext}
+   * @return {boolean}
+   */
+  function shouldUseCSS() {
+    return this.document.queryCommandValue('styleWithCSS') === 'true';
   }
 
   /**
@@ -713,6 +750,7 @@ editing.define('EditingContext', (function() {
     setEndingSelection: {value: setEndingSelection },
     setStyle: {value: setStyle},
     setUpEffectiveNodes: {value: setUpEffectiveNodes},
+    shouldUseCSS: {get: shouldUseCSS},
     splitNode: {value: splitNode},
     splitNodeLeft: {value: splitNodeLeft},
     splitText: {value: splitText},

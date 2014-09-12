@@ -156,6 +156,8 @@ testing.define('Sample', (function() {
       }
     }
     this.startingSelection_ = parseSample(this.document, htmlText);
+    var editor = editing.Editor.getOrCreate(this.document_);
+    editor.setDomSelection(this.startingSelection_);
     Object.seal(this);
   }
 
@@ -172,7 +174,6 @@ testing.define('Sample', (function() {
    */
   function execCommand(name, opt_userInterface, opt_value) {
     var editor = editing.Editor.getOrCreate(this.document_);
-    editor.setDomSelection(this.startingSelection_);
     if (testRunner.useTryCatch) {
       var returnValue = 'UNKNOWN';
       try {

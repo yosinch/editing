@@ -89,8 +89,7 @@ editing.define('Editor', (function() {
         "') this time, because it is called recursively in" +
         " document.execCommand('" + this.currentContext_.name + "')");
     }
-    if (!this.selection_)
-      throw new Error('Editor must have a selection.');
+    this.selection_ = this.getDomSelection();
     var context = this.createContext(name, this.selection_);
     this.currentContext_ = context;
     var succeeded = false;
@@ -153,13 +152,6 @@ editing.define('Editor', (function() {
 
   /**
    * @this {!Editor}
-   */
-  function loadDomSelection() {
-    this.selection_ = this.getDomSelection();
-  }
-
-  /**
-   * @this {!Editor}
    * @return {boolean}
    */
   function redo(context) {
@@ -189,7 +181,17 @@ editing.define('Editor', (function() {
       return;
     }
     domSelection.collapse(selection.anchorNode, selection.anchorOffset);
-    domSelection.extend(selection.focusNode, selection.focusOffset);
+
+    // Chrome throws an IndexError for Selection.extend() when specifying to
+    // middle or beyond trailing whitespaces, http://crbug.com/413156
+    // Following code is work around of that.
+    if (!editing.nodes.isText(selection.focusNode)) {
+      domSelection.extend(selection.focusNode, selection.focusOffset);
+      return;
+    }
+    var trimmed = selection.focusNode.nodeValue.trimRight();
+    domSelection.extend(selection.focusNode,
+                        Math.min(selection.focusOffset, trimmed.length));
   }
 
   /**
@@ -221,7 +223,6 @@ editing.define('Editor', (function() {
     document_: {writable: true},
     execCommand: {value: execCommand},
     getDomSelection: {value: getDomSelection },
-    loadDomSelection: {value: loadDomSelection},
     selection: {get: function() { return this.selection_; }},
     selection_: {writable: true},
     setDomSelection: {value: setDomSelection },

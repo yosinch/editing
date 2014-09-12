@@ -69,6 +69,32 @@ testCaseWithSample('context.normalizeSelection.splitTextFocusAnchor',
     expectEq(1, function() { return selection.focusOffset; });
   });
 
+// We extend selection over leading and trailing whitespaces.
+testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.1',
+  '<p contenteditable> ^0123| </p>', function(context, selectionIn) {
+    var selection = context.normalizeSelection(selectionIn);
+    expectFalse(function() { return selection.isCaret; });
+    expectFalse(function() { return selection.isEmpty; });
+    expectTrue(function() { return selection.isRange; });
+    expectEq('P', function() { return selection.anchorNode.nodeName; });
+    expectEq(0, function() { return selection.anchorOffset; });
+    expectEq('P', function() { return selection.focusNode.nodeName; });
+    expectEq(1, function() { return selection.focusOffset; });
+  });
+
+testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.2',
+  // Boundary points are middle of leading/trailing whitespaces.
+  '<p contenteditable> ^ 0123 | </p>', function(context, selectionIn) {
+    var selection = context.normalizeSelection(selectionIn);
+    expectFalse(function() { return selection.isCaret; });
+    expectFalse(function() { return selection.isEmpty; });
+    expectTrue(function() { return selection.isRange; });
+    expectEq('P', function() { return selection.anchorNode.nodeName; });
+    expectEq(0, function() { return selection.anchorOffset; });
+    expectEq('P', function() { return selection.focusNode.nodeName; });
+    expectEq(1, function() { return selection.focusOffset; });
+  });
+
 //
 // removeAttribute
 //
@@ -328,6 +354,18 @@ testCaseWithSample('context.setUpEffectiveNodes.Junk',
                  return context.document.body.firstChild.innerHTML;
                });
     });
+
+//
+// shouldUseCSS
+//
+testCaseWithSample('context.shouldUseCSS',
+    '<p contenteditable>012|</p>', function(context) {
+  context.document.execCommand('styleWithCSS', false, true);
+  expectTrue(function() { return context.shouldUseCSS; });
+
+  context.document.execCommand('styleWithCSS', false, false);
+  expectFalse(function() { return context.shouldUseCSS; });
+});
 
 //
 // splitNode
