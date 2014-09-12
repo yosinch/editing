@@ -239,7 +239,7 @@ editing.defineCommand('InsertOrderedList', (function() {
 
     // Extend as far as the closest list if exists.
     var listAncestors =
-      editing.nodes.ancestorsUntil(effectiveNodes[0], function(node) {
+      editing.nodes.ancestorsWhile(effectiveNodes[0], function(node) {
         return !isList(node);
       });
     var listCandidate = listAncestors[listAncestors.length - 1].parentNode;

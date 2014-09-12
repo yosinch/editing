@@ -36,7 +36,7 @@ editing.define('nodes', (function() {
    * @param {function(!Node):boolean} predicate
    * @return {!Array.<!Node>}
    */
-  function ancestorsUntil(node, predicate) {
+  function ancestorsWhile(node, predicate) {
     var result = [];
     for (var ancestor = node.parentNode; ancestor && predicate(ancestor);
          ancestor = ancestor.parentNode) {
@@ -357,7 +357,7 @@ editing.define('nodes', (function() {
   }
 
   return Object.defineProperties({}, {
-    ancestorsUntil: {value: ancestorsUntil},
+    ancestorsWhile: {value: ancestorsWhile},
     commonAncestor: {value: commonAncestor},
     computeSelectedNodes: {value: computeSelectedNodes},
     isContentEditable: {value: isContentEditable},

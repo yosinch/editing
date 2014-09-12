@@ -8,16 +8,57 @@ function dumpNodes(nodes) {
   var sink = ''
   var delimiter = '';
   nodes.forEach(function(node) {
+    sink += delimiter;
     if (node === null)
       sink += "(null)";
     else if (editing.nodes.isText(node))
-      sink += delimiter + node.nodeValue;
+      sink += node.nodeValue;
     else
-      sink += delimiter + node.nodeName;
+      sink += node.nodeName;
     delimiter = ',';
   });
   return sink;
 }
+
+//
+// ancestorsWhile
+//
+testCaseWithSample('nodes.ancestorsWhile.Nodes',
+  '<div><a>foo<b>bar<i>baz<u>q$u|x</u></i></b></a></div>',
+  function(context, selection) {
+    var node = selection.anchorNode;
+    expectEq('U,I,B,A', function() {
+        return dumpNodes(
+          editing.nodes.ancestorsWhile(node, function(node) {
+            return node.nodeName !== 'DIV';
+          }));
+      });
+    expectEq('U,I,B', function() {
+        return dumpNodes(
+          editing.nodes.ancestorsWhile(node, function(node) {
+            return node.nodeName !== 'A';
+          }));
+      });
+    expectEq('U,I', function() {
+        return dumpNodes(
+          editing.nodes.ancestorsWhile(node, function(node) {
+            return node.nodeName !== 'B';
+          }));
+      });
+    expectEq('U', function() {
+        return dumpNodes(
+          editing.nodes.ancestorsWhile(node, function(node) {
+            return node.nodeName !== 'I';
+          }));
+      });
+    expectEq('', function() {
+        return dumpNodes(
+          editing.nodes.ancestorsWhile(node, function(node) {
+            return node.nodeName !== 'U';
+          }));
+      });
+  }
+);
 
 //
 // computeSelectedNodes
