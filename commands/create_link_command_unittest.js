@@ -314,7 +314,7 @@ testCaseFor('createLink.style.3r', {
 });
 
 testCaseFor('createLink.style.3r.css', {
-  after: '<div contenteditable><a href="URL">^hello <span style="font-weight: bold; font-style: italic">world|</span></a></div>',
+  after: '<div contenteditable><a href="URL">^hello <span style="font-style: italic; font-weight: bold">world|</span></a></div>',
   before: '<div contenteditable>^hello <a href="URL" style="font-style: italic; font-weight: bold;">world</a>|</div>',
   sampleId: 'editing/execCommand/toggle-link-win.html',
   styleWithCSS: true,

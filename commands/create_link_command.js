@@ -59,47 +59,46 @@ editing.defineCommand('createLink', (function() {
    * @param {!editing.EditingContext} context
    * @param {!Element} element
    */
+  // TODO(yosin) We should move |expandInlineStyle()| to library to share
+  // with other commands.
   function expandInlineStyle(context, element) {
+    /**
+     * @param {!editing.EditingContext} context
+     * @param {!Element} element
+     */
+    function expandInlineStyleWithCSS(context, element) {
+      var style = new editing.EditingStyle(element);
+      if (!style.hasStyle)
+        return;
+      var styleElement = context.createElement('span');
+      style.properties.forEach(function(property) {
+        context.setStyle(styleElement, property.name, property.value);
+        context.removeStyle(element, property.name);
+      });
+      moveAllChildren(context, styleElement, element);
+      context.appendChild(element, styleElement);
+    }
+
+    /**
+     * @param {!editing.EditingContext} context
+     * @param {!Element} element
+     */
+    function expandInlineStyleWithoutCSS(context, element) {
+      var style = new editing.EditingStyle(element);
+      if (!style.hasStyle)
+        return;
+      style.createElements(context, function(context, property, styleElement) {
+        moveAllChildren(context, styleElement, element);
+        context.appendChild(element, styleElement);
+        context.removeStyle(element, property.name);
+      });
+    }
+
     if (context.shouldUseCSS) {
       expandInlineStyleWithCSS(context, element);
       return;
     }
     expandInlineStyleWithoutCSS(context, element);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   */
-  function expandInlineStyleWithCSS(context, element) {
-    var style = new editing.EditingStyle(element);
-    if (!style.hasStyle)
-      return;
-    var styleElement = context.createElement('span');
-    style.properties.forEach(function(property) {
-      context.setStyle(styleElement, property.name, property.value);
-      context.removeStyle(element, property.name);
-    });
-    moveAllChildren(context, styleElement, element);
-    context.appendChild(element, styleElement);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   */
-  function expandInlineStyleWithoutCSS(context, element) {
-    var style = new editing.EditingStyle(element);
-    if (!style.hasStyle)
-      return;
-    style.properties.forEach(function(property) {
-      var styleElement = editing.EditingStyle.createElement(context, property);
-      if (!styleElement)
-        return;
-      moveAllChildren(context, styleElement, element);
-      context.appendChild(element, styleElement);
-      context.removeStyle(element, property.name);
-    });
   }
 
   /**
@@ -161,6 +160,8 @@ editing.defineCommand('createLink', (function() {
    * @param {!Element} newElement
    * @param {!Element} oldElement
    */
+  // TODO(yosin) We should move |moveAllChildren()| to |EditingContext| to
+  // share with other commands.
   function moveAllChildren(context, newElement, oldElement) {
     while (oldElement.firstChild)
       context.appendChild(newElement, oldElement.firstChild);
