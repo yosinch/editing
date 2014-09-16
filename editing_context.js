@@ -30,7 +30,8 @@ editing.define('EditingContext', (function() {
     // We don't make ending selection as starting selection here. Because,
     // |ReadOnlySelection| doesn't track DOM modification during command
     // execution.
-    this.startingSelection_ = selection
+    this.startingSelection_ = selection;
+    this.styledElements_ = new Map();
     Object.seal(this);
   }
 
@@ -42,6 +43,9 @@ editing.define('EditingContext', (function() {
 
   /** @type {!Array.<!editing.Operation>} */
   EditingContext.prototype.operations_;
+
+  /** @type {!Map.<!Element, !editing.SetStyle>} */
+  EditingContext.prototype.styledElements_;
 
   /**
    * @this {!EditingContext}
@@ -523,8 +527,13 @@ editing.define('EditingContext', (function() {
    */
   function setStyle(element, propertyName, newValue) {
     console.assert(editing.nodes.isElement(element));
-    var operation = new editing.SetStyle(element, propertyName, newValue);
-    this.operations_.push(operation);
+    var operation = this.styledElements_.get(element);
+    if (!operation) {
+      operation = new editing.SetStyle(element);
+      this.operations_.push(operation);
+      this.styledElements_.set(element, operation);
+    }
+    operation.setProperty(propertyName, newValue);
     operation.execute();
   }
 

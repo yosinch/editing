@@ -4,7 +4,7 @@
 
 function createHtmlGetter(element) {
   return function() {
-    return element.outerHTML.toLowerCase();
+    return element.outerHTML;
   }
 }
 
@@ -117,10 +117,29 @@ testCaseWithSample('operations.setStyle.1',
     function(context, selection) {
       var parentNode = context.document.body.firstChild;
       var element = parentNode.firstChild;
-      var operation = new editing.SetStyle(element, 'color', 'red');
+      var operation = new editing.SetStyle(element);
+      operation.setProperty('color', 'red');
 
       operation.redo();
       expectEq('<p><foo style="color: red;"></foo></p>',
+               createHtmlGetter(parentNode));
+
+      operation.undo();
+      expectEq('<p><foo style="color: blue;"></foo></p>',
+               createHtmlGetter(parentNode));
+    });
+
+testCaseWithSample('operations.setStyle.2',
+    '|<p><foo style="color: blue;"></p>',
+    function(context, selection) {
+      var parentNode = context.document.body.firstChild;
+      var element = parentNode.firstChild;
+      var operation = new editing.SetStyle(element);
+      operation.setProperty('font-weight', 'bold');
+      operation.setProperty('color', 'red');
+
+      operation.redo();
+      expectEq('<p><foo style="color: red; font-weight: bold;"></foo></p>',
                createHtmlGetter(parentNode));
 
       operation.undo();

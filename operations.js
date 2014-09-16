@@ -323,44 +323,73 @@ editing.define('SetAttribute', (function() {
 //////////////////////////////////////////////////////////////////////
 //
 // SetStyle
+// We consolidate inline style changes into one operation to keep ordering
+// of STYLE attribute value.
 //
 editing.define('SetStyle', (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Element} element
-   * @param {string} propertyName
-   * @param {string} newValue
    */
-  function SetStyle(element, propertyName, newValue) {
-    editing.Operation.call(this, 'setAttribute');
+  function SetStyle(element) {
+    editing.Operation.call(this, 'setStyle');
+    this.changes_ = [];
     this.element_ = element;
-    this.propertyName_ = propertyName;
-    this.newValue_ = newValue;
-    this.oldValue_ = element.style[propertyName];
+    this.oldStyleText_ = element.getAttribute('style');
     Object.seal(this);
   }
+
+  /** @type {!Array.<{name: string, value: string}>} */
+  SetStyle.prototype.changes_;
+
+  /** @type {!Element} */
+  SetStyle.prototype.element_;
+
+  /** @type {string} */
+  SetStyle.prototype.oldStyleText_;
 
   /**
    * @this {!SetStyle}
    */
   function redo() {
-    this.element_.style[this.propertyName_] = this.newValue_;
+    // Restore to initial state.
+    this.undo();
+    // Apply changes.
+    var style = this.element_.style;
+    this.changes_.forEach(function(property) {
+      style[property.name] = property.value;
+    });
+  }
+
+  /**
+   * @this {!SetStyle}
+   * @param {string} propertyName
+   * @param {string} propertyValue
+   */
+  function setProperty(propertyName, propertyValue) {
+    console.assert(propertyName in this.element_.style,
+                   'Unknown CSS property name', propertyName);
+    this.changes_.push({name: propertyName, value: propertyValue});
   }
 
   /**
    * @this {!SetStyle}
    */
   function undo() {
-    this.element_.style[this.propertyName_] = this.oldValue_;
+    if (this.oldStyleText_ === null) {
+      this.element_.removeAttribute('style');
+      return;
+    }
+    this.element_.setAttribute('style', this.oldStyleText_);
   }
 
   SetStyle.prototype = Object.create(editing.Operation.prototype, {
     constructor: SetStyle,
+    changes_: {writable: true},
     element_: {writable: true},
-    newValue_: {writable: true},
-    oldValue_: {writable: true},
-    propertyName_: {writable: true},
+    oldStyleText_: {writable: true},
     redo: {value: redo},
+    setProperty: {value: setProperty},
     undo: {value: undo}
   });
 

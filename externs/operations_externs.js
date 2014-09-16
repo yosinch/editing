@@ -82,10 +82,14 @@ editing.SetAttribute = function(element, attrName, newValue) {}
  * @extends {editing.Operation}
  * @final
  * @param {!Element} element
+ */
+editing.SetStyle = function(element) {}
+
+/**
  * @param {string} propertyName
  * @param {string} newValue
  */
-editing.SetStyle = function(element, propertyName, newValue) {}
+editing.SetStyle.prototype.setProperty = function(propertyName, newValue) {};
 
 /**
  * @constructor
