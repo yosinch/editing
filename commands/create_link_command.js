@@ -138,6 +138,8 @@ editing.defineCommand('createLink', (function() {
     return Boolean(node) && node.nodeName === 'A';
   }
 
+  /** @const */ var isDescendantOf = editing.nodes.isDescendantOf;
+
   /**
    * @param {!Node} node
    * @return {boolean}
@@ -254,10 +256,14 @@ editing.defineCommand('createLink', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
-   * @param {string} url
+   * @param {?string} url
    */
   function setAnchorUrl(context, anchorElement, url) {
     console.assert(anchorElement.nodeName === 'A');
+    if (!url) {
+      context.removeAttribute(anchorElement, 'href');
+      return;
+    }
     context.setAttribute(anchorElement, 'href', url);
   }
 
@@ -349,7 +355,7 @@ editing.defineCommand('createLink', (function() {
         return;
       }
 
-      if (editing.nodes.isDescendantOf(node, anchorElement)) {
+      if (isDescendantOf(node, anchorElement)) {
         // See w3c.44
         return;
       }
@@ -432,6 +438,8 @@ editing.defineCommand('createLink', (function() {
 
     /** @type {?Element} */ var lastAnchorElement = null;
     /** @type {?string} */ var lastUrl = null;
+    /** @const @type {?Node} */
+    var endNode = editing.nodes.nextNodeSkippingChildren(lastNode);
     effectiveNodes.forEach(function(currentNode) {
       if (currentNode === anchorElement)
         return;
@@ -451,12 +459,12 @@ editing.defineCommand('createLink', (function() {
       if (isAnchorElement(currentNode)) {
         lastAnchorElement = /** @type {!Element} */(currentNode);
         lastUrl = getAnchorUrl(lastAnchorElement);
-        if (lastAnchorElement.hasAttribute('style') &&
-            lastNode.nextSibling &&
-            editing.nodes.isDescendantOf(lastNode, lastAnchorElement)) {
+        var needSplit = endNode && isDescendantOf(endNode, lastAnchorElement);
+        if (lastAnchorElement.hasAttribute('style') && needSplit) {
           // If |lastAnchorElement| contains |lastNode| and |lastAnchorElement|
           // has // STYLE attribute, we split it. See |createLink.style.4|.
-          context.splitTree(lastAnchorElement, lastNode.nextSibling);
+          context.splitTree(lastAnchorElement, /** @type {!Node} */(endNode));
+          needSplit = false;
         }
         expandInlineStyle(context, lastAnchorElement);
         if (!anchorElement) {
@@ -469,11 +477,18 @@ editing.defineCommand('createLink', (function() {
         setAnchorUrl(context, lastAnchorElement, url);
         if (canMergeAnchor(lastAnchorElement, url)) {
           // Unwrap A element.
-          var contentElement = editing.nodes.isDescendantOf(lastAnchorElement,
-                                                            anchorElement) ?
-              lastAnchorElement.parentNode : anchorElement;
+          var contentElement =
+              isDescendantOf(lastAnchorElement, anchorElement) ?
+                  lastAnchorElement.parentNode : anchorElement;
+          var contentEndNode = needSplit ? endNode : null;
+          while (contentEndNode &&
+                 contentEndNode.parentNode !== lastAnchorElement)
+            contentEndNode = contentEndNode.parentNode;
           moveChildren(context, contentElement, lastAnchorElement,
-                       lastNode.nextSibling, selectionTracker);
+                       contentEndNode, selectionTracker);
+          setAnchorUrl(context, lastAnchorElement, lastUrl);
+          lastAnchorElement = null;
+          lastUrl = null;
           return;
         }
         processPendingContents();
@@ -517,17 +532,12 @@ editing.defineCommand('createLink', (function() {
       var element = /** @type {!Element} */(lastAnchorElement);
       var nextNode = editing.nodes.nextNode(lastNode);
       if (nextNode &&
-          editing.nodes.isDescendantOf(nextNode, element)) {
+          isDescendantOf(nextNode, element)) {
         var newAnchorElement = context.splitTree(element, nextNode);
         // TODO(yosin) We should remove this code fragment once |splitNode|
         // doesn't copy "name" attribute. See http://crbug.com/411785
         context.removeAttribute(element, 'name');
-        if (lastUrl) {
-          setAnchorUrl(context, newAnchorElement,
-                       /** @type {string} */(lastUrl));
-        } else {
-          context.removeAttribute(newAnchorElement, 'href');
-        }
+        setAnchorUrl(context, newAnchorElement, lastUrl);
       }
       unwrapAnchorContents(context, element);
     }

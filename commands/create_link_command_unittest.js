@@ -290,7 +290,7 @@ testCaseFor('createLink.style.2.css', {
   value: 'URL'
 });
 
-// If there are more than one inline style, we don't convert it to elemnt.
+// If there are more than one inline style, we don't convert it to element.
 testCaseFor('createLink.style.3', {
   after: '<div contenteditable><a href="URL">^hello <b><i>world|</i></b></a></div>',
   before: '<div contenteditable>^hello <a href="URL" style="font-weight: bold; font-style: italic">world</a>|</div>',
@@ -333,5 +333,12 @@ testCaseFor('createLink.style.4.css', {
   before: '<div contenteditable><a href="URL" style="font-weight: bold">^hello| world</a></div>',
   sampleId: 'editing/execCommand/toggle-link-win.html',
   styleWithCSS: true,
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.5', {
+  after: '<div contenteditable><a href="URL">^hello <b>world</b> |</a><a href="track">after</a></div>',
+  before: '<div contenteditable>^hello <a href="track"><b>world</b> |after</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
   value: 'URL'
 });
