@@ -5,26 +5,83 @@
 'use strict';
 
 editing.define('EditingStyle', (function() {
-  /** @const */ var CSS_PROPRTY_DATA = {
-    'font-style': {
-      priority: 2,
-      tagNames: {'italic': 'i'}
-    },
-    'font-weight': {
-      priority: 1,
-      tagNames: {'bold': 'b'},
-    },
-    'text-decoration': {
-      priority: 3,
-      tagNames: {
-        'line-through': 's',
-        'underline': 'u'
+  /** @const */ var CSS_PROPRTY_DATA = (function() {
+    function makeFontCreate(attributeName) {
+      if (attributeName === 'face') {
+        return function(context, property) {
+          var fontElement = context.createElement('font');
+          // Remove single quotes for Outlook 2007 compatibility.
+          // See http://wkb.ug/79448
+          var value = property.value.replace(/\u0027/g, '');
+          context.setAttribute(fontElement, attributeName, value);
+          return fontElement;
+        }
+      }
+      return function(context, property) {
+        var fontElement = context.createElement('font');
+        context.setAttribute(fontElement, attributeName, property.value);
+        return fontElement;
       }
     }
-  };
+
+    function makeSimpleCreator(expectedValue, tagName) {
+      return function(context, property) {
+        if (property.value === expectedValue)
+          return context.createElement(tagName);
+        return null;
+      };
+    }
+
+    function makeSimpleCreator2(expectedValue1, tagName1, expectedValue2,
+                               tagName2) {
+      return function(context, property) {
+        if (property.value === expectedValue1)
+          return context.createElement(tagName1);
+        if (property.value === expectedValue2)
+          return context.createElement(tagName2);
+        return null;
+      };
+    }
+
+    return {
+      'color': {
+        createStyleElement: makeFontCreate('color')
+      },
+      'font-family': {
+        createStyleElement: makeFontCreate('face')
+      },
+      'font-size': {
+        createStyleElement: makeFontCreate('size')
+      },
+      'font-style': {
+        createStyleElement: makeSimpleCreator('italic', 'i')
+      },
+      'font-weight': {
+        createStyleElement: makeSimpleCreator('bold', 'b')
+      },
+      'text-decoration': {
+        createStyleElement: makeSimpleCreator2('line-through', 's',
+                                               'underline', 'u')
+      },
+      'vertical-align': {
+        createStyleElement: makeSimpleCreator2('sub', 'sub', 'super', 'sup')
+      }
+    };
+  })();
   Object.keys(CSS_PROPRTY_DATA).forEach(function(propertyName) {
     CSS_PROPRTY_DATA[propertyName].propertyName = propertyName;
   });
+
+  // This order must match with |ApplyStyleCommand::applyInlineStyleChange()|.
+  /** @const @type {!Array.<string>} */ var CREATE_ELEMENT_ORDER = [
+    'color',
+    'font-family',
+    'font-size',
+    'font-weight',
+    'font-style',
+    'text-decoration',
+    'vertical-align',
+  ].reverse();
 
   /** @const */ var TAG_NAME_DATA = {
     'b': {
@@ -60,26 +117,40 @@ editing.define('EditingStyle', (function() {
   /**
    * @constructor
    * @final
-   * @param {!Element}
+   * @param {!Element} element
    */
   function EditingStyle(element) {
     this.domStyle_ = element.style;
     Object.seal(this);
   }
 
+  /** @type {!Array.<!editing.Property>} */
+  EditingStyle.prototype.properties;
+
   /**
-   * @param {{name: string, value: string}} property
-   * @return {?Element}
+   * @this {!EditingStyle}
+   * @param {!editing.EditingContext} context
+   * @param {!function(!editing.EditingContext, editing.Property, !Element)}
+   *    callback
    */
-  EditingStyle.createElement = function(context, property) {
-    var data = CSS_PROPRTY_DATA[property.name];
-    if (!data)
-      return null;
-    var tagName = data.tagNames[property.value];
-    if (!tagName)
-      return null;
-    return context.createElement(tagName);
-  };
+  function createElements(context, callback) {
+    var domStyle = this.domStyle_;
+    /** @type {!Map.<string, string>} */ var properties = new Map();
+    [].forEach.call(domStyle, function(propertyName) {
+      properties.set(propertyName, domStyle[propertyName]);
+    });
+    CREATE_ELEMENT_ORDER.forEach(function(propertyName) {
+      var propertyValue = properties.get(propertyName);
+      if (typeof(propertyValue) !== 'string')
+        return;
+      var property = {name: propertyName, value: propertyValue};
+      var data = CSS_PROPRTY_DATA[propertyName];
+      var styleElement = data.createStyleElement(context, property);
+      if (!styleElement)
+        return;
+      callback(context, property, styleElement);
+    });
+  }
 
   /**
    * @param {string} propertyName
@@ -99,7 +170,7 @@ editing.define('EditingStyle', (function() {
 
   /**
    * @this {!EditingStyle}
-   * @return {!Array.<{name: string, value: string}>}
+   * @return {!Array.<editing.Property>}
    */
   function properties() {
     var domStyle = this.domStyle_;
@@ -107,12 +178,8 @@ editing.define('EditingStyle', (function() {
       return CSS_PROPRTY_DATA[propertyName];
     }).filter(function(data) {
       return data;
-    }).sort(function(data1, data2) {
-      return data2.priority - data1.priority;
     }).map(function(data) {
       var propertyValue = domStyle[data.propertyName];
-      if (!(propertyValue in data.tagNames))
-        return undefined;
       return {name: data.propertyName, value: propertyValue}
     }).filter(function(property) {
       return property;
@@ -121,6 +188,7 @@ editing.define('EditingStyle', (function() {
 
   Object.defineProperties(EditingStyle.prototype, {
     constructor: {value: EditingStyle},
+    createElements: {value: createElements},
     hasStyle: {get: hasStyle},
     properties: {get: properties}
   });

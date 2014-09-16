@@ -9,25 +9,42 @@
 //
 testCaseWithSample('style.createElement.1',
     '<p contenteditable>|foo</p>', function(context) {
-  expectEq('B', function() {
-    return editing.EditingStyle.createElement(context, {
-      name: 'font-weight', value: 'bold'
-    }).tagName;
+  function sample(propertyName, propertyValue) {
+     var element = context.createElement('span');
+     element.style[propertyName] = propertyValue;
+     var style = new editing.EditingStyle(element);
+     var result = [];
+     style.createElements(context, function(context, property, styleElement) {
+       result.push(styleElement);
+     });
+     if (result.length !== 1)
+       return '';
+     return result[0].outerHTML;
+  }
+
+  expectEq('<font color="red"></font>', function() {
+    return sample('color', 'red');
   });
-  expectEq('I', function() {
-    return editing.EditingStyle.createElement(context, {
-      name: 'font-style', value: 'italic'
-    }).tagName;
+  expectEq('<font face="monospace"></font>', function() {
+    return sample('font-family', 'monospace');
   });
-  expectEq('S', function() {
-    return editing.EditingStyle.createElement(context, {
-      name: 'text-decoration', value: 'line-through'
-    }).tagName;
+  expectEq('<b></b>', function() {
+    return sample('font-weight', 'bold');
   });
-  expectEq('U', function() {
-    return editing.EditingStyle.createElement(context, {
-      name: 'text-decoration', value: 'underline'
-    }).tagName;
+  expectEq('<i></i>', function() {
+    return sample('font-style', 'italic');
+  });
+  expectEq('<u></u>', function() {
+    return sample('text-decoration', 'underline');
+  });
+  expectEq('<s></s>', function() {
+    return sample('text-decoration', 'line-through');
+  });
+  expectEq('<sub></sub>', function() {
+    return sample('vertical-align', 'sub');
+  });
+  expectEq('<sup></sup>', function() {
+    return sample('vertical-align', 'super');
   });
 });
 

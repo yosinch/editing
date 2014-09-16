@@ -10,11 +10,16 @@
 editing.EditingStyle = function(element) {};
 
 /**
- * @param {editing.EditingContext} context
- * @param {{name: string, value: string}} property
- * @return {?Element}
+ * @typedef {{name: string, value: string}}
  */
-editing.EditingStyle.createElement = function(context, property) {};
+editing.Property;
+
+/**
+ * @param {editing.EditingContext} context
+ * @param {!function(!editing.EditingContext, !editing.Property, !Element)}
+ *    callback
+ */
+editing.EditingStyle.prototype.createElements = function(context, callback) {};
 
 /**
  * @type {boolean}
@@ -22,6 +27,6 @@ editing.EditingStyle.createElement = function(context, property) {};
 editing.EditingStyle.prototype.hasStyle;
 
 /**
- * @type {!Array.<{name: string, value: string}>}
+ * @type {!Array.<!editing.Property>}
  */
 editing.EditingStyle.prototype.properties;
