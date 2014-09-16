@@ -226,9 +226,8 @@ editing.defineCommand('createLink', (function() {
       return selection;
 
     // Move lowest anchor contents to anchor element.
-    while (startContainer.firstChild) {
+    while (startContainer.firstChild)
       context.appendChild(anchorElement, startContainer.firstChild);
-    }
 
     // Move highest content node before anchor element
     context.insertBefore(anchorElement.parentNode, lastOf(elements),
@@ -271,9 +270,8 @@ editing.defineCommand('createLink', (function() {
     console.assert(editing.nodes.isElement(firstContent));
     context.insertBefore(anchorElement.parentNode, firstContent,
                          anchorElement);
-    while (firstContent.firstChild) {
+    while (firstContent.firstChild)
       context.appendChild(anchorElement, firstContent.firstChild);
-    }
     context.appendChild(firstContent, anchorElement);
   }
 
@@ -282,9 +280,8 @@ editing.defineCommand('createLink', (function() {
    * @param {!Element} anchorElement
    */
   function unwrapAnchorContents(context, anchorElement) {
-    while (canUnwrapContents(anchorElement)) {
+    while (canUnwrapContents(anchorElement))
       unwrapAnchorContent(context, anchorElement);
-    }
   }
 
   /**
@@ -419,7 +416,7 @@ editing.defineCommand('createLink', (function() {
     }
 
     var startNode = effectiveNodes[0];
-    var endNode = lastOf(effectiveNodes);
+    var lastNode = lastOf(effectiveNodes);
     {
       var previous = startNode.previousSibling;
       if (isAnchorElement(previous)) {
@@ -451,59 +448,58 @@ editing.defineCommand('createLink', (function() {
         return;
       }
 
-      var currentElement = /** @type {!Element} */(currentNode);
-      if (isAnchorElement(currentElement)) {
-        lastAnchorElement = currentElement;
-        lastUrl = getAnchorUrl(currentElement);
-        if (currentElement.hasAttribute('style') &&
-            endNode.nextSibling &&
-            editing.nodes.isDescendantOf(endNode, currentElement)) {
-          // If |currentElement| contains |endNode| and |currentElement| has
-          // STYLE attribute, we split it. See |createLink.style.4|.
-          context.splitTree(currentElement, endNode.nextSibling);
+      if (isAnchorElement(currentNode)) {
+        lastAnchorElement = /** @type {!Element} */(currentNode);
+        lastUrl = getAnchorUrl(lastAnchorElement);
+        if (lastAnchorElement.hasAttribute('style') &&
+            lastNode.nextSibling &&
+            editing.nodes.isDescendantOf(lastNode, lastAnchorElement)) {
+          // If |lastAnchorElement| contains |lastNode| and |lastAnchorElement|
+          // has // STYLE attribute, we split it. See |createLink.style.4|.
+          context.splitTree(lastAnchorElement, lastNode.nextSibling);
         }
-        expandInlineStyle(context, currentElement);
+        expandInlineStyle(context, lastAnchorElement);
         if (!anchorElement) {
           processPendingContents();
-          anchorElement = currentElement;
+          anchorElement = lastAnchorElement;
           setAnchorUrl(context, anchorElement, url);
           return;
         }
         console.assert(getAnchorUrl(anchorElement) === url);
-        setAnchorUrl(context, currentElement, url);
-        if (canMergeAnchor(currentElement, url)) {
+        setAnchorUrl(context, lastAnchorElement, url);
+        if (canMergeAnchor(lastAnchorElement, url)) {
           // Unwrap A element.
-          var contentElement = editing.nodes.isDescendantOf(currentElement,
+          var contentElement = editing.nodes.isDescendantOf(lastAnchorElement,
                                                             anchorElement) ?
-              currentElement.parentNode : anchorElement;
-          moveChildren(context, contentElement, currentElement,
-                       endNode.nextSibling, selectionTracker);
+              lastAnchorElement.parentNode : anchorElement;
+          moveChildren(context, contentElement, lastAnchorElement,
+                       lastNode.nextSibling, selectionTracker);
           return;
         }
         processPendingContents();
-        anchorElement = currentElement;
+        anchorElement = lastAnchorElement;
       }
 
-      if (editing.nodes.isInteractive(currentElement)) {
+      if (editing.nodes.isInteractive(currentNode)) {
         processPendingContents();
         return;
       }
 
-      if (currentElement.hasChildNodes()) {
-        pendingContainers.push(currentElement);
+      if (currentNode.hasChildNodes()) {
+        pendingContainers.push(currentNode);
         return;
       }
 
       if (pendingContainers.length) {
-        pendingContents.push(currentElement);
-        if (!currentElement.nextSibling)
+        pendingContents.push(currentNode);
+        if (!currentNode.nextSibling)
           moveLastContainerToContents();
         return;
       }
-      wrapByAnchor(currentElement);
+      wrapByAnchor(currentNode);
     });
 
-    if (endNode.parentNode === anchorElement &&
+    if (lastNode.parentNode === anchorElement &&
         canMergeAnchor(anchorElement.nextSibling, url)) {
       // Merge nodes after selection. See w3c.20
       moveChildren(context, anchorElement, anchorElement.nextSibling, null,
@@ -519,7 +515,7 @@ editing.defineCommand('createLink', (function() {
     // e.g. <a>^foo|bar</a>
     if (lastAnchorElement && lastUrl !== url) {
       var element = /** @type {!Element} */(lastAnchorElement);
-      var nextNode = editing.nodes.nextNode(endNode);
+      var nextNode = editing.nodes.nextNode(lastNode);
       if (nextNode &&
           editing.nodes.isDescendantOf(nextNode, element)) {
         var newAnchorElement = context.splitTree(element, nextNode);
