@@ -56,6 +56,53 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function expandInlineStyle(context, element) {
+    if (context.shouldUseCSS) {
+      expandInlineStyleWithCSS(context, element);
+      return;
+    }
+    expandInlineStyleWithoutCSS(context, element);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function expandInlineStyleWithCSS(context, element) {
+    var style = new editing.EditingStyle(element);
+    if (!style.hasStyle)
+      return;
+    var styleElement = context.createElement('span');
+    style.properties.forEach(function(property) {
+      context.setStyle(styleElement, property.name, property.value);
+      context.removeStyle(element, property.name);
+    });
+    moveAllChildren(context, styleElement, element);
+    context.appendChild(element, styleElement);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function expandInlineStyleWithoutCSS(context, element) {
+    var style = new editing.EditingStyle(element);
+    if (!style.hasStyle)
+      return;
+    style.properties.forEach(function(property) {
+      var styleElement = editing.EditingStyle.createElement(context, property);
+      if (!styleElement)
+        return;
+      moveAllChildren(context, styleElement, element);
+      context.appendChild(element, styleElement);
+      context.removeStyle(element, property.name);
+    });
+  }
+
+  /**
    * @param {!Element} anchorElement
    * @return {?string}
    */
@@ -85,19 +132,19 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {!Node} node
-   * @return {boolean}
-   */
-  function isEffectiveNode(node) {
-    return editing.nodes.isPhrasing(node);
-  }
-
-  /**
    * @param {?Node} node
    * @return {boolean}
    */
   function isAnchorElement(node) {
     return Boolean(node) && node.nodeName === 'A';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isEffectiveNode(node) {
+    return editing.nodes.isPhrasing(node);
   }
 
   /**
@@ -107,6 +154,16 @@ editing.defineCommand('createLink', (function() {
    */
   function lastOf(array) {
     return array.length ? array[array.length - 1] : null;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} newElement
+   * @param {!Element} oldElement
+   */
+  function moveAllChildren(context, newElement, oldElement) {
+    while (oldElement.firstChild)
+      context.appendChild(newElement, oldElement.firstChild);
   }
 
   /**
@@ -395,8 +452,16 @@ editing.defineCommand('createLink', (function() {
 
       var currentElement = /** @type {!Element} */(currentNode);
       if (isAnchorElement(currentElement)) {
-        lastAnchorElement = /** @type {!Element} */(currentElement);
+        lastAnchorElement = currentElement;
         lastUrl = getAnchorUrl(currentElement);
+        if (currentElement.hasAttribute('style') &&
+            endNode.nextSibling &&
+            editing.nodes.isDescendantOf(endNode, currentElement)) {
+          // If |currentElement| contains |endNode| and |currentElement| has
+          // STYLE attribute, we split it. See |createLink.style.4|.
+          context.splitTree(currentElement, endNode.nextSibling);
+        }
+        expandInlineStyle(context, currentElement);
         if (!anchorElement) {
           processPendingContents();
           anchorElement = currentElement;
@@ -407,7 +472,10 @@ editing.defineCommand('createLink', (function() {
         setAnchorUrl(context, currentElement, url);
         if (canMergeAnchor(currentElement, url)) {
           // Unwrap A element.
-          moveChildren(context, currentElement.parentNode, currentElement,
+          var contentElement = editing.nodes.isDescendantOf(currentElement,
+                                                            anchorElement) ?
+              currentElement.parentNode : anchorElement;
+          moveChildren(context, contentElement, currentElement,
                        endNode.nextSibling, selectionTracker);
           return;
         }

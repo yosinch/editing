@@ -6,6 +6,11 @@
 
 testing.define('TEST_EXPECTATIONS', (function() {
   return {
+    // createLink
+    'createLink.style.3.css': {expected: 'fail', reason: 'issue #43'},
+    'createLink.style.3r': {expected: 'fail', reason: 'issue #44'},
+    'createLink.style.3r.css': {expected: 'fail', reason: 'issue #43'},
+
     // insert ordered list
     'insertOrderedList.w3c.26': {expected: 'fail', reason: 'issue #39'},
     'insertOrderedList.w3c.26r': {expected: 'fail', reason: 'issue #39'},
