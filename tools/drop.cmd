@@ -1,6 +1,10 @@
 @if "%_echo%"=="" echo off
 setlocal
-set dest_dir=d:\src\w\crbk\src\third_party\WebKit\Source\core\editing\js
+
+: Remove resouce file which contains our JavaScript file.
+del %CR_ROOT%\out\Debug\gen\blink\public\resources\blink_resources.pak
+
+set dest_dir=%CR_ROOT%\third_party\WebKit\Source\core\editing\js
 set files= ^
     editing.js ^
     content_model.js ^
