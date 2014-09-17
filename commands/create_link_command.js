@@ -293,23 +293,9 @@ editing.defineCommand('createLink', (function() {
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
    */
-  function unwrapAnchorContent(context, anchorElement) {
-    var firstContent = /** @type {!Element} */(anchorElement.firstChild);
-    console.assert(editing.nodes.isElement(firstContent));
-    context.insertBefore(anchorElement.parentNode, firstContent,
-                         anchorElement);
-    while (firstContent.firstChild)
-      context.appendChild(anchorElement, firstContent.firstChild);
-    context.appendChild(firstContent, anchorElement);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} anchorElement
-   */
   function unwrapAnchorContents(context, anchorElement) {
     while (canUnwrapContents(anchorElement))
-      unwrapAnchorContent(context, anchorElement);
+      swapParentAndChild(context, anchorElement);
   }
 
   /**
