@@ -5,6 +5,11 @@
 'use strict';
 
 editing.defineCommand('createLink', (function() {
+  /** @const */ var isDescendantOf = editing.nodes.isDescendantOf;
+  /** @const */ var isEditable = editing.nodes.isEditable;
+  /** @const */ var isElement = editing.nodes.isElement;
+  /** @const */ var isPhrasing = editing.nodes.isPhrasing;
+
   /**
    * @param {?Node} node
    * @param {string} url
@@ -25,8 +30,7 @@ editing.defineCommand('createLink', (function() {
    */
   function canMergeElements(node1, node2) {
     if (!node1 || !node2 || node1.nodeName !== node2.nodeName ||
-        !editing.nodes.isElement(node1) ||
-        !editing.nodes.isPhrasing(node1)) {
+        !isElement(node1) || !isPhrasing(node1)) {
       return false;
     }
     var element1 = /** @type {!Element} */(node1);
@@ -42,15 +46,14 @@ editing.defineCommand('createLink', (function() {
    * Returns true if all child element is identical phrasing element.
    */
   function canUnwrapContents(node) {
-    if (!editing.nodes.isElement(node))
+    if (!isElement(node))
       return false;
     var element = /** @type {!Element} */(node);
     var firstChild = element.firstChild;
     if (!firstChild)
       return false;
     return [].every.call(element.childNodes, function(child) {
-      return editing.nodes.isElement(child) &&
-             editing.nodes.isPhrasing(child) &&
+      return isElement(child) && isPhrasing(child) &&
              child.nodeName === firstChild.nodeName &&
              !!child.firstChild;
     });
@@ -139,14 +142,12 @@ editing.defineCommand('createLink', (function() {
     return Boolean(node) && node.nodeName === 'A';
   }
 
-  /** @const */ var isDescendantOf = editing.nodes.isDescendantOf;
-
   /**
    * @param {!Node} node
    * @return {boolean}
    */
   function isEffectiveNode(node) {
-    return editing.nodes.isEditable(node) && node.nodeName !== 'A';
+    return isEditable(node) && node.nodeName !== 'A';
   }
 
   /**
@@ -205,7 +206,7 @@ editing.defineCommand('createLink', (function() {
     var anchorElement = null;
     var elements = [];
     for (var runner = startContainer;
-         runner && runner.parentNode && editing.nodes.isPhrasing(runner);
+         runner && runner.parentNode && isPhrasing(runner);
          runner = runner.parentNode) {
       if (isAnchorElement(runner)) {
         anchorElement = runner;
@@ -279,7 +280,7 @@ editing.defineCommand('createLink', (function() {
    */
   function swapParentAndChild(context, element) {
     console.assert(element.firstChild &&
-                   editing.nodes.isElement(element.firstChild));
+                   isElement(element.firstChild));
     var child = /** @type {!Element} */(element.firstChild);
     console.assert(child === element.lastChild);
     context.removeChild(element, child);
@@ -314,15 +315,17 @@ editing.defineCommand('createLink', (function() {
       context.insertBefore(selection.anchorNode, textNode, refChild);
     else
       context.appendChild(selection.anchorNode, textNode);
-    selection = new editing.ReadOnlySelection(
-      selection.anchorNode, selection.anchorOffset,
-      selection.anchorNode, selection.anchorOffset + 1,
-      editing.SelectionDirection.ANCHOR_IS_START);
+
+    var endingSelection = new editing.ReadOnlySelection(
+        selection.anchorNode, selection.anchorOffset,
+        selection.anchorNode, selection.anchorOffset + 1,
+        editing.SelectionDirection.ANCHOR_IS_START);
+
     var anchorElement = context.createElement('A');
     setAnchorUrl(context, anchorElement, url);
     context.insertBefore(textNode.parentNode, anchorElement, textNode);
     context.appendChild(anchorElement, textNode);
-    context.setEndingSelection(selection);
+    context.setEndingSelection(endingSelection);
     return true;
   }
 
@@ -423,7 +426,7 @@ editing.defineCommand('createLink', (function() {
     var selectionTracker = new editing.SelectionTracker(context, selection);
     var effectiveNodes = context.setUpEffectiveNodes(selection,
                                                      isEffectiveNode);
-    if (!effectiveNodes[0] || !editing.nodes.isPhrasing(effectiveNodes[0]))
+    if (!effectiveNodes[0] || !isPhrasing(effectiveNodes[0]))
       effectiveNodes.shift();
     if (!effectiveNodes.length) {
       context.setEndingSelection(context.startingSelection);
@@ -460,12 +463,12 @@ editing.defineCommand('createLink', (function() {
         moveLastContainerToContents();
       }
 
-      if (!editing.nodes.isEditable(currentNode)) {
+      if (!isEditable(currentNode)) {
         processPendingContents();
         return true;
       }
 
-      if (!editing.nodes.isPhrasing(currentNode)) {
+      if (!isPhrasing(currentNode)) {
         var savedCurrentAnchorElement = currentAnchorElement;
         processPendingContents();
         if (savedCurrentAnchorElement !== currentNode.parentNode)
