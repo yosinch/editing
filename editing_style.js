@@ -130,6 +130,19 @@ editing.define('EditingStyle', (function() {
   /**
    * @this {!EditingStyle}
    * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function applyStyle(context, element) {
+    this.createElements(context, function(context, property, styleElement) {
+      if (element.tagName === styleElement.tagName)
+        return;
+      context.setStyle(element, property.name, property.value);
+    });
+  }
+
+  /**
+   * @this {!EditingStyle}
+   * @param {!editing.EditingContext} context
    * @param {!function(!editing.EditingContext, editing.Property, !Element)}
    *    callback
    */
@@ -187,6 +200,7 @@ editing.define('EditingStyle', (function() {
   }
 
   Object.defineProperties(EditingStyle.prototype, {
+    applyStyle: {value: applyStyle},
     constructor: {value: EditingStyle},
     createElements: {value: createElements},
     hasStyle: {get: hasStyle},

@@ -91,6 +91,31 @@ editing.defineCommand('createLink', (function() {
       var style = new editing.EditingStyle(element);
       if (!style.hasStyle)
         return;
+      if (element.childElementCount) {
+        // Apply inline style to text child element.
+        var lastElement = null;
+        [].forEach.call(element.childNodes, function(child) {
+          if (isElement(child)) {
+            style.applyStyle(context, /** @type {!Element} */(child));
+            lastElement = null;
+            return;
+          }
+          if (lastElement) {
+            context.appendChild(lastElement, child);
+            return;
+          }
+          style.createElements(context,
+              function(context, property, styleElement) {
+                if (!lastElement)
+                  context.replaceChild(element, styleElement, child);
+                context.appendChild(styleElement, child);
+                lastElement = styleElement;
+              });
+        });
+        context.removeAttribute(element, 'style');
+        return;
+      }
+      // Introduce text-level elements for inline style.
       style.createElements(context, function(context, property, styleElement) {
         moveAllChildren(context, styleElement, element);
         context.appendChild(element, styleElement);
@@ -454,6 +479,7 @@ editing.defineCommand('createLink', (function() {
     /** @const @type {?Node} */
     var endNode = editing.nodes.nextNodeSkippingChildren(lastNode);
     effectiveNodes.every(function(currentNode) {
+console.log('every', currentNode.outerHTML || currentNode.nodeValue);
       if (currentNode === currentAnchorElement)
         return true;
 
@@ -505,8 +531,10 @@ editing.defineCommand('createLink', (function() {
           // Selection contains partial anchor contents. We split this
           // anchor element. e.g. <a>^foo|bar</a>, see createLink.style.4.
           unwrapAnchorContents(context, anchorElement);
+console.log('unwrapAnchorContents', anchorElement.outerHTML);
           splitAnchorElement(context, anchorElement,
                              /** @type {!Node} */(endNode));
+console.log('splitAnchorElement', anchorElement.outerHTML, anchorElement.nextSibling.outerHTML);
         }
         expandInlineStyle(context, anchorElement);
         setAnchorUrl(context, anchorElement, urlValue);

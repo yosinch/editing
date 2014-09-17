@@ -344,6 +344,25 @@ testCaseFor('createLink.style.5', {
   value: 'URL'
 });
 
+testCaseFor('createLink.style.5.css', {
+  // Select first two words
+  // Put STYLE attribute into B element.
+  after: '<div contenteditable><a href="URL">^hello <b style="font-style: italic">world</b><i> again|</i></a><a href="otherurl" style="font-style: italic">after</a></div>',
+  before: '<div contenteditable>^hello <a href="otherurl" style="font-style: italic"><b>world</b> again|after</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.6.css', {
+  // Select first two words
+  // Put STYLE attribute into B element.
+  after: '<div contenteditable><a href="URL">^hello <b style="font-style: italic">world|</b></a><a href="otherurl"><i> after</i></a></div>',
+  before: '<div contenteditable>^hello <a href="otherurl" style="font-style: italic"><b>world|</b> after</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+
 testCaseFor('createLink.div.1', {
   // Select last word
   // Note: DIV in A element is violate HTML5 content model.
