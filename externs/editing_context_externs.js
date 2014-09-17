@@ -151,6 +151,14 @@ editing.EditingContext.prototype.splitNode = function(parent, child) {};
 
 /**
  * @this {!editing.EditingContext}
+ * @param {!Node} parent
+ * @param {!Node} child
+ * @return {!Node}
+ */
+editing.EditingContext.prototype.splitNodeLeft = function(parent, child) {};
+
+/**
+ * @this {!editing.EditingContext}
  * @param {!Text} node
  * @param {number} offset
  * @return {!Text}
