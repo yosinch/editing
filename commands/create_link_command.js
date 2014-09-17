@@ -171,31 +171,22 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {?Node} newNode
-   * @param {?Node} oldNode
-   * @param {?Node} stopNode
-   * @param {?editing.SelectionTracker} selectionTracker
+   * @param {!Element} newParent
+   * @param {!Element} oldParent
+   * @param {!editing.SelectionTracker} selectionTracker
    *
-   * TODO(yosin) We should make |context.unwrapElement| to use |moveChildren|.
+   * TODO(yosin) We should make |context.unwrapElement| to use |mergeElements|.
    */
-  function moveChildren(context, newNode, oldNode, stopNode,
-                        selectionTracker) {
-    console.assert(newNode && editing.nodes.isElement(newNode));
-    console.assert(oldNode && editing.nodes.isElement(oldNode));
-    var newParent = /** @type {!Element} */(newNode);
-    var oldParent = /** @type {!Element} */(oldNode);
-    console.assert(!stopNode || stopNode.parentNode === oldParent,
-                   'stopNode', stopNode, 'must be child of', oldParent);
+  function mergeElements(context, newParent, oldParent, selectionTracker) {
+    console.assert(newParent !== oldParent,
+                   'Should not move children to itself');
     var child = oldParent.firstChild;
-    while (child && child !== stopNode) {
+    while (child) {
       var next = child.nextSibling;
       context.appendChild(newParent, child);
       child = next;
     }
-    if (child)
-      return;
-    if (selectionTracker)
-      selectionTracker.willRemoveNode(oldParent);
+    selectionTracker.willRemoveNode(oldParent);
     context.removeChild(oldParent.parentNode, oldParent);
   }
 
@@ -270,6 +261,20 @@ editing.defineCommand('createLink', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
+   * @param {!Node} refNode
+   */
+  function splitAnchorElement(context, anchorElement, refNode) {
+    console.assert(anchorElement.nodeName === 'A');
+    console.assert(isDescendantOf(refNode, anchorElement));
+    context.splitTree(anchorElement, refNode);
+    // TODO(yosin) We should remove this code fragment once |splitNode|
+    // doesn't copy "name" attribute. See http://crbug.com/411785
+    context.removeAttribute(anchorElement, 'name');
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} anchorElement
    */
   function unwrapAnchorContent(context, anchorElement) {
     var firstContent = /** @type {!Element} */(anchorElement.firstChild);
@@ -320,48 +325,50 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {string} url
+   * @param {string} urlValue
    * @return {boolean}
    */
-  function createLinkForRange(context, url) {
-    console.assert(url !== '');
+  function createLinkForRange(context, urlValue) {
+    console.assert(urlValue !== '');
 
-    var anchorElement = null;
+    /** @type {?Element} */var currentAnchorElement = null;
+
     /**
      * @param {!Node} node
      * Wraps |node| by A element.
      */
     function wrapByAnchor(node) {
-      if (!anchorElement) {
+      if (!currentAnchorElement) {
         if (!editing.nodes.isVisibleNode(node)) {
           // We don't want to have leading whitespaces in anchor element.
           return;
         }
         var nextSibling = node.nextSibling;
-        if (canMergeAnchor(nextSibling, url)) {
+        if (canMergeAnchor(nextSibling, urlValue)) {
           // See w3c.26, w3c.30
-          anchorElement = nextSibling;
-          context.insertBefore(anchorElement, node, anchorElement.firstChild);
+          currentAnchorElement = /** @type {!Element} */(nextSibling);
+          context.insertBefore(currentAnchorElement, node,
+                               currentAnchorElement.firstChild);
           return;
         }
         var previousSibling = node.previousSibling;
-        if (canMergeAnchor(previousSibling, url)) {
+        if (canMergeAnchor(previousSibling, urlValue)) {
           // See w3c.27
-          anchorElement = /** @type {!Element} */(previousSibling);
-          context.appendChild(anchorElement, node);
+          currentAnchorElement = /** @type {!Element} */(previousSibling);
+          context.appendChild(currentAnchorElement, node);
           return;
         }
-        anchorElement = insertNewAnchorElement(context, url, node);
+        currentAnchorElement = insertNewAnchorElement(context, urlValue, node);
         return;
       }
 
-      if (isDescendantOf(node, anchorElement)) {
+      if (isDescendantOf(node, currentAnchorElement)) {
         // See w3c.44
         return;
       }
 
-      if (node.parentNode === anchorElement.parentNode) {
-        context.appendChild(anchorElement, node);
+      if (node.parentNode === currentAnchorElement.parentNode) {
+        context.appendChild(currentAnchorElement, node);
         return;
       }
 
@@ -370,10 +377,10 @@ editing.defineCommand('createLink', (function() {
     }
 
     function endAnchorElement() {
-      if (!anchorElement)
+      if (!currentAnchorElement)
         return;
-      unwrapAnchorContents(context, anchorElement);
-      anchorElement = null;
+      unwrapAnchorContents(context, currentAnchorElement);
+      currentAnchorElement = null;
     }
 
     var pendingContainers = [];
@@ -405,7 +412,7 @@ editing.defineCommand('createLink', (function() {
     // TODO(yosin) We should not use |computeSelectedNodes()| to check
     // whether selection contains nodes or not. See createLink.EndTag.
     if (!editing.nodes.computeSelectedNodes(selection).length)
-      return createLinkForCaret(context, url);
+      return createLinkForCaret(context, urlValue);
 
     // TODO(yosin) We should reorder content elements for caret, since Chrome
     // does so.
@@ -421,28 +428,28 @@ editing.defineCommand('createLink', (function() {
       return true;
     }
 
-    var startNode = effectiveNodes[0];
+    var firstNode = effectiveNodes[0];
     var lastNode = lastOf(effectiveNodes);
     {
-      var previous = startNode.previousSibling;
+      var previous = firstNode.previousSibling;
       if (isAnchorElement(previous)) {
-        if (canMergeAnchor(previous, url)) {
-          // Merge into previous A, see w3c.20
-          anchorElement = previous;
+        if (canMergeAnchor(previous, urlValue)) {
+          // Merge into previous A, see createLink.w3c.20
+          currentAnchorElement = /** @type {!Element} */(previous);
         }
-      } else if (canMergeElements(previous, startNode)) {
+      } else if (canMergeElements(previous, firstNode)) {
         // This also cancels split tree by |setUpEffectiveNodes()|.
-        moveChildren(context, previous, startNode, null, selectionTracker);
+        // See createLink.abc.3, createLink.w3c.42.
+        mergeElements(context, /** @type {!Element} */(previous),
+                      /** @type {!Element} */(firstNode), selectionTracker);
       }
     }
 
-    /** @type {?Element} */ var lastAnchorElement = null;
-    /** @type {?string} */ var lastUrl = null;
     /** @const @type {?Node} */
     var endNode = editing.nodes.nextNodeSkippingChildren(lastNode);
-    effectiveNodes.forEach(function(currentNode) {
-      if (currentNode === anchorElement)
-        return;
+    effectiveNodes.every(function(currentNode) {
+      if (currentNode === currentAnchorElement)
+        return true;
 
       var lastPendingContainer = lastOf(pendingContainers);
       if (lastPendingContainer &&
@@ -453,94 +460,63 @@ editing.defineCommand('createLink', (function() {
       if (!editing.nodes.isEditable(currentNode) ||
           !editing.nodes.isPhrasing(currentNode)) {
         processPendingContents();
-        return;
+        return true;
       }
 
       if (isAnchorElement(currentNode)) {
-        lastAnchorElement = /** @type {!Element} */(currentNode);
-        lastUrl = getAnchorUrl(lastAnchorElement);
-        var needSplit = endNode && isDescendantOf(endNode, lastAnchorElement);
-        if (lastAnchorElement.hasAttribute('style') && needSplit) {
-          // If |lastAnchorElement| contains |lastNode| and |lastAnchorElement|
-          // has // STYLE attribute, we split it. See |createLink.style.4|.
-          context.splitTree(lastAnchorElement, /** @type {!Node} */(endNode));
-          needSplit = false;
+        var anchorElement = /** @type {!Element} */(currentNode);
+        var handleLastNode = endNode &&
+            isDescendantOf(endNode, anchorElement) &&
+            (getAnchorUrl(anchorElement) !== urlValue ||
+             anchorElement.hasAttribute('style'));
+        if (handleLastNode) {
+          // Selection contains partial anchor contents. We split this
+          // anchor element. e.g. <a>^foo|bar</a>, see createLink.style.4.
+          unwrapAnchorContents(context, anchorElement);
+          splitAnchorElement(context, anchorElement,
+                             /** @type {!Node} */(endNode));
         }
-        expandInlineStyle(context, lastAnchorElement);
-        if (!anchorElement) {
-          processPendingContents();
-          anchorElement = lastAnchorElement;
-          setAnchorUrl(context, anchorElement, url);
-          return;
-        }
-        console.assert(getAnchorUrl(anchorElement) === url);
-        setAnchorUrl(context, lastAnchorElement, url);
-        if (canMergeAnchor(lastAnchorElement, url)) {
-          // Unwrap A element.
-          var contentElement =
-              isDescendantOf(lastAnchorElement, anchorElement) ?
-                  lastAnchorElement.parentNode : anchorElement;
-          var contentEndNode = needSplit ? endNode : null;
-          while (contentEndNode &&
-                 contentEndNode.parentNode !== lastAnchorElement)
-            contentEndNode = contentEndNode.parentNode;
-          moveChildren(context, contentElement, lastAnchorElement,
-                       contentEndNode, selectionTracker);
-          setAnchorUrl(context, lastAnchorElement, lastUrl);
-          lastAnchorElement = null;
-          lastUrl = null;
-          return;
+        expandInlineStyle(context, anchorElement);
+        setAnchorUrl(context, anchorElement, urlValue);
+        if (currentAnchorElement && canMergeAnchor(anchorElement, urlValue)) {
+          // Merge |anchorElement| into |currentAnchorElement|.
+          // See createLink.abc.3, createLink.w3c.20
+          mergeElements(context, currentAnchorElement, anchorElement,
+                        selectionTracker);
+          console.assert(!anchorElement.parentNode);
+          return !handleLastNode;
         }
         processPendingContents();
-        anchorElement = lastAnchorElement;
+        currentAnchorElement = anchorElement;
+        return !handleLastNode;
       }
 
       if (editing.nodes.isInteractive(currentNode)) {
         processPendingContents();
-        return;
+        return true;
       }
 
       if (currentNode.hasChildNodes()) {
         pendingContainers.push(currentNode);
-        return;
+        return true;
       }
 
       if (pendingContainers.length) {
         pendingContents.push(currentNode);
         if (!currentNode.nextSibling)
           moveLastContainerToContents();
-        return;
+        return true;
       }
-      wrapByAnchor(currentNode);
-    });
 
-    if (lastNode.parentNode === anchorElement &&
-        canMergeAnchor(anchorElement.nextSibling, url)) {
-      // Merge nodes after selection. See w3c.20
-      moveChildren(context, anchorElement, anchorElement.nextSibling, null,
-                   selectionTracker);
-    }
+      wrapByAnchor(currentNode);
+      return true;
+    });
 
     // The last effective node is descendant of pending container.
     // Example: foo<b>^bar<i>baz quux</i></b>|mox
     // where the last effective node is "baz quux".
+    // See createLink.w3c.11, createLink.w3c.12.
     processPendingContents();
-
-    // In case of we select anchor element partially, we need to split it,
-    // e.g. <a>^foo|bar</a>
-    if (lastAnchorElement && lastUrl !== url) {
-      var element = /** @type {!Element} */(lastAnchorElement);
-      var nextNode = editing.nodes.nextNode(lastNode);
-      if (nextNode &&
-          isDescendantOf(nextNode, element)) {
-        var newAnchorElement = context.splitTree(element, nextNode);
-        // TODO(yosin) We should remove this code fragment once |splitNode|
-        // doesn't copy "name" attribute. See http://crbug.com/411785
-        context.removeAttribute(element, 'name');
-        setAnchorUrl(context, newAnchorElement, lastUrl);
-      }
-      unwrapAnchorContents(context, element);
-    }
 
     selectionTracker.finishWithStartAsAnchor();
     return true;
