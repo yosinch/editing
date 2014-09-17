@@ -337,8 +337,27 @@ testCaseFor('createLink.style.4.css', {
 });
 
 testCaseFor('createLink.style.5', {
-  after: '<div contenteditable><a href="URL">^hello <b>world</b> |</a><a href="track">after</a></div>',
-  before: '<div contenteditable>^hello <a href="track"><b>world</b> |after</a></div>',
+  // Select first two words
+  after: '<div contenteditable><a href="URL">^hello <b>world</b> |</a><a href="otherurl">after</a></div>',
+  before: '<div contenteditable>^hello <a href="otherurl"><b>world</b> |after</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.div.1', {
+  // Select last word
+  // Note: DIV in A element is violate HTML5 content model.
+  after: '<div contenteditable><a href="otherurl"><div>hello</div></a><div><a href="URL">^world|</a></div></div>',
+  before: '<div contenteditable><a href="otherurl"><div>hello</div><div>^world|</div></a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.div.2', {
+  // Select last word
+  // Note: DIV in A element is violate HTML5 content model.
+  after: '<div contenteditable><a href="otherurl"><div>hello</div></a><div><a href="URL">^world|</a></div></div>',
+  before: '<div contenteditable><a href="otherurl"><div>hello</div><div>^world|</div></a></div>',
   sampleId: 'editing/execCommand/toggle-link-win.html',
   value: 'URL'
 });

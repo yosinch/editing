@@ -24,8 +24,9 @@ editing.defineCommand('createLink', (function() {
    * @return {boolean}
    */
   function canMergeElements(node1, node2) {
-    if (!node1 || !node2 || node1.tagName !== node2.tagName ||
-        !editing.nodes.isElement(node1)) {
+    if (!node1 || !node2 || node1.nodeName !== node2.nodeName ||
+        !editing.nodes.isElement(node1) ||
+        !editing.nodes.isPhrasing(node1)) {
       return false;
     }
     var element1 = /** @type {!Element} */(node1);
@@ -145,7 +146,7 @@ editing.defineCommand('createLink', (function() {
    * @return {boolean}
    */
   function isEffectiveNode(node) {
-    return editing.nodes.isPhrasing(node);
+    return editing.nodes.isEditable(node) && node.nodeName !== 'A';
   }
 
   /**
@@ -270,6 +271,22 @@ editing.defineCommand('createLink', (function() {
     // TODO(yosin) We should remove this code fragment once |splitNode|
     // doesn't copy "name" attribute. See http://crbug.com/411785
     context.removeAttribute(anchorElement, 'name');
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function swapParentAndChild(context, element) {
+    console.assert(element.firstChild &&
+                   editing.nodes.isElement(element.firstChild));
+    var child = /** @type {!Element} */(element.firstChild);
+    console.assert(child === element.lastChild);
+    context.removeChild(element, child);
+    while (child.firstChild)
+      context.appendChild(element, child.firstChild);
+    context.insertBefore(element.parentNode, child, element);
+    context.appendChild(child, element);
   }
 
   /**
@@ -400,7 +417,6 @@ editing.defineCommand('createLink', (function() {
       wrapByAnchor(lastContainer);
     }
 
-    // Wrap pending contents which are sibling of |stopNode|
     function processPendingContents() {
       pendingContents.forEach(wrapByAnchor);
       endAnchorElement();
@@ -431,6 +447,7 @@ editing.defineCommand('createLink', (function() {
     var firstNode = effectiveNodes[0];
     var lastNode = lastOf(effectiveNodes);
     {
+      // TODO(yosin) Should use |let| instead of |var|.
       var previous = firstNode.previousSibling;
       if (isAnchorElement(previous)) {
         if (canMergeAnchor(previous, urlValue)) {
@@ -457,9 +474,35 @@ editing.defineCommand('createLink', (function() {
         moveLastContainerToContents();
       }
 
-      if (!editing.nodes.isEditable(currentNode) ||
-          !editing.nodes.isPhrasing(currentNode)) {
+      if (!editing.nodes.isEditable(currentNode)) {
         processPendingContents();
+        return true;
+      }
+
+      if (!editing.nodes.isPhrasing(currentNode)) {
+        var savedCurrentAnchorElement = currentAnchorElement;
+        processPendingContents();
+        if (savedCurrentAnchorElement !== currentNode.parentNode)
+          return true;
+
+        var anchorElement = /** @type {!Element} */(savedCurrentAnchorElement);
+
+        // <a>012<div>345</div>678</a>
+        // => <a>012</a><div><a>345</a></div><a>678</a>
+        if (currentNode.previousSibling) {
+          anchorElement = /** @type {!Element} */ (context.splitNodeLeft(
+              anchorElement, currentNode));
+          context.removeAttribute(anchorElement, 'name');
+        }
+
+        if (currentNode.nextSibling) {
+          context.splitNode(anchorElement, currentNode.nextSibling);
+          context.removeAttribute(anchorElement, 'name');
+        }
+
+        swapParentAndChild(context, anchorElement);
+
+        currentAnchorElement = anchorElement;
         return true;
       }
 
