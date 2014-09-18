@@ -90,9 +90,8 @@ editing.defineCommand('InsertOrderedList', (function() {
   function replaceNodeName(context, node, name) {
     console.assert(node.parentNode);
     var newNode = context.createElement(name);
-    [].forEach.call(node.childNodes, function(childNode) {
-      context.appendChild(newNode, childNode);
-    });
+    while (node.firstChild)
+      context.appendChild(newNode, node.firstChild);
     // TODO(hajimehoshi): Copy attributes
     var parent = /** @type {!Node} */(node.parentNode);
     context.replaceChild(parent, newNode, node);
@@ -192,11 +191,11 @@ editing.defineCommand('InsertOrderedList', (function() {
     var parent = firstList.parentNode;
     listNodes.slice(1).forEach(function(listNode) {
       console.assert(listNode.nodeName === 'OL');
-      [].forEach.call(listNode.childNodes, function(listItemNode) {
-        console.assert(isListItem(listItemNode) ||
-                       canContentOfDL(listItemNode));
-        context.appendChild(firstList, listItemNode);
-      });
+      console.assert([].every.call(listNode.childNodes, function(node) {
+        return isListItem(node) || canContentOfDL(node);
+      }));
+      while (listNode.firstChild)
+        context.appendChild(firstList, listNode.firstChild);
       context.removeChild(listNode.parentNode, listNode);
     });
 
@@ -403,8 +402,8 @@ editing.defineCommand('InsertOrderedList', (function() {
 
     // TODO(hajimehoshi): Fix this selection range
     context.setEndingSelection(new editing.ReadOnlySelection(
-        context.document.firstChild, 0,
-        context.document.firstChild, 0,
+        context.document.body.firstChild, 0,
+        context.document.body.firstChild, 0,
         editing.SelectionDirection.ANCHOR_IS_START));
 
     return true;
