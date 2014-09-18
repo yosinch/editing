@@ -124,8 +124,31 @@ editing.define('EditingStyle', (function() {
     Object.seal(this);
   }
 
+  /**
+   * @this {!EditingStyle}
+   * @param {!editing.EditingContext} context
+   * @param {!function(!editing.EditingContext, editing.Property, !Element)}
+   *    callback
+   */
+  EditingStyle.prototype.createElements;
+
   /** @type {!Array.<!editing.Property>} */
   EditingStyle.prototype.properties;
+
+  /**
+   * @this {!EditingStyle}
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function applyInheritedStyle(context, element) {
+    this.createElements(context, function(context, property, styleElement) {
+      if (element.tagName === styleElement.tagName)
+        return;
+      if (element.style[property.name] !== '')
+        return;
+      context.setStyle(element, property.name, property.value);
+    });
+  }
 
   /**
    * @this {!EditingStyle}
@@ -187,6 +210,7 @@ editing.define('EditingStyle', (function() {
   }
 
   Object.defineProperties(EditingStyle.prototype, {
+    applyInheritedStyle: {value: applyInheritedStyle},
     constructor: {value: EditingStyle},
     createElements: {value: createElements},
     hasStyle: {get: hasStyle},

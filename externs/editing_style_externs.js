@@ -15,6 +15,13 @@ editing.EditingStyle = function(element) {};
 editing.Property;
 
 /**
+ * @param {!editing.EditingContext} context
+ * @param {!Element} element
+ */
+editing.EditingStyle.prototype.applyInheritedStyle =
+    function(context, element) {};
+
+/**
  * @param {editing.EditingContext} context
  * @param {!function(!editing.EditingContext, !editing.Property, !Element)}
  *    callback

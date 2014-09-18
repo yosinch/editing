@@ -5,9 +5,26 @@
 'use strict';
 
 //
-// computeTagName
+// applyInheritedStyle
 //
-testCaseWithSample('style.createElement.1',
+testCaseWithSample('style.applyInheritedStyle.1',
+    '<p contenteditable>|<span id="sample" style="font-style: italic; font-weight: bold">012</span><span id="target" style="font-weight: normal">345</span></p>',
+  function(context) {
+    var sample = context.document.querySelector('#sample');
+    var style = new editing.EditingStyle(sample);
+    var target = context.document.querySelector('#target');
+    style.applyInheritedStyle(context, target);
+
+    // We should not change 'font-weight' to 'bold', because |element| has
+    // 'font-weight' CSS property in STYLE attribute.
+    expectEq('<span id="target" style="font-weight: normal; font-style: italic;">345</span>',
+             function() { return target.outerHTML; });
+  });
+
+//
+// createElements
+//
+testCaseWithSample('style.createElements.1',
     '<p contenteditable>|foo</p>', function(context) {
   function sample(propertyName, propertyValue) {
      var element = context.createElement('span');
