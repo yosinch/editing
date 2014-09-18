@@ -142,20 +142,30 @@ editing.EditingContext.prototype.setUpEffectiveNodes = function(selection,
                                                                 predicate) {};
 
 /**
- * @this {!editing.EditingContext}
- * @param {!Node} parent
- * @param {!Node} child
- * @return {!Node}
+ * @this {!editing.EditingContext} context
+ * @param {!editing.ReadOnlySelection} selection
+ * @param {!function(!Node):boolean} predicate
+ * @param {!function(!Element, !Node): !Element} splitter
+ * @return {!Array.<!Node>}
  */
-editing.EditingContext.prototype.splitNode = function(parent, child) {};
+editing.EditingContext.prototype.setUpEffectiveNodesWithSplitter =
+    function(selection, predicate, splitter) {};
 
 /**
  * @this {!editing.EditingContext}
- * @param {!Node} parent
+ * @param {!Element} element
  * @param {!Node} child
- * @return {!Node}
+ * @return {!Element}
  */
-editing.EditingContext.prototype.splitNodeLeft = function(parent, child) {};
+editing.EditingContext.prototype.splitNode = function(element, child) {};
+
+/**
+ * @this {!editing.EditingContext}
+ * @param {!Element} element
+ * @param {!Node} child
+ * @return {!Element}
+ */
+editing.EditingContext.prototype.splitNodeLeft = function(element, child) {};
 
 /**
  * @this {!editing.EditingContext}
@@ -167,19 +177,19 @@ editing.EditingContext.prototype.splitText = function(node, offset) {};
 
 /**
   * @this {!editing.EditingContext}
-  * @param {!Node} treeNode
+  * @param {!Element} element
   * @param {!Node} refNode
   * @return {!Element}
  */
-editing.EditingContext.prototype.splitTree = function(treeNode, refNode) {};
+editing.EditingContext.prototype.splitTree = function(element, refNode) {};
 
 /**
    * @this {!editing.EditingContext}
-   * @param {!Node} treeNode
+   * @param {!Element} element
    * @param {!Node} refNode
-   * @return {!Node}
+   * @return {!Element}
    */
-editing.EditingContext.prototype.splitTreeLeft = function(treeNode, refNode) {};
+editing.EditingContext.prototype.splitTreeLeft = function(element, refNode) {};
 
 /** @type {!editing.ReadOnlySelection} */
 editing.EditingContext.prototype.startingSelection;

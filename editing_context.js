@@ -113,17 +113,17 @@ editing.define('EditingContext', (function() {
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} parent
+   * @param {!Element} element
    * @param {!Node} child
-   * @return {!Node}
+   * @return {!Element}
    */
-  EditingContext.prototype.splitNode = function(parent, child) {};
+  EditingContext.prototype.splitNode = function(element, child) {};
 
   /**
    * @this {!EditingContext}
    * @param {!Element} element
    * @param {!Node} refChild
-   * @return {!Node}
+   * @return {!Element}
    */
   EditingContext.prototype.splitNodeLeft = function(element, refChild) {};
 
@@ -137,19 +137,20 @@ editing.define('EditingContext', (function() {
 
   /**
     * @this {!EditingContext}
+    * @param {!Element} element
     * @param {!Node} refNode
-    * @return {!Node}
+    * @return {!Element}
    */
-  EditingContext.prototype.splitTree = function(treeNode, refNode) {};
+  EditingContext.prototype.splitTree = function(element, refNode) {};
 
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} treeNode
+   * @param {!Element} element
    * @param {!Node} refNode
-   * @return {!Node}
+   * @return {!Element}
    */
-  EditingContext.prototype.splitTreeLeft = function(treeNode, refNode) {};
+  EditingContext.prototype.splitTreeLeft = function(element, refNode) {};
 
   /**
    * @this {!EditingContext}
@@ -551,6 +552,18 @@ editing.define('EditingContext', (function() {
    * returns null and the following selected nodes.
    */
   function setUpEffectiveNodes(selection, predicate) {
+    return this.setUpEffectiveNodesWithSplitter(selection, predicate,
+                                                splitTree);
+  }
+
+  /**
+   * @this {!editing.EditingContext} context
+   * @param {!editing.ReadOnlySelection} selection
+   * @param {!function(!Node):boolean} predicate
+   * @param {!function(!Node, !Node): !Node} splitter
+   * @return {!Array.<!Node>}
+   */
+  function setUpEffectiveNodesWithSplitter(selection, predicate, splitter) {
     console.assert(selection.isNormalized);
     var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     if (!selectedNodes.length)
@@ -583,7 +596,7 @@ editing.define('EditingContext', (function() {
     }
     if (needSplits.length) {
       var oldTree = needSplits[needSplits.length - 1].parentNode;
-      var newTree = this.splitTree(oldTree, needSplits[0]);
+      var newTree = splitter.call(this, oldTree, needSplits[0]);
       if (oldTree == runner)
         runner = newTree;
     }
@@ -607,9 +620,9 @@ editing.define('EditingContext', (function() {
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} element
+   * @param {!Element} element
    * @param {!Node} refChild
-   * @return {!Node}
+   * @return {!Element}
    *
    * Split |parent| at |child|, and returns new node which contains |child|
    * to its sibling nodes.
@@ -645,6 +658,7 @@ editing.define('EditingContext', (function() {
    * @this {!EditingContext}
    * @param {!Element} element
    * @param {!Node} refChild
+   * @return {!Element}
    *
    * Split |element| at |refChild| by moving child nodes before |refChild|
    * to new element and returns it.
@@ -694,49 +708,50 @@ editing.define('EditingContext', (function() {
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} treeNode
+   * @param {!Element} element
    * @param {!Node} refNode
-   * @return {!Node}
+   * @return {!Element}
    *
    * This function is similar to |splitTreeLeft| but it moves nodes |refNode|
    * and after |refNode| to new element.
    */
-  function splitTree(treeNode, refNode) {
-    console.assert(editing.nodes.isDescendantOf(refNode, treeNode),
+  function splitTree(element, refNode) {
+    console.assert(editing.nodes.isDescendantOf(refNode, element),
                   'refNode', refNode,
-                  'must be descendant of treeNdoe', treeNode);
+                  'must be descendant of treeNdoe', element);
     var lastNode = refNode;
-    for (var runner = refNode.parentNode; runner && runner !== treeNode;
+    for (var runner = refNode.parentNode;
+         runner && runner !== element && editing.nodes.isElement(runner);
          runner = runner.parentNode) {
-      lastNode = this.splitNode(runner, lastNode);
+      lastNode = this.splitNode(/** @type {!Element} */(runner), lastNode);
     }
-    return this.splitNode(treeNode, lastNode);
+    return this.splitNode(element, lastNode);
   }
-
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} treeNode
+   * @param {!Element} element
    * @param {!Node} refNode
-   * @return {!Node}
+   * @return {!Element}
    *
-   * Split |treeNode| at |refNode| by moving nodes before |refNode| to
+   * Split |element| at |refNode| by moving nodes before |refNode| to
    * new element and return it.
    *
    * This function is similar to |splitTree| but moves nodes before |refNode|
    * to new element.
    */
-  function splitTreeLeft(treeNode, refNode) {
-    console.assert(editing.nodes.isDescendantOf(refNode, treeNode),
+  function splitTreeLeft(element, refNode) {
+    console.assert(editing.nodes.isDescendantOf(refNode, element),
                   'refNode', refNode,
-                  'must be descendant of treeNdoe', treeNode);
+                  'must be descendant of treeNdoe', element);
     var lastNode = refNode;
-    for (var runner = refNode.parentNode; runner && runner !== treeNode;
+    for (var runner = refNode.parentNode;
+         runner && runner !== element && editing.nodes.isElement(runner);
          runner = runner.parentNode) {
       this.splitNodeLeft(/** @type {!Element} */(runner), lastNode);
       lastNode = runner;
     }
-    return this.splitNodeLeft(/** @type {!Element} */(treeNode), lastNode);
+    return this.splitNodeLeft(/** @type {!Element} */(element), lastNode);
   }
 
   /**
@@ -793,6 +808,7 @@ editing.define('EditingContext', (function() {
     setEndingSelection: {value: setEndingSelection },
     setStyle: {value: setStyle},
     setUpEffectiveNodes: {value: setUpEffectiveNodes},
+    setUpEffectiveNodesWithSplitter: {value: setUpEffectiveNodesWithSplitter},
     shouldUseCSS: {get: shouldUseCSS},
     splitNode: {value: splitNode},
     splitNodeLeft: {value: splitNodeLeft},

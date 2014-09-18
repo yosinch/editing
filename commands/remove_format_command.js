@@ -88,7 +88,7 @@ editing.defineCommand('removeFormat', (function() {
     if (!needSplit || !splitable)
       return effectiveNodes;
 
-    context.splitTreeLeft(splitable, startNode);
+    context.splitTreeLeft(/** @type {!Element} */(splitable), startNode);
     return effectiveNodes;
   }
 
