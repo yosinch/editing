@@ -76,7 +76,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
       return true;
     })
-    return [].reduce.call(listItemCandidates, function(nodes, node) {
+    return listItemCandidates.reduce(function(nodes, node) {
       return nodes.concat(getChildListItemCandidates(node));
     }, []);
   }
@@ -167,13 +167,87 @@ editing.defineCommand('InsertOrderedList', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Node} node
+   * @param {!Node} originalNode
+   * @param {!Array.<!Node>} effectiveNodes
    */
-  function unlistify(context, node) {
-    var listItemNode = node;
+  function unlistify(context, originalNode, effectiveNodes) {
+    // TODO(hajimehoshi): Split list into two lists
+    var listItemNode = originalNode;
     while (listItemNode && !isListItem(listItemNode))
       listItemNode = listItemNode.parentNode;
-    console.assert(listItemNode || listItemNode.parentNode.nodeName === 'OL');
+    if (!listItemNode)
+      return;
+
+    // Unlistify the inner lists recursively. See w3c.58. Actual unlistifying
+    // the child lists will be executed after unlistifying |listItemNode|.
+    var childLists = [].filter.call(listItemNode.childNodes, function(node) {
+      // TODO(hajimehoshi): Consider the case when |node| is <ul>.
+      if (node.nodeName !== 'OL')
+        return false;
+      if (effectiveNodes.indexOf(node) === -1)
+        return false;
+      return true;
+    });
+
+    var listNode = listItemNode.parentNode;
+    console.assert(listNode.nodeName === 'OL');
+
+    // Separate |listNode| into |firstList| and |secondList|.
+    var firstList = listNode;
+    var secondList = context.createElement('ol');
+    context.insertAfter(listNode.parentNode, secondList, firstList);
+    
+    // TOOD(hajimehoshi): Use nextSiblingsWhile in the future.
+    var siblings = [];
+    for (var node = listItemNode.nextSibling; node; node = node.nextSibling)
+      siblings.push(node);
+    siblings.forEach(function(node) {
+      context.appendChild(secondList, node);
+    });
+    context.insertBefore(secondList.parentNode, listItemNode, secondList);
+
+    // If the new list item is NOT in the outer list, get the content out of
+    // the <li> and remove the <li>.
+    //
+    // NOTE: Even when the new list item's parent is a <li>, that is, the <li>
+    // is in a <li>, it is treated as if it was in a list. See w3c.40.
+    if (!isList(listItemNode.parentNode) &&
+        !isListItem(listItemNode.parentNode)) {
+      var isListItemLastChildText = false;
+      if (listItemNode.childNodes.length) {
+        var childNodes = listItemNode.childNodes;
+        isListItemLastChildText =
+          editing.nodes.isText(childNodes[childNodes.length - 1]);
+      }
+      while (listItemNode.firstChild) {
+        context.insertBefore(secondList.parentNode, listItemNode.firstChild,
+                             secondList);
+      }
+      if (isListItemLastChildText &&
+          (secondList.parentNode.lastChild !== secondList ||
+           secondList.childNodes.length)) {
+        var br = context.createElement('br');
+        context.insertBefore(secondList.parentNode, br, secondList);
+      }
+      context.removeChild(listItemNode.parentNode, listItemNode);
+      if (!firstList.childNodes.length && firstList.previousSibling &&
+          editing.nodes.isText(firstList.previousSibling)) {
+        var br = context.createElement('br');
+        context.insertBefore(firstList.parentNode, br, firstList);
+      }
+    }
+
+    if (!firstList.childNodes.length)
+      context.removeChild(firstList.parentNode, firstList);
+    if (!secondList.childNodes.length)
+      context.removeChild(secondList.parentNode, secondList);
+
+    childLists.forEach(function(listNode) {
+      [].slice.call(listNode.childNodes, 0).forEach(function(listItem) {
+        console.assert(isListItem(listItem));
+        unlistify(context, listItem, effectiveNodes);
+      });
+    });
   }
 
   /**
@@ -236,15 +310,21 @@ editing.defineCommand('InsertOrderedList', (function() {
       effectiveNodes.unshift(sibling);
     }
 
-    // Extend as far as the closest list if exists.
-    var listAncestors =
+    // Extend as far as the closest list item if exists.
+    var listItemAncestors =
       editing.nodes.ancestorsWhile(effectiveNodes[0], function(node) {
-        return !isList(node);
+        return !isListItem(node);
       });
-    var listCandidate = listAncestors[listAncestors.length - 1].parentNode;
-    if (listCandidate && isList(listCandidate)) {
-      effectiveNodes = listAncestors.reverse().concat(effectiveNodes);
-      effectiveNodes.push(listCandidate);
+    var listItemCandidate = null;
+    if (listItemAncestors.length) {
+      listItemCandidate =
+        listItemAncestors[listItemAncestors.length - 1].parentNode;
+    } else {
+      listItemCandidate = effectiveNodes[0].parentNode;
+    }
+    if (listItemCandidate && isListItem(listItemCandidate)) {
+      effectiveNodes = listItemAncestors.reverse().concat(effectiveNodes);
+      effectiveNodes.unshift(listItemCandidate);
     }
 
     // Extend the tailing text nodes.
@@ -291,6 +371,10 @@ editing.defineCommand('InsertOrderedList', (function() {
         }
         if (isList(node)) {
           listItemCandidatesAfterListifying.push(node);
+          return;
+        }
+        if (isInList(node)) {
+          unlistify(context, node, effectiveNodes);
           return;
         }
         if (nodes.length === 1 && canContentOfDL(nodes[0])) {
