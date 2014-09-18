@@ -24,23 +24,6 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {?Node} node1
-   * @param {?Node} node2
-   * @return {boolean}
-   */
-  function canMergeElements(node1, node2) {
-    if (!node1 || !node2 || node1.nodeName !== node2.nodeName ||
-        !isElement(node1) || !isPhrasing(node1)) {
-      return false;
-    }
-    var element1 = /** @type {!Element} */(node1);
-    var element2 = /** @type {!Element} */(node2);
-    return [].every.call(element1.attributes, function(attr1) {
-      return attr1.value === element2.getAttribute(attr1.name);
-    });
-  }
-
-  /**
    * @param {!Node} node
    * @return {boolean}
    * Returns true if all child element is identical phrasing element.
@@ -91,6 +74,36 @@ editing.defineCommand('createLink', (function() {
       var style = new editing.EditingStyle(element);
       if (!style.hasStyle)
         return;
+      if (element.childElementCount) {
+        // Apply inline style to text child element.
+        var lastElement = null;
+        [].forEach.call(element.childNodes, function(child) {
+          if (isElement(child)) {
+            style.applyInheritedStyle(context, /** @type {!Element} */(child));
+            lastElement = null;
+            return;
+          }
+          if (lastElement) {
+            context.appendChild(lastElement, child);
+            return;
+          }
+          if (editing.nodes.isWhitespaceNode(child)) {
+            // We don't need to wrap whitespaces with style element.
+            // See createLink.style.7
+            return;
+          }
+          style.createElements(context,
+              function(context, property, styleElement) {
+                if (!lastElement)
+                  context.replaceChild(element, styleElement, child);
+                context.appendChild(styleElement, child);
+                lastElement = styleElement;
+              });
+        });
+        context.removeAttribute(element, 'style');
+        return;
+      }
+      // Introduce text-level elements for inline style.
       style.createElements(context, function(context, property, styleElement) {
         moveAllChildren(context, styleElement, element);
         context.appendChild(element, styleElement);
@@ -112,6 +125,16 @@ editing.defineCommand('createLink', (function() {
   function getAnchorUrl(anchorElement) {
     console.assert(anchorElement.nodeName === 'A');
     return anchorElement.getAttribute('href');
+  }
+
+  /**
+   * @param {!Element} element
+   * @return {boolean}
+   */
+  function hasTextLevelElement(element) {
+    return [].some.call(element.children, function(child) {
+      return isPhrasing(child);
+    });
   }
 
   /**
@@ -264,14 +287,16 @@ editing.defineCommand('createLink', (function() {
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
    * @param {!Node} refNode
+   * @return {!Element}
    */
   function splitAnchorElement(context, anchorElement, refNode) {
     console.assert(anchorElement.nodeName === 'A');
     console.assert(isDescendantOf(refNode, anchorElement));
-    context.splitTree(anchorElement, refNode);
+    var newAnchorElement = context.splitTree(anchorElement, refNode);
     // TODO(yosin) We should remove this code fragment once |splitNode|
     // doesn't copy "name" attribute. See http://crbug.com/411785
     context.removeAttribute(anchorElement, 'name');
+    return newAnchorElement;
   }
 
   /**
@@ -339,6 +364,53 @@ editing.defineCommand('createLink', (function() {
 
     /** @type {?Element} */var currentAnchorElement = null;
 
+    function endAnchorElement() {
+      if (!currentAnchorElement)
+        return;
+      unwrapAnchorContents(context, currentAnchorElement);
+      currentAnchorElement = null;
+    }
+
+    var pendingContainers = [];
+    var pendingContents = [];
+
+    function moveLastContainerToContents() {
+      // All descendant of |lastPendingContainer| can be contents of anchor.
+      var lastContainer = pendingContainers.pop();
+      while (pendingContents.length &&
+             lastOf(pendingContents).parentNode === lastContainer) {
+        pendingContents.pop();
+      }
+      if (pendingContainers.length) {
+        pendingContents.push(lastContainer);
+        return;
+      }
+      wrapByAnchor(lastContainer);
+    }
+
+    function processPendingContents() {
+      pendingContents.forEach(wrapByAnchor);
+      endAnchorElement();
+      pendingContainers = [];
+      pendingContents = [];
+    }
+
+    /**
+     * @this {!editing.EditingContext}
+     * @param {!Element} element
+     * @param {!Node} refNode
+     * @return {!Element}
+     */
+    function splitTreeForCreateLink(element, refNode) {
+      if (element.nodeName !== 'A')
+        //return this.splitTree(element, refNode);
+        return element;
+      if (getAnchorUrl(element) == urlValue)
+        return element;
+      expandInlineStyle(this, element);
+      return this.splitTree(element, refNode);
+    }
+
     /**
      * @param {!Node} node
      * Wraps |node| by A element.
@@ -382,50 +454,23 @@ editing.defineCommand('createLink', (function() {
       wrapByAnchor(node);
     }
 
-    function endAnchorElement() {
-      if (!currentAnchorElement)
-        return;
-      unwrapAnchorContents(context, currentAnchorElement);
-      currentAnchorElement = null;
-    }
-
-    var pendingContainers = [];
-    var pendingContents = [];
-
-    function moveLastContainerToContents() {
-      // All descendant of |lastPendingContainer| can be contents of anchor.
-      var lastContainer = pendingContainers.pop();
-      while (pendingContents.length &&
-             lastOf(pendingContents).parentNode === lastContainer) {
-        pendingContents.pop();
-      }
-      if (pendingContainers.length) {
-        pendingContents.push(lastContainer);
-        return;
-      }
-      wrapByAnchor(lastContainer);
-    }
-
-    function processPendingContents() {
-      pendingContents.forEach(wrapByAnchor);
-      endAnchorElement();
-      pendingContainers = [];
-      pendingContents = [];
-    }
-
+    //
+    // Main part of createLinkForRange
+    //
     var selection = context.normalizeSelection(context.startingSelection);
     // TODO(yosin) We should not use |computeSelectedNodes()| to check
     // whether selection contains nodes or not. See createLink.EndTag.
-    if (!editing.nodes.computeSelectedNodes(selection).length)
+    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
+    if (!selectedNodes.length)
       return createLinkForCaret(context, urlValue);
 
-    // TODO(yosin) We should reorder content elements for caret, since Chrome
+    // TODO(yosin) We should reorder content elements for caret, once Chrome
     // does so.
     selection = normalizeSelectedStartNode(context, selection);
 
     var selectionTracker = new editing.SelectionTracker(context, selection);
-    var effectiveNodes = context.setUpEffectiveNodes(selection,
-                                                     isEffectiveNode);
+    var effectiveNodes = context.setUpEffectiveNodesWithSplitter(
+        selection, isEffectiveNode, splitTreeForCreateLink);
     if (!effectiveNodes[0] || !isPhrasing(effectiveNodes[0]))
       effectiveNodes.shift();
     if (!effectiveNodes.length) {
@@ -435,20 +480,11 @@ editing.defineCommand('createLink', (function() {
 
     var firstNode = effectiveNodes[0];
     var lastNode = lastOf(effectiveNodes);
-    {
-      // TODO(yosin) Should use |let| instead of |var|.
-      var previous = firstNode.previousSibling;
-      if (isAnchorElement(previous)) {
-        if (canMergeAnchor(previous, urlValue)) {
-          // Merge into previous A, see createLink.w3c.20
-          currentAnchorElement = /** @type {!Element} */(previous);
-        }
-      } else if (canMergeElements(previous, firstNode)) {
-        // This also cancels split tree by |setUpEffectiveNodes()|.
-        // See createLink.abc.3, createLink.w3c.42.
-        mergeElements(context, /** @type {!Element} */(previous),
-                      /** @type {!Element} */(firstNode), selectionTracker);
-      }
+    while (effectiveNodes.length > 1 && firstNode !== selectedNodes[0] &&
+           firstNode.nodeName !== 'A' &&
+           isDescendantOf(lastNode, firstNode)) {
+      effectiveNodes.shift();
+      firstNode = effectiveNodes[0];
     }
 
     /** @const @type {?Node} */
@@ -504,11 +540,26 @@ editing.defineCommand('createLink', (function() {
         if (handleLastNode) {
           // Selection contains partial anchor contents. We split this
           // anchor element. e.g. <a>^foo|bar</a>, see createLink.style.4.
+          // Note: We should unwrap anchor content before splitting for
+          // createLink.Range.42.3:
+          //   <a><b><i>^foo|bar</i></b></a> =>
+          //   <b><i><a>foo</a><a>bar</a></i></b>
           unwrapAnchorContents(context, anchorElement);
-          splitAnchorElement(context, anchorElement,
-                             /** @type {!Node} */(endNode));
+          /** @const */ var shouldExpandInlineStyleAfterSplit =
+              lastNode.parentNode !== anchorElement &&
+              isPhrasing(/** @type {!Element} */(lastNode.parentNode));
+          // See createLink.style.4 and createLink.style.6.css
+          var newAnchorElement = splitAnchorElement(
+              context, anchorElement, /** @type {!Node} */(endNode));
+          expandInlineStyle(context, anchorElement);
+          if (shouldExpandInlineStyleAfterSplit) {
+            // Expand style for createLink.style.6.css
+            // But not for see createLink.style.4
+            expandInlineStyle(context, newAnchorElement);
+          }
+        } else {
+          expandInlineStyle(context, anchorElement);
         }
-        expandInlineStyle(context, anchorElement);
         setAnchorUrl(context, anchorElement, urlValue);
         if (currentAnchorElement && canMergeAnchor(anchorElement, urlValue)) {
           // Merge |anchorElement| into |currentAnchorElement|.

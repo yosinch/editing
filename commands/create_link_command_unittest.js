@@ -344,6 +344,35 @@ testCaseFor('createLink.style.5', {
   value: 'URL'
 });
 
+testCaseFor('createLink.style.5.css', {
+  // Select first two words
+  // Put STYLE attribute into B element.
+  after: '<div contenteditable><a href="URL">^hello <b style="font-style: italic">world</b><i> again|</i></a><a href="otherurl" style="font-style: italic">after</a></div>',
+  before: '<div contenteditable>^hello <a href="otherurl" style="font-style: italic"><b>world</b> again|after</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.style.6.css', {
+  // Select first two words
+  // Put STYLE attribute into B element.
+  after: '<div contenteditable><a href="URL">^hello <b style="font-style: italic">world|</b></a><a href="otherurl"><i> after</i></a></div>',
+  before: '<div contenteditable>^hello <a href="otherurl" style="font-style: italic"><b>world|</b> after</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+
+testCaseFor('createLink.style.7', {
+  // Select first two words with trailing space
+  // We should not wrap spaces with styled element.
+  after: '<div contenteditable><a href="URL">^hello <b style="font-style: italic">world</b> |</a><a href="otherurl" style="font-style: italic">WebKit</a></div>',
+  before: '<div contenteditable>^hello <a href="otherurl" style="font-style: italic"><b>world</b> |WebKit</a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+
 testCaseFor('createLink.div.1', {
   // Select last word
   // Note: DIV in A element is violate HTML5 content model.
@@ -358,6 +387,29 @@ testCaseFor('createLink.div.2', {
   // Note: DIV in A element is violate HTML5 content model.
   after: '<div contenteditable><a href="otherurl"><div>hello</div></a><div><a href="URL">^world|</a></div></div>',
   before: '<div contenteditable><a href="otherurl"><div>hello</div><div>^world|</div></a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.div.3', {
+  // Select last word
+  after: '<div contenteditable><a href="otherurl"><div style="font-weight: bold">hello</div></a><div style="font-weight: bold"><a href="URL">^world|</a></div></div>',
+  before: '<div contenteditable><a href="otherurl" style="font-weight: bold"><div>hello</div><div>^world|</div></a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.div.4', {
+  // Select last word
+  after: '<div contenteditable><a href="otherurl"><div style="font-weight: normal">hello</div></a><div style="font-weight: bold"><a href="URL">^world|</a></div></div>',
+  before: '<div contenteditable><a href="otherurl" style="font-weight: bold"><div style="font-weight: normal">hello</div><div>^world|</div></a></div>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.u.1', {
+  after: '<p contenteditable><u>hello <b>world</b> <a href="URL">^WebKit|</a></u></p>',
+  before: '<p contenteditable><u>hello <b>world</b> ^WebKit|</u></p>',
   sampleId: 'editing/execCommand/toggle-link-win.html',
   value: 'URL'
 });
