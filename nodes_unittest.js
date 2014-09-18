@@ -61,6 +61,26 @@ testCaseWithSample('nodes.ancestorsWhile.Nodes',
 );
 
 //
+// canContainRangeEndPoint
+//
+testCaseWithSample('nodes.canContainRangeEndPoint.NodesText',
+  '<p contenteditable>^abcd|</p>',
+  function(context) {
+    function canContainRangeEndPoint(tagName) {
+      var element = context.createElement(tagName);
+      return editing.nodes.canContainRangeEndPoint(element);
+    }
+
+    expectTrue(function() { return canContainRangeEndPoint('a'); });
+    expectTrue(function() { return canContainRangeEndPoint('b'); });
+    expectTrue(function() { return canContainRangeEndPoint('div'); });
+
+    expectFalse(function() { return canContainRangeEndPoint('button'); });
+    expectFalse(function() { return canContainRangeEndPoint('input'); });
+    expectFalse(function() { return canContainRangeEndPoint('progress'); });
+  });
+
+//
 // computeSelectedNodes
 //
 testCaseWithSample('nodes.computeSelectedNodes.NodesText',

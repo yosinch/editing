@@ -6,6 +6,12 @@
 editing.nodes;
 
 /**
+ * @param {!Node} node
+ * @return {boolean}
+ */
+editing.nodes.canContainRangeEndPoint = function(node) {};
+
+/**
  * @param {!editing.ReadOnlySelection} selection
  * @return {!Array.<!Node>}
  */

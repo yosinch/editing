@@ -88,6 +88,17 @@ editing.define('nodes', (function() {
   }
 
   /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function canContainRangeEndPoint(node) {
+    if (!isElement(node))
+      return true;
+    var model = editing.contentModel[node.nodeName];
+    return model !== undefined && model.canContainRangeEndPoint;
+  }
+
+  /**
    * @param {!editing.ReadOnlySelection} selection
    * @return {!Array.<!Node>}
    *
@@ -358,6 +369,7 @@ editing.define('nodes', (function() {
 
   return Object.defineProperties({}, {
     ancestorsWhile: {value: ancestorsWhile},
+    canContainRangeEndPoint: {value: canContainRangeEndPoint},
     commonAncestor: {value: commonAncestor},
     computeSelectedNodes: {value: computeSelectedNodes},
     isContentEditable: {value: isContentEditable},

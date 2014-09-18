@@ -51,9 +51,12 @@ editing.define('contentModel', (function() {
     var contextModel = typeof(contextModelIn) == 'string' ?
         contextModelIn.split(' ') : toSet(contextModelIn);
     names.forEach(function(name) {
-      contentModel[name] = {categories: categories,
-                            usableContexts: usableContexts,
-                            contextModel: contextModel};
+      contentModel[name] = {
+        canContainRangeEndPoint: true,
+        categories: categories,
+        usableContexts: usableContexts,
+        contextModel: contextModel
+      };
     });
   }
 
@@ -76,6 +79,19 @@ editing.define('contentModel', (function() {
     ' span strong sub sup time u var ' + NON_HTML5_PHRASING_TAGS,
     [FLOW, PHRASING, PALPABLE], PHRASING, PHRASING);
 
+  // Forms
+  defineContentModel('input', [FLOW, PHRASING], PHRASING, []);
+  defineContentModel('button', [FLOW, PHRASING, PALPABLE], PHRASING, PHRASING);
+  defineContentModel('select', [FLOW, PHRASING, PALPABLE], PHRASING,
+                     'option optgroup');
+  defineContentModel('datalist', [FLOW, PHRASING], PHRASING, PHRASING);
+  defineContentModel('textarea', [FLOW, PHRASING, PALPABLE], PHRASING, '');
+  defineContentModel('keygen', [FLOW, PHRASING, PALPABLE], PHRASING, []);
+  defineContentModel('output', [FLOW, PHRASING, PALPABLE], PHRASING, PHRASING);
+  defineContentModel('progress', [FLOW, PHRASING, PALPABLE], PHRASING, PHRASING);
+  defineContentModel('meter', [FLOW, PHRASING, PALPABLE], PHRASING, PHRASING);
+  defineContentModel('fieldset', [FLOW, PHRASING, PALPABLE], FLOW, PHRASING);
+
   // Grouping content
   defineContentModel('p', [FLOW, PALPABLE], FLOW, PHRASING);
   defineContentModel('blockquote div p', [FLOW, PALPABLE], FLOW, FLOW);
@@ -85,6 +101,8 @@ editing.define('contentModel', (function() {
   defineContentModel('li', [], 'ol ul menu', FLOW);
 
   // Embedded content
+  defineContentModel('embed', [FLOW, PHRASING, EMBEDDED, PALPABLE], FLOW, []);
+  defineContentModel('iframe', [FLOW, PHRASING, EMBEDDED, PALPABLE], FLOW, []);
   defineContentModel('img', [FLOW, PHRASING, EMBEDDED, PALPABLE], FLOW, []);
 
   // Sections
@@ -102,6 +120,15 @@ editing.define('contentModel', (function() {
   defineContentModel('thead', [], 'table', 'tr');
   defineContentModel('tr', [], 'thead tbody tfoot table', FLOW);
   defineContentModel('td th', [], 'tr', FLOW);
+
+  // Taken from override functions of Node::canContainRangeEndPoint()
+  'applet br button embed frame hr img input meter object output progress'
+    .split(' ').forEach(function(tagName) {
+      var model = contentModel[tagName.toUpperCase()];
+      if (!model)
+        return;
+      model.canContainRangeEndPoint = false;
+    });
 
   return contentModel;
 })());
