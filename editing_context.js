@@ -607,8 +607,8 @@ editing.define('EditingContext', (function() {
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} parent
-   * @param {!Node} child
+   * @param {!Node} element
+   * @param {!Node} refChild
    * @return {!Node}
    *
    * Split |parent| at |child|, and returns new node which contains |child|
@@ -616,27 +616,29 @@ editing.define('EditingContext', (function() {
    * This function is similar to |splitNodeLeft|, which move child nodes before
    * |refChild| to new element.
    */
-  function splitNode(parent, child) {
-    if (!parent.parentNode)
-      throw new Error('Parent ' + parent + ' must have a parent.');
-
-    var newParent = /** @type {!Element} */(parent.cloneNode(false));
-    this.removeAttribute(newParent, 'id');
+  function splitNode(element, refChild) {
+    console.assert(element.parentNode, element);
+    console.assert(refChild.parentNode === element, refChild);
+    if (element.firstChild === refChild)
+      return element;
+    var newElement = /** @type {!Element} */(element.cloneNode(false));
+    this.removeAttribute(newElement, 'id');
     /*
      * TODO(yosin) Once http://crbug.com/411795 and  http://crbug.com/411795
      * fixed. We should remove "name" attribute from cloned node.
-     if (newParent.nodeName === 'A')
-      this.removeAttribute(newParent, 'name');
+     if (newElement.nodeName === 'A')
+      this.removeAttribute(newElement, 'name');
     */
-    var sibling = child;
+    var sibling = refChild;
     while (sibling) {
-      console.assert(sibling.parentNode === parent);
+      console.assert(sibling.parentNode === element);
       var nextSibling = sibling.nextSibling;
-      this.appendChild(newParent, sibling);
+      this.appendChild(newElement, sibling);
       sibling = nextSibling;
     }
-    this.insertAfter(parent.parentNode, newParent, parent);
-    return newParent;
+    this.insertAfter(/** @type{!Node} */(element.parentNode), newElement,
+                     element);
+    return newElement;
   }
 
   /**

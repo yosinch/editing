@@ -427,6 +427,17 @@ testCaseWithSample('context.splitNode.4',
       expectEq(newTree, function() { return oldTree.nextSibling; });
     });
 
+// From createLink.style.6.css
+testCaseWithSample('context.splitNode.5',
+    '<p contenteditable>|<i> after</i>',
+    function(context, selectionIn) {
+      var selection = context.normalizeSelection(selectionIn);
+      var refNode = context.document.querySelector('i').firstChild; // " after"
+      var oldTree = context.document.querySelector('i');
+      var newTree = context.splitTree(oldTree, refNode);
+      expectTrue(function() { return oldTree === newTree; });
+    });
+
 //
 // splitNodeLeft
 //
@@ -486,7 +497,7 @@ testCaseWithSample('context.splitNodeLeft.4',
 //
 // splitTree
 //
-testCaseWithSample('context.splitTree.shallow',
+testCaseWithSample('context.splitTree.1',
     '<p contenteditable><e1>one</e1>|<e2>two</e2><e3>three</e3></p>',
     function(context, selectionIn) {
       var selection = context.normalizeSelection(selectionIn);
@@ -499,7 +510,7 @@ testCaseWithSample('context.splitTree.shallow',
               function() { return testing.serializeNode(newTree); });
     });
 
-testCaseWithSample('context.splitTree.deep',
+testCaseWithSample('context.splitTree.2',
     '<p contenteditable><b>bold1<i>italic1<s>strike1|strike2</s>italic2</i>bold2</b></p>',
     function(context, selectionIn) {
       var selection = context.normalizeSelection(selectionIn);
@@ -509,6 +520,20 @@ testCaseWithSample('context.splitTree.deep',
       expectEq('<b>bold1<i>italic1<s>strike1</s></i></b>',
                function() { return testing.serializeNode(oldTree); });
       expectEq('<b><i><s>strike2</s>italic2</i>bold2</b>',
+               function() { return testing.serializeNode(newTree); });
+    });
+
+// From createLink.style.6.css
+testCaseWithSample('context.splitTree.3',
+    '<p contenteditable>|<a href="otherurl"><b style="font-style: italic;">world</b><i> after</i></a></p>',
+    function(context, selectionIn) {
+      var selection = context.normalizeSelection(selectionIn);
+      var refNode = context.document.querySelector('i').firstChild; // " after"
+      var oldTree = context.document.querySelector('a');
+      var newTree = context.splitTree(oldTree, refNode);
+      expectEq('<a href="otherurl"><b style="font-style: italic">world</b></a>',
+               function() { return testing.serializeNode(oldTree); });
+      expectEq('<a href="otherurl"><i> after</i></a>',
                function() { return testing.serializeNode(newTree); });
     });
 
