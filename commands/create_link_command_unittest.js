@@ -407,6 +407,27 @@ testCaseFor('createLink.div.4', {
   value: 'URL'
 });
 
+testCaseFor('createLink.atomicElement.1', {
+  after: '<div contenteditable><a href="URL">^1<progress><a style>2</a></progress>|</a></div>',
+  before: '<div contenteditable>^1<progress><a style>2</a></progress>|</div><script>"FOO";</script>',
+  sampleId: 'editing/style/apply-style-atomic.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.atomicElement.2', {
+  // Selection canonicalization moves selection before PROGRESS element.
+  after: '<div contenteditable><a href="URL">^URL|</a><progress>012</progress></div>',
+  before: '<div contenteditable><progress>^012|</progress></div>',
+  value: 'URL'
+});
+
+testCaseFor('createLink.atomicElement.3', {
+  // No changes when selection is PROGRESS element.
+  after: '<div contenteditable>^<progress>012</progress>|</div>',
+  before: '<div contenteditable>^<progress>012</progress>|</div>',
+  value: 'URL'
+});
+
 testCaseFor('createLink.u.1', {
   after: '<p contenteditable><u>hello <b>world</b> <a href="URL">^WebKit|</a></u></p>',
   before: '<p contenteditable><u>hello <b>world</b> ^WebKit|</u></p>',

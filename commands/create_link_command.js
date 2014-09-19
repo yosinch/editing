@@ -128,16 +128,6 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {!Element} element
-   * @return {boolean}
-   */
-  function hasTextLevelElement(element) {
-    return [].some.call(element.children, function(child) {
-      return isPhrasing(child);
-    });
-  }
-
-  /**
    * @param {!editing.EditingContext} context
    * @param {string} url
    * @param {!Node} anchorPhraseNode
@@ -205,12 +195,8 @@ editing.defineCommand('createLink', (function() {
   function mergeElements(context, newParent, oldParent, selectionTracker) {
     console.assert(newParent !== oldParent,
                    'Should not move children to itself');
-    var child = oldParent.firstChild;
-    while (child) {
-      var next = child.nextSibling;
-      context.appendChild(newParent, child);
-      child = next;
-    }
+    while (oldParent.firstChild)
+      context.appendChild(newParent, oldParent.firstChild);
     selectionTracker.willRemoveNode(oldParent);
     context.removeChild(oldParent.parentNode, oldParent);
   }
@@ -463,7 +449,6 @@ editing.defineCommand('createLink', (function() {
     var selectedNodes = editing.nodes.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return createLinkForCaret(context, urlValue);
-
     // TODO(yosin) We should reorder content elements for caret, once Chrome
     // does so.
     selection = normalizeSelectedStartNode(context, selection);
@@ -489,9 +474,23 @@ editing.defineCommand('createLink', (function() {
 
     /** @const @type {?Node} */
     var endNode = editing.nodes.nextNodeSkippingChildren(lastNode);
+    var atomicElements = [];
     effectiveNodes.every(function(currentNode) {
       if (currentNode === currentAnchorElement)
         return true;
+
+      while (atomicElements.length &&
+             !isDescendantOf(currentNode, lastOf(atomicElements))) {
+        atomicElements.shift();
+      }
+      if (atomicElements.length) {
+        if (pendingContainers.length) {
+          pendingContents.push(currentNode);
+          if (!currentNode.nextSibling)
+            moveLastContainerToContents();
+        }
+        return true;
+      }
 
       var lastPendingContainer = lastOf(pendingContainers);
       if (lastPendingContainer &&
@@ -545,18 +544,18 @@ editing.defineCommand('createLink', (function() {
           //   <a><b><i>^foo|bar</i></b></a> =>
           //   <b><i><a>foo</a><a>bar</a></i></b>
           unwrapAnchorContents(context, anchorElement);
+
+          // Expand style for createLink.style.6.css
+          // But not for see createLink.style.4
           /** @const */ var shouldExpandInlineStyleAfterSplit =
               lastNode.parentNode !== anchorElement &&
               isPhrasing(/** @type {!Element} */(lastNode.parentNode));
-          // See createLink.style.4 and createLink.style.6.css
+
           var newAnchorElement = splitAnchorElement(
               context, anchorElement, /** @type {!Node} */(endNode));
           expandInlineStyle(context, anchorElement);
-          if (shouldExpandInlineStyleAfterSplit) {
-            // Expand style for createLink.style.6.css
-            // But not for see createLink.style.4
+          if (shouldExpandInlineStyleAfterSplit)
             expandInlineStyle(context, newAnchorElement);
-          }
         } else {
           expandInlineStyle(context, anchorElement);
         }
@@ -580,7 +579,13 @@ editing.defineCommand('createLink', (function() {
       }
 
       if (currentNode.hasChildNodes()) {
-        pendingContainers.push(currentNode);
+        if (editing.nodes.canContainRangeEndPoint(currentNode)) {
+          pendingContainers.push(currentNode);
+        } else {
+          if (currentAnchorElement)
+            pendingContainers.push(currentNode);
+          atomicElements.push(currentNode);
+        }
         return true;
       }
 
