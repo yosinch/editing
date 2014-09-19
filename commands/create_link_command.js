@@ -123,7 +123,7 @@ editing.defineCommand('createLink', (function() {
    * @return {?string}
    */
   function getAnchorUrl(anchorElement) {
-    console.assert(anchorElement.nodeName === 'A');
+    console.assert(isAnchorElement(anchorElement));
     return anchorElement.getAttribute('href');
   }
 
@@ -160,7 +160,7 @@ editing.defineCommand('createLink', (function() {
    * @return {boolean}
    */
   function isEffectiveNode(node) {
-    return isEditable(node) && node.nodeName !== 'A';
+    return isEditable(node) && !isAnchorElement(node);
   }
 
   /**
@@ -180,8 +180,9 @@ editing.defineCommand('createLink', (function() {
   // TODO(yosin) We should move |moveAllChildren()| to |EditingContext| to
   // share with other commands.
   function moveAllChildren(context, newElement, oldElement) {
-    while (oldElement.firstChild)
-      context.appendChild(newElement, oldElement.firstChild);
+    while (oldElement.hasChildNodes())
+      context.appendChild(newElement,
+                          /** @type {!Node} */(oldElement.firstChild));
   }
 
   /**
@@ -195,8 +196,7 @@ editing.defineCommand('createLink', (function() {
   function mergeElements(context, newParent, oldParent, selectionTracker) {
     console.assert(newParent !== oldParent,
                    'Should not move children to itself');
-    while (oldParent.firstChild)
-      context.appendChild(newParent, oldParent.firstChild);
+    moveAllChildren(context, newParent, oldParent);
     selectionTracker.willRemoveNode(oldParent);
     context.removeChild(oldParent.parentNode, oldParent);
   }
@@ -211,14 +211,14 @@ editing.defineCommand('createLink', (function() {
    */
   function normalizeSelectedStartNode(context, selection) {
     console.assert(selection.isNormalized);
-    var startContainer = selection.startContainer;
-    var anchorElement = null;
+    var startContainer = /** @type {!Element} */(selection.startContainer);
+    /** @type {?Element} */ var anchorElement = null;
     var elements = [];
     for (var runner = startContainer;
          runner && runner.parentNode && isPhrasing(runner);
          runner = runner.parentNode) {
       if (isAnchorElement(runner)) {
-        anchorElement = runner;
+        anchorElement = /** @type {!Element} */(runner);
         break;
       }
       if (runner.previousSibling || runner.nextSibling)
@@ -230,8 +230,7 @@ editing.defineCommand('createLink', (function() {
       return selection;
 
     // Move lowest anchor contents to anchor element.
-    while (startContainer.firstChild)
-      context.appendChild(anchorElement, startContainer.firstChild);
+    moveAllChildren(context, anchorElement, startContainer);
 
     // Move highest content node before anchor element
     context.insertBefore(anchorElement.parentNode, lastOf(elements),
@@ -261,7 +260,7 @@ editing.defineCommand('createLink', (function() {
    * @param {?string} url
    */
   function setAnchorUrl(context, anchorElement, url) {
-    console.assert(anchorElement.nodeName === 'A');
+    console.assert(isAnchorElement(anchorElement));
     if (!url) {
       context.removeAttribute(anchorElement, 'href');
       return;
@@ -276,11 +275,14 @@ editing.defineCommand('createLink', (function() {
    * @return {!Element}
    */
   function splitAnchorElement(context, anchorElement, refNode) {
-    console.assert(anchorElement.nodeName === 'A');
+    console.assert(isAnchorElement(anchorElement));
     console.assert(isDescendantOf(refNode, anchorElement));
     var newAnchorElement = context.splitTree(anchorElement, refNode);
     // TODO(yosin) We should remove this code fragment once |splitNode|
     // doesn't copy "name" attribute. See http://crbug.com/411785
+    // Note: We should remove NAME attribute from existing A element.
+    // Otherwise, following tests are failed: createLink.w3c.46,
+    // createLink.w3c.46r createLink.w3c.47 createLink.w3c.47r
     context.removeAttribute(anchorElement, 'name');
     return newAnchorElement;
   }
@@ -295,8 +297,7 @@ editing.defineCommand('createLink', (function() {
     var child = /** @type {!Element} */(element.firstChild);
     console.assert(child === element.lastChild);
     context.removeChild(element, child);
-    while (child.firstChild)
-      context.appendChild(element, child.firstChild);
+    moveAllChildren(context, element, child);
     context.insertBefore(element.parentNode, child, element);
     context.appendChild(child, element);
   }
@@ -388,12 +389,14 @@ editing.defineCommand('createLink', (function() {
      * @return {!Element}
      */
     function splitTreeForCreateLink(element, refNode) {
-      if (element.nodeName !== 'A')
-        //return this.splitTree(element, refNode);
+      if (!isAnchorElement(element))
         return element;
       if (getAnchorUrl(element) == urlValue)
         return element;
       expandInlineStyle(this, element);
+      // Note: We keep NAME attribute here, otherwise following tests are
+      // failed: createLink.w3c.46, createLink.w3c.46r createLink.w3c.47,
+      // createLink.w3c.47r
       return this.splitTree(element, refNode);
     }
 
@@ -551,6 +554,9 @@ editing.defineCommand('createLink', (function() {
               lastNode.parentNode !== anchorElement &&
               isPhrasing(/** @type {!Element} */(lastNode.parentNode));
 
+          // Note: when we expand inline style before splitting tree, following
+          // tests are failed: createLink.style.4, createLink.style.4.css,
+          // createLink.style.5.css, createLink.style.7
           var newAnchorElement = splitAnchorElement(
               context, anchorElement, /** @type {!Node} */(endNode));
           expandInlineStyle(context, anchorElement);
