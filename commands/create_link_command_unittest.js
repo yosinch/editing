@@ -428,6 +428,22 @@ testCaseFor('createLink.atomicElement.3', {
   value: 'URL'
 });
 
+testCaseFor('createLink.fontSize.1', {
+  // Chrome doesn't do special handling for FONT/@size.
+  after: '<p contenteditable><font size="-1"><a href="URL">^012|</a></font></p>',
+  before: '<p contenteditable><font size="-1">^012|</font></p>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
+testCaseFor('createLink.fontSize.1.css', {
+  // Chrome doesn't do special handling for "font-size" CSS property.
+  after: '<p contenteditable><span style="font-size: small"><a href="URL">^012|</a></span></p>',
+  before: '<p contenteditable><span style="font-size: small">^012|</span></p>',
+  sampleId: 'editing/execCommand/toggle-link-win.html',
+  value: 'URL'
+});
+
 testCaseFor('createLink.u.1', {
   after: '<p contenteditable><u>hello <b>world</b> <a href="URL">^WebKit|</a></u></p>',
   before: '<p contenteditable><u>hello <b>world</b> ^WebKit|</u></p>',
