@@ -133,21 +133,54 @@ editing.define('Editor', (function() {
    * @return {!editing.ReadOnlySelection}
    */
   function getDomSelection() {
-    var domSeleciton = this.document_.getSelection();
-    function direction() {
-      if (!domSeleciton.rangeCount)
+    /**
+     * @param {!Selection} domSelection
+     * @return {editing.SelectionDirection}
+     */
+    function computeDirection(domSelection) {
+      if (!domSelection.rangeCount)
         return editing.SelectionDirection.ANCHOR_IS_START;
-      var range = domSeleciton.getRangeAt(0);
-      if (range.startContainer === domSeleciton.anchorNode &&
-          range.startOffset == domSeleciton.anchorOffset) {
-        return editing.SelectionDirection.ANCHOR_IS_START;
+      var range = domSelection.getRangeAt(0);
+      if (domSelection.anchorNode === domSelection.focusNode) {
+        return domSelection.anchorOffset <= domSelection.focusOffset ?
+            editing.SelectionDirection.ANCHOR_IS_START :
+            editing.SelectionDirection.FOCUS_IS_START;
       }
-      return editing.SelectionDirection.FOCUS_IS_START;
+      return equalPositions(range.startContainer, range.startOffset,
+                            domSelection.anchorNode,
+                            domSelection.anchorOffset) ?
+        editing.SelectionDirection.ANCHOR_IS_START :
+        editing.SelectionDirection.FOCUS_IS_START;
     }
+
+    /**
+     * @param {?Node} container1
+     * @param {number} offset1
+     * @param {?Node} container2
+     * @param {number} offset2
+     * @return {boolean}
+     */
+    function equalPositions(container1, offset1, container2, offset2) {
+      if (container1 === container2)
+        return offset1 === offset2;
+      if (!container1 || !container2)
+        return false;
+      if (!offset1 && container1.nodeType !== Node.ELEMENT_NODE) {
+        offset1 = editing.nodes.nodeIndex(container1);
+        container1 = container1.parentNode;
+      }
+      if (!offset2 && container2.nodeType !== Node.ELEMENT_NODE) {
+        offset2 = editing.nodes.nodeIndex(container2);
+        container2 = container2.parentNode;
+      }
+      return container1 === container2 && offset1 === offset2;
+    }
+
+    var domSelection = this.document_.getSelection();
     return new editing.ReadOnlySelection(
-        domSeleciton.anchorNode, domSeleciton.anchorOffset,
-        domSeleciton.focusNode, domSeleciton.focusOffset,
-        direction());
+        domSelection.anchorNode, domSelection.anchorOffset,
+        domSelection.focusNode, domSelection.focusOffset,
+        computeDirection(domSelection));
   }
 
   /**
