@@ -90,7 +90,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   function replaceNodeName(context, node, name) {
     console.assert(node.parentNode);
     var newNode = context.createElement(name);
-    while (node.firstChild)
+    while (node.hasChildNodes())
       context.appendChild(newNode, node.firstChild);
     // TODO(hajimehoshi): Copy attributes
     var parent = /** @type {!Node} */(node.parentNode);
@@ -184,9 +184,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       // TODO(hajimehoshi): Consider the case when |node| is <ul>.
       if (node.nodeName !== 'OL')
         return false;
-      if (effectiveNodes.indexOf(node) === -1)
-        return false;
-      return true;
+      return effectiveNodes.indexOf(node) !== -1;
     });
 
     var listNode = listItemNode.parentNode;
@@ -214,18 +212,18 @@ editing.defineCommand('InsertOrderedList', (function() {
     if (!isList(listItemNode.parentNode) &&
         !isListItem(listItemNode.parentNode)) {
       var isListItemLastChildText = false;
-      if (listItemNode.childNodes.length) {
+      if (listItemNode.hasChildNodes()) {
         var childNodes = listItemNode.childNodes;
         isListItemLastChildText =
           editing.nodes.isText(childNodes[childNodes.length - 1]);
       }
-      while (listItemNode.firstChild) {
+      while (listItemNode.hasChildNodes()) {
         context.insertBefore(secondList.parentNode, listItemNode.firstChild,
                              secondList);
       }
       if (isListItemLastChildText &&
           (secondList.parentNode.lastChild !== secondList ||
-           secondList.childNodes.length)) {
+           secondList.hasChildNodes())) {
         var br = context.createElement('br');
         context.insertBefore(secondList.parentNode, br, secondList);
       }
@@ -237,9 +235,9 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
     }
 
-    if (!firstList.childNodes.length)
+    if (!firstList.hasChildNodes())
       context.removeChild(firstList.parentNode, firstList);
-    if (!secondList.childNodes.length)
+    if (!secondList.hasChildNodes())
       context.removeChild(secondList.parentNode, secondList);
 
     childLists.forEach(function(listNode) {
@@ -268,7 +266,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       console.assert([].every.call(listNode.childNodes, function(node) {
         return isListItem(node) || canContentOfDL(node);
       }));
-      while (listNode.firstChild)
+      while (listNode.hasChildNodes())
         context.appendChild(firstList, listNode.firstChild);
       context.removeChild(listNode.parentNode, listNode);
     });
