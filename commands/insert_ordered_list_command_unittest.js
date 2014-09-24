@@ -54,3 +54,13 @@ testCaseFor('insertOrderedList.w3c.58.3', {
   before: '<div contenteditable><ol><li>foo<ol><li>^bar<ol><li>baz|</li></ol></li></ol></li></ol></div>',
   after: '<div contenteditable><ol><li>foo</li><li>^bar</li><li>baz</li></ol></div>',
 });
+
+testCaseFor('insertOrderedList.w3c.90.1', {
+  before: '<div contenteditable><ul><li>^foo<ul><li>bar</li></ul></li><li>|baz</li></ul></div>',
+  after: '<div contenteditable><ol><li>^foo</li><li>bar|</li></ol><ul><li>baz</li></ul></div>',
+});
+
+testCaseFor('insertOrderedList.w3c.90.2', {
+  before: '<div contenteditable><ul><li>^foo<ul><li>bar</li></ul></li><li>baz|</li></ul></div>',
+  after: '<div contenteditable><ol><li>^foo<ol><li>bar</li></ol></li><li>baz|</li></ol></div>',
+});

@@ -11,6 +11,8 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'insertOrderedList.w3c.26r': {expected: 'fail', reason: 'issue #39'},
     'insertOrderedList.w3c.27': {expected: 'fail', reason: 'issue #39'},
     'insertOrderedList.w3c.27r': {expected: 'fail', reason: 'issue #39'},
+    'insertOrderedList.w3c.78': {expected: 'fail', reason: 'issue #59'},
+    'insertOrderedList.w3c.78r': {expected: 'fail', reason: 'issue #59'},
 
     // remove format
     'removeFormat.nested_div_style': {expected: 'fail', reason: 'issue #25'},
