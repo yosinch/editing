@@ -24,25 +24,6 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {!Node} node
-   * @return {boolean}
-   * Returns true if all child element is identical phrasing element.
-   */
-  function canUnwrapContents(node) {
-    if (!isElement(node))
-      return false;
-    var element = /** @type {!Element} */(node);
-    var firstChild = element.firstChild;
-    if (!firstChild)
-      return false;
-    return Array.prototype.every.call(element.childNodes, function(child) {
-      return isElement(child) && isPhrasing(child) &&
-             child.nodeName === firstChild.nodeName &&
-             !!child.firstChild;
-    });
-  }
-
-  /**
    * @param {!editing.EditingContext} context
    * @param {!Element} element
    */
@@ -307,6 +288,25 @@ editing.defineCommand('createLink', (function() {
    * @param {!Element} anchorElement
    */
   function unwrapAnchorContents(context, anchorElement) {
+    /**
+     * @param {!Node} node
+     * @return {boolean}
+     * Returns true if all child element is identical phrasing element.
+     */
+    function canUnwrapContents(node) {
+      if (!isElement(node))
+        return false;
+      var element = /** @type {!Element} */(node);
+      var firstChild = element.firstChild;
+      if (!firstChild)
+        return false;
+      return Array.prototype.every.call(element.childNodes, function(child) {
+        return isElement(child) && isPhrasing(child) &&
+               child.nodeName === firstChild.nodeName &&
+               !!child.firstChild;
+      });
+    }
+
     while (canUnwrapContents(anchorElement))
       swapParentAndChild(context, anchorElement);
   }
