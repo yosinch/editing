@@ -209,7 +209,7 @@ editing.defineCommand('Unlink', (function() {
       }
 
       if (!isAnchorElement(currentNode))
-        return;
+        continue;
 
       var anchorElement = /** @type {!Element} */(currentNode);
       unwrapAnchorContents(context, anchorElement);
