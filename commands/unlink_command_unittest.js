@@ -89,7 +89,7 @@ testCaseFor('unlink.contents.text.whole.anchor.focus', {
 
 testCaseFor('unlink.contents.text.whole.focus.anchor', {
   before: '<p contenteditable><a href="foo">|bar^</a></p>',
-  after:'<p contenteditable>|bar^</p>'
+  after:'<p contenteditable>^bar|</p>'
 });
 
 //
@@ -131,9 +131,10 @@ testCaseFor('unlink.multiple.whole.anchor.focus', {
   after:'<p contenteditable>^barbar2|</p>',
 });
 
+// Chrome always set anchor to start.
 testCaseFor('unlink.multiple.whole.focus.anchor', {
   before: '<p contenteditable>|<a href="foo">bar</a><a href="foo2">bar2</a>^</p>',
-  after:'<p contenteditable>|barbar2^</p>',
+  after:'<p contenteditable>^barbar2|</p>',
 });
 
 testCaseFor('unlink.multiple.partial.anchor.focus', {
