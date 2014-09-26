@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-
 editing.define('SelectionDirection', {
   ANCHOR_IS_START: 'ANCHOR_IS_START',
   FOCUS_IS_START: 'FOCUS_IS_START'
 });
 
 editing.define('ReadOnlySelection', (function() {
+  'use strict';
+
   /**
    * @constructor
    * @final

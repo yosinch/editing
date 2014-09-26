@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 // TODO(hajimehoshi): Temporal definition: we need to implement this later
 /**
  * @param {Object} obj
@@ -11,6 +9,8 @@
 function makeInlineStyleCommand(obj) {}
 
 (function() {
+  'use strict';
+
   editing.defineCommand('backColor', makeInlineStyleCommand({
     cssProperty: 'background-color',
   }));

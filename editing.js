@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 // Instead of |var editing = {}| to make closure compiler happy.
 window['editing']= {};
 
 (function() {
+  'use strict';
+
   /** @type {!Map.<string, !CommandFunction>} */
   var commandTable = new Map();
 
@@ -68,9 +68,8 @@ window['editing']= {};
   function newSet(members) {
     var set = new Set(members);
     if (!set.size) {
-      members.forEach(function(member) {
+      for (var member of members)
         set.add(member);
-      });
     }
     return set;
   }

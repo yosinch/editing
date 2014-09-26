@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.defineCommand('redo', (function() {
+  'use strict';
+
   /**
    * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.
@@ -19,6 +19,8 @@ editing.defineCommand('redo', (function() {
 })());
 
 editing.defineCommand('undo', (function() {
+  'use strict';
+
   /**
    * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.

@@ -7,13 +7,13 @@
 function dumpNodes(nodes) {
   var sink = ''
   var delimiter = '';
-  nodes.forEach(function(node) {
+  for (var node of nodes) {
     if (editing.nodes.isText(node))
       sink += delimiter + node.nodeValue;
     else
       sink += delimiter + node.nodeName;
     delimiter = ',';
-  });
+  }
   return sink;
 }
 

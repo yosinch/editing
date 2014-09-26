@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 // Instead of |var testing = {}| to make closure compiler happy.
 window['testing']= {};
 
 (function() {
+  'use strict';
+
   /**
    * @return {string}
    */
@@ -38,15 +38,19 @@ window['testing']= {};
 
 // TODO(yosin) We should add more end tag omissible tag names.
 testing.define('END_TAG_OMISSIBLE', (function() {
+  'use strict';
+
   var omissibleTagNames = new Set();
-  ['br', 'hr', 'img', 'wbr'].forEach(function(tagName) {
+  for (var tagName of ['br', 'hr', 'img', 'wbr']) {
     omissibleTagNames.add(tagName.toUpperCase());
     omissibleTagNames.add(tagName);
-  });
+  }
   return omissibleTagNames;
 })());
 
 testing.define('serializeNode', (function() {
+  'use strict';
+
   /**
    * @param {!Node} node
    * @param {Object=} opt_options
@@ -111,21 +115,21 @@ testing.define('serializeNode', (function() {
       }
       var tagName = node.nodeName.toLowerCase();
       var sink = '<' + tagName;
-      [].slice.call(node.attributes).sort(orderByAttributeName).forEach(
-        function(attrNode) {
-          var attrName = attrNode.name;
-          var attrValue = attrNode.value;
-          if (attrValue){
-            // IE11 append ";" for end of CSS property list.
-            if (attrName == 'style')
-              attrValue = attrValue.replace(/;$/, '');
-            attrValue = attrValue.replace(/&/g, '&amp;')
-                .replace(/\u0022/g, '&quot;');
-            sink += ' ' + attrName + '="' + attrValue + '"';
-          } else {
-            sink += ' ' + attrName;
-          }
-        });
+      for (var attrNode of Array.prototype.slice.call(node.attributes)
+           .sort(orderByAttributeName)) {
+        var attrName = attrNode.name;
+        var attrValue = attrNode.value;
+        if (attrValue){
+          // IE11 append ";" for end of CSS property list.
+          if (attrName == 'style')
+            attrValue = attrValue.replace(/;$/, '');
+          attrValue = attrValue.replace(/&/g, '&amp;')
+            .replace(/\u0022/g, '&quot;');
+          sink += ' ' + attrName + '="' + attrValue + '"';
+        } else {
+          sink += ' ' + attrName;
+        }
+      }
       sink += '>';
       var child = node.firstChild;
       var offset = 0;

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.define('EditingStyle', (function() {
+  'use strict';
+
   /** @const */ var CSS_PROPRTY_DATA = (function() {
     function makeFontCreate(attributeName) {
       if (attributeName === 'face') {
@@ -68,9 +68,8 @@ editing.define('EditingStyle', (function() {
       }
     };
   })();
-  Object.keys(CSS_PROPRTY_DATA).forEach(function(propertyName) {
+  for (var propertyName of Object.keys(CSS_PROPRTY_DATA))
     CSS_PROPRTY_DATA[propertyName].propertyName = propertyName;
-  });
 
   // This order must match with |ApplyStyleCommand::applyInlineStyleChange()|.
   /** @const @type {!Array.<string>} */ var CREATE_ELEMENT_ORDER = [
@@ -159,20 +158,19 @@ editing.define('EditingStyle', (function() {
   function createElements(context, callback) {
     var domStyle = this.domStyle_;
     /** @type {!Map.<string, string>} */ var properties = new Map();
-    [].forEach.call(domStyle, function(propertyName) {
+    for (var propertyName of Array.prototype.slice.call(domStyle))
       properties.set(propertyName, domStyle[propertyName]);
-    });
-    CREATE_ELEMENT_ORDER.forEach(function(propertyName) {
+    for (var propertyName of CREATE_ELEMENT_ORDER) {
       var propertyValue = properties.get(propertyName);
       if (typeof(propertyValue) !== 'string')
-        return;
+        continue;
       var property = {name: propertyName, value: propertyValue};
       var data = CSS_PROPRTY_DATA[propertyName];
       var styleElement = data.createStyleElement(context, property);
       if (!styleElement)
-        return;
+        continue;
       callback(context, property, styleElement);
-    });
+    }
   }
 
   /**
@@ -197,7 +195,7 @@ editing.define('EditingStyle', (function() {
    */
   function properties() {
     var domStyle = this.domStyle_;
-    return [].map.call(domStyle, function(propertyName) {
+    return Array.prototype.map.call(domStyle, function(propertyName) {
       return CSS_PROPRTY_DATA[propertyName];
     }).filter(function(data) {
       return data;

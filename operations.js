@@ -356,9 +356,8 @@ editing.define('SetStyle', (function() {
     this.undo();
     // Apply changes.
     var style = this.element_.style;
-    this.changes_.forEach(function(property) {
+    for (var property of this.changes_)
       style[property.name] = property.value;
-    });
   }
 
   /**

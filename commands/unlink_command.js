@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.defineCommand('Unlink', (function() {
+
+  'use strict';
+
   /** @const */ var isElement = editing.nodes.isElement;
   /** @const */ var isPhrasing = editing.nodes.isPhrasing;
 
@@ -91,6 +92,7 @@ editing.defineCommand('Unlink', (function() {
   function isAnchorElement(node) {
     return Boolean(node) && node.nodeName === 'A';
   }
+
 
   /**
    * @param {!Node} node
@@ -188,7 +190,7 @@ editing.defineCommand('Unlink', (function() {
     // aren't valid HTML5.
     /** @const @type {!Array.{!Element} */
     var anchorElements = [];
-    effectiveNodes.forEach(function(currentNode) {
+    for (var currentNode of effectiveNodes) {
       var lastAnchorElement = lastOf(anchorElements);
       if (lastAnchorElement &&
           lastAnchorElement === currentNode.previousSibling) {
@@ -200,10 +202,10 @@ editing.defineCommand('Unlink', (function() {
       if (!currentNode.hasChildNodes()) {
         if (isAnchorElement(currentNode)) {
           selectionTracker.willRemoveNode(currentNode);
-          var parentNode = /** @type {!Node} */(currentNode.parentNode);
-          context.removeChild(parentNode, currentNode);
+          var parentNode = /** @type {!Node} */(currentNode.context);
+          parentNode.removeChild(parentNode, currentNode);
         }
-        return;
+        continue;
       }
 
       if (!isAnchorElement(currentNode))
@@ -213,7 +215,7 @@ editing.defineCommand('Unlink', (function() {
       unwrapAnchorContents(context, anchorElement);
       expandInlineStyle(context, anchorElement);
       anchorElements.push(anchorElement);
-    });
+    }
 
     while (anchorElements.length) {
       var endNode = lastOf(effectiveNodes);

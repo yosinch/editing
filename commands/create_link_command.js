@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.defineCommand('createLink', (function() {
+  'use strict';
+
   /** @const */ var isDescendantOf = editing.nodes.isDescendantOf;
   /** @const */ var isEditable = editing.nodes.isEditable;
   /** @const */ var isElement = editing.nodes.isElement;
@@ -39,10 +39,10 @@ editing.defineCommand('createLink', (function() {
       if (!style.hasStyle)
         return;
       var styleElement = context.createElement('span');
-      style.properties.forEach(function(property) {
+      for (var property of style.properties) {
         context.setStyle(styleElement, property.name, property.value);
         context.removeStyle(element, property.name);
-      });
+      }
       moveAllChildren(context, styleElement, element);
       context.appendChild(element, styleElement);
     }
@@ -58,20 +58,20 @@ editing.defineCommand('createLink', (function() {
       if (element.childElementCount) {
         // Apply inline style to text child element.
         var lastElement = null;
-        [].forEach.call(element.childNodes, function(child) {
+        for (var child of Array.prototype.slice.call(element.childNodes)) {
           if (isElement(child)) {
             style.applyInheritedStyle(context, /** @type {!Element} */(child));
             lastElement = null;
-            return;
+            continue;
           }
           if (lastElement) {
             context.appendChild(lastElement, child);
-            return;
+            continue;
           }
           if (editing.nodes.isWhitespaceNode(child)) {
             // We don't need to wrap whitespaces with style element.
             // See createLink.style.7
-            return;
+            continue;
           }
           style.createElements(context,
               function(context, property, styleElement) {
@@ -80,7 +80,7 @@ editing.defineCommand('createLink', (function() {
                 context.appendChild(styleElement, child);
                 lastElement = styleElement;
               });
-        });
+        }
         context.removeAttribute(element, 'style');
         return;
       }
@@ -300,7 +300,7 @@ editing.defineCommand('createLink', (function() {
       var firstChild = element.firstChild;
       if (!firstChild)
         return false;
-      return [].every.call(element.childNodes, function(child) {
+      return Array.prototype.every.call(element.childNodes, function(child) {
         return isElement(child) && isPhrasing(child) &&
                child.nodeName === firstChild.nodeName &&
                !!child.firstChild;

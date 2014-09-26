@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.define('Editor', (function() {
+  'use strict';
+
   var DEBUG = true;
 
   /**
@@ -193,9 +193,8 @@ editing.define('Editor', (function() {
       return false;
     }
     var commandData = this.redoStack_.pop();
-    commandData.operations.forEach(function(operation) {
+    for (var operation of commandData.operations)
       operation.redo();
-    });
     this.undoStack_.push(commandData);
     context.setEndingSelection(commandData.endingSelection);
     return true;
@@ -240,9 +239,8 @@ editing.define('Editor', (function() {
     var commandData = this.undoStack_.pop();
     // TODO(yosin) We should not use |reverse()| here. We can do this
     // without copying array.
-    commandData.operations.slice().reverse().forEach(function(operation) {
+    for (var operation of commandData.operations.slice().reverse())
       operation.undo();
-    });
     this.redoStack_.push(commandData);
     context.setEndingSelection(commandData.startingSelection);
     return true;

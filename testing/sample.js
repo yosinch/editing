@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 testing.define('Sample', (function() {
+  'use strict';
+
   function indexOfNode(node) {
     var parentNode = node.parentNode;
     var index = 0;
