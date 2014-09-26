@@ -168,13 +168,10 @@ editing.define('nodes', (function() {
    * @param {!Node} other
    * Returns true if |other| is an ancestor of |node|, otherwise false.
    */
+  // TODO(yosin) We should use |Node.prototype.contains()| instead of
+  // |editing.nodes.isDescendantOf()|. See issue #53.
   function isDescendantOf(node, other) {
-    console.assert(other);
-    for (var runner = node.parentNode; runner; runner = runner.parentNode) {
-      if (runner == other)
-        return true;
-    }
-    return false;
+    return other !== node && other.contains(node);
   }
 
   /**
