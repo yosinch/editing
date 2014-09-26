@@ -7,7 +7,7 @@
 function dumpNodes(nodes) {
   var sink = ''
   var delimiter = '';
-  nodes.forEach(function(node) {
+  for (var node of nodes) {
     sink += delimiter;
     if (node === null)
       sink += "(null)";
@@ -16,7 +16,7 @@ function dumpNodes(nodes) {
     else
       sink += node.nodeName;
     delimiter = ',';
-  });
+  }
   return sink;
 }
 

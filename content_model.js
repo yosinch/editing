@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 // See http://www.whatwg.org/specs/web-apps/current-work/multipage/dom.html#content-models
 editing.define('CONTENT_CATEGORY', {
   EMBEDDED: 'EMBEDDED',
@@ -17,6 +15,8 @@ editing.define('CONTENT_CATEGORY', {
 });
 
 editing.define('contentModel', (function() {
+  'use strict';
+
   /**
    * @param {*} scalarOrArray
    * @return {!Array}
@@ -35,9 +35,8 @@ editing.define('contentModel', (function() {
    */
   function toSet(members) {
     var set = {};
-    members.forEach(function(member) {
+    for (var member of members)
       set[member] = member;
-    });
     return set;
   }
 
@@ -50,14 +49,14 @@ editing.define('contentModel', (function() {
         usableContextIn.split(' ') : toSet(toArray(usableContextIn));
     var contextModel = typeof(contextModelIn) == 'string' ?
         contextModelIn.split(' ') : toSet(contextModelIn);
-    names.forEach(function(name) {
+    for (var name of names) {
       contentModel[name] = {
         canContainRangeEndPoint: true,
         categories: categories,
         usableContexts: usableContexts,
         contextModel: contextModel
       };
-    });
+    }
   }
 
   /** @const */ var EMBEDDED = editing.CONTENT_CATEGORY.EMBEDDED;
@@ -122,13 +121,15 @@ editing.define('contentModel', (function() {
   defineContentModel('td th', [], 'tr', FLOW);
 
   // Taken from override functions of Node::canContainRangeEndPoint()
-  'applet br button embed frame hr img input meter object output progress'
-    .split(' ').forEach(function(tagName) {
-      var model = contentModel[tagName.toUpperCase()];
-      if (!model)
-        return;
-      model.canContainRangeEndPoint = false;
-    });
+  var tagNames =
+    'applet br button embed frame hr img input meter object output progress'
+    .split(' ')
+  for (var tagName of tagNames) {
+    var model = contentModel[tagName.toUpperCase()];
+    if (!model)
+      continue;
+    model.canContainRangeEndPoint = false;
+  }
 
   return contentModel;
 })());

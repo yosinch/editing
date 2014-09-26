@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.define('nodes', (function() {
+  'use strict';
+
   /** @const */ var INTERACTIVE = editing.CONTENT_CATEGORY.INTERACTIVE;
   /** @const */ var PHRASING = editing.CONTENT_CATEGORY.PHRASING;
 

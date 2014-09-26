@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.defineCommand('Unlink', (function() {
+  'use strict';
+
   /**
    * @param {!Node} node
    * @return {boolean}
@@ -44,7 +44,7 @@ editing.defineCommand('Unlink', (function() {
     // We'll remove nested anchor elements event if nested anchor elements
     // aren't valid HTML5.
     var anchorElements = [];
-    effectiveNodes.forEach(function(currentNode) {
+    for (var currentNode of effectiveNodes) {
       var lastAnchorElement = lastOf(anchorElements);
       if (lastAnchorElement &&
           lastAnchorElement === currentNode.previousSibling) {
@@ -59,12 +59,12 @@ editing.defineCommand('Unlink', (function() {
           var parentNode = /** @type {!Node} */(currentNode.parentNode);
           context.removeChild(parentNode, currentNode);
         }
-        return;
+        continue;
       }
 
       if (currentNode.nodeName == 'A')
         anchorElements.push(currentNode);
-    });
+    }
 
     while (anchorElements.length) {
       var endNode = lastOf(effectiveNodes);

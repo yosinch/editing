@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 editing.define('EditingContext', (function() {
+  'use strict';
+
   function ASSERT_EDITING_IN_PROGRESS(context) {
     if (!context.endingSelection_)
       return;

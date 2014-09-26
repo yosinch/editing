@@ -96,9 +96,8 @@ if (!('Set' in this)) {
     function Set(iterable) {
       this.members_ = {};
       if (Array.isArray(iterable)) {
-        iterable.forEach(function(member) {
+        for (var member of iterable)
           this.members_[member] = true;
-        }, this);
       }
     }
 

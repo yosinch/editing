@@ -119,14 +119,14 @@ window['TestRunner'] = (function() {
   function getSectionNames() {
     var sectionNames = new Set();
     var list = [];
-    this.allTestCases_.forEach(function(testCase) {
+    for (var testCase of this.allTestCases_) {
       var name = testCase.name;
       var sectionName = name.substr(0, name.indexOf('.'));
       if (sectionNames.has(sectionName))
-        return;
+        continue;
       list.push(sectionName);
       sectionNames.add(sectionName);
-    });
+    }
     return list.sort();
   }
 
@@ -137,10 +137,10 @@ window['TestRunner'] = (function() {
   function mergeResult(result, moreResult){
     if (!moreResult)
       return result;
-    Object.keys(moreResult).forEach(function(name) {
+    for (var name of Object.keys(moreResult)) {
       var key = name == 'current' ? testing.browserId : name;
       result[key] = moreResult[name];
-    });
+    }
     return result;
   }
 
@@ -272,7 +272,7 @@ window['TestRunner'] = (function() {
         delete overrideResult['reason'];
         this.results_.push(overrideResult);
       }
-      this.results_.forEach(function(result) {
+      for (var result of this.results_) {
         var className = result.className;
         if (className == overrideResult.expected) {
           if (overrideResult.expected != 'pass')
@@ -295,9 +295,9 @@ window['TestRunner'] = (function() {
         ulResult.classList.add(className);
         li.appendChild(ulResult);
 
-        Object.keys(result).filter(function(key) {
+        for (var key of Object.keys(result).filter(function(key) {
           return !(key in SKIP_KEY_NAMES);
-        }).sort(compareKeys).forEach(function(key) {
+        }).sort(compareKeys)) {
           var li = document.createElement('li');
           li.classList.add(key);
           ulResult.appendChild(li);
@@ -306,8 +306,8 @@ window['TestRunner'] = (function() {
             li.innerHTML = padding(key) + ' ' + value;
           else
             li.textContent = padding(key) + ' ' + value;
-        });
-      });
+        }
+      }
       liTestCase.classList.add(testCaseClass);
     }
 
@@ -329,14 +329,15 @@ window['TestRunner'] = (function() {
                  '</span>';
         }, '');
 
-      Object.keys(testCasesByClass).filter(function(key) {
-        return key != 'pass';
-      }).sort(function(key1, key2) {
-        return orderOfClass(key1) - orderOfClass(key2);
-      }).forEach(function(sectionName) {
+      for (var sectionName of
+           Object.keys(testCasesByClass).filter(function(key) {
+             return key != 'pass';
+           }).sort(function(key1, key2) {
+             return orderOfClass(key1) - orderOfClass(key2);
+           })) {
         var testCases = testCasesByClass[sectionName];
         if (!testCases.size)
-          return;
+          continue;
         var h3 = document.createElement('h3');
         h3.textContent = sectionName + ' (' + testCases.size + ')';
         resultElement.appendChild(h3);
@@ -344,10 +345,10 @@ window['TestRunner'] = (function() {
         resultElement.appendChild(p);
         /** @const */ var MAX_LINKS = 50;
         var count = 0;
-        testCases.forEach(function(testCase) {
+        for (var testCase of testCases) {
           ++count;
           if (count > MAX_LINKS)
-            return;
+            continue;
           p.appendChild(document.createTextNode(' '));
           var a = document.createElement('a');
           a.href = '#' + testCase.name;
@@ -355,8 +356,8 @@ window['TestRunner'] = (function() {
           p.appendChild(a);
           if (count == MAX_LINKS && testCases.size >= MAX_LINKS)
             p.appendChild(document.createTextNode(' AND MORE!'));
-        });
-      });
+        }
+      }
     }
 
     var allTestCases = opt_sectionNameToRun ?
@@ -383,12 +384,12 @@ window['TestRunner'] = (function() {
             numRun + '/' + allTestCases.length + '(' + percent + '%) tests.';
         document.getElementById('progress').style.width = percent + '%';
 
-        ['exception', 'fail'].forEach(function(key) {
+        for (var key of ['exception', 'fail']) {
           var testCases = testCasesByClass[key];
           if (!testCases || !testCases.size)
-            return;
+            continue;
           status += ' ' + testCasesByClass[key].size + ' ' + key + '.';
-        });
+        }
 
         status += ' Elapsed: ' + ((new Date())- startAt) + 'ms';
         if (lastBeginFrameTimeStamp) {
@@ -454,19 +455,19 @@ function run(testName) {
   testRunner.results_ = [];
   testRunner.useTryCatch_ = false;
   testCase.testFunction();
-  testRunner.results_.filter(function(result) {
+  for (var result of testRunner.results_.filter(function(result) {
     return result.className !== 'pass';
-  }).forEach(function(result) {
+  })) {
     console.log(result.className);
-    Object.keys(result).filter(function(key) {
+    for (var key of Object.keys(result).filter(function(key) {
       return !IGNORE_KEYS.has(key);
-    }).forEach(function(key) {
+    })) {
       var value = String(result[key])
         .replace(/<span class="[^\u0022]+">/g, '')
         .replace(new RegExp('</span>', 'g'), '')
         .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
       console.log(' ', (key + PADDING).substr(0, PADDING.length), value);
-    });
-  });
+    }
+  }
   return testRunner.results_;
 }

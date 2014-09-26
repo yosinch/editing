@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 installClass('Document', function(documentPrototype) {
+  'use strict';
+
   <include src="editing.js">
   <include src="content_model.js">
   <include src="editing_context.js">

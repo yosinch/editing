@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 // Sample: http://jsfiddle.net/9nf4fue9/1/
 editing.defineCommand('removeFormat', (function() {
+  'use strict';
+
   // TODO(yosin) We should move |TAG_NAMES_TO_REMOVE| to "content_model.js".
   /** @const */
   var TAG_NAMES_TO_REMOVE = editing.newSet([
@@ -152,7 +152,7 @@ editing.defineCommand('removeFormat', (function() {
     }
 
     /** @type {!Array.<!Element>} */ var styleElements = [];
-    effectiveNodes.forEach(function(currentNode) {
+    for (var currentNode of effectiveNodes) {
       var styleElement = lastOf(styleElements);
       if (styleElement && styleElement == currentNode.previousSibling) {
         removeStyle(styleElement, null);
@@ -165,12 +165,12 @@ editing.defineCommand('removeFormat', (function() {
           var parentNode = /** @type {!Node} */(currentNode.parentNode);
           context.removeChild(parentNode, currentNode);
         }
-        return;
+        continue;
       }
       if (!isStyleElement(currentNode))
-        return;
+        continue;
       styleElements.push(currentNode);
-    });
+    }
 
     while (styleElements.length) {
       var endNode = lastOf(effectiveNodes);
