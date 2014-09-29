@@ -6,7 +6,7 @@
 //
 // Operation
 //
-editing.define('Operation', (function() {
+editing.Operation = (function() {
   /**
    * @constructor
    * @param {string} operationName
@@ -39,13 +39,13 @@ editing.define('Operation', (function() {
   });
 
   return Operation;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // AppendChild
 //
-editing.define('AppendChild', (function() {
+editing.AppendChild = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
@@ -82,13 +82,13 @@ editing.define('AppendChild', (function() {
   });
 
   return AppendChild;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // InsertBefore
 //
-editing.define('InsertBefore', (function() {
+editing.InsertBefore = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
@@ -129,13 +129,13 @@ editing.define('InsertBefore', (function() {
   });
 
   return InsertBefore;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // RemoveAttribute
 //
-editing.define('RemoveAttribute', (function() {
+editing.RemoveAttribute = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Element} element
@@ -175,13 +175,13 @@ editing.define('RemoveAttribute', (function() {
   });
 
   return RemoveAttribute;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // RemoveChild
 //
-editing.define('RemoveChild', (function() {
+editing.RemoveChild = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
@@ -219,13 +219,13 @@ editing.define('RemoveChild', (function() {
   });
 
   return RemoveChild;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // ReplaceChild
 //
-editing.define('ReplaceChild', (function() {
+editing.ReplaceChild = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
@@ -266,13 +266,13 @@ editing.define('ReplaceChild', (function() {
   });
 
   return ReplaceChild;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // SetAttribute
 //
-editing.define('SetAttribute', (function() {
+editing.SetAttribute = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Element} element
@@ -318,7 +318,7 @@ editing.define('SetAttribute', (function() {
   });
 
   return SetAttribute;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -326,7 +326,7 @@ editing.define('SetAttribute', (function() {
 // We consolidate inline style changes into one operation to keep ordering
 // of STYLE attribute value.
 //
-editing.define('SetStyle', (function() {
+editing.SetStyle = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Element} element
@@ -393,13 +393,13 @@ editing.define('SetStyle', (function() {
   });
 
   return SetStyle;
-})());
+})();
 
 //////////////////////////////////////////////////////////////////////
 //
 // SplitText
 //
-editing.define('SplitText', (function() {
+editing.SplitText = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Text} textNode
@@ -440,4 +440,4 @@ editing.define('SplitText', (function() {
   });
 
   return SplitText;
-})());
+})();

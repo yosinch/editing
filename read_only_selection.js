@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-editing.define('SelectionDirection', {
+// To avoid "redefinition error" from closure compiler, we use bracket for
+// initializing |SelectionDirection|.
+editing['SelectionDirection'] = {
   ANCHOR_IS_START: 'ANCHOR_IS_START',
   FOCUS_IS_START: 'FOCUS_IS_START'
-});
+};
 
-editing.define('ReadOnlySelection', (function() {
+editing.ReadOnlySelection = (function() {
   'use strict';
 
   /**
@@ -162,4 +164,4 @@ editing.define('ReadOnlySelection', (function() {
     startOffset: {get: startOffset},
   });
   return ReadOnlySelection;
-})());
+})();

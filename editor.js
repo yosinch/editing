@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-editing.define('Editor', (function() {
+editing.Editor = (function() {
   'use strict';
 
   var DEBUG = true;
@@ -263,4 +263,4 @@ editing.define('Editor', (function() {
     undoStack_: {writable: true}
   });
   return Editor;
-})());
+})();
