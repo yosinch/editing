@@ -188,9 +188,9 @@ editing.defineCommand('Unlink', (function() {
 
     // We'll remove nested anchor elements event if nested anchor elements
     // aren't valid HTML5.
-    /** @const @type {!Array.{!Element} */
+    /** @const @type {!Array.<!Element>} */
     var anchorElements = [];
-    for (var currentNode of effectiveNodes) {
+    effectiveNodes.forEach(function(currentNode) {
       var lastAnchorElement = lastOf(anchorElements);
       if (lastAnchorElement &&
           lastAnchorElement === currentNode.previousSibling) {
@@ -202,20 +202,20 @@ editing.defineCommand('Unlink', (function() {
       if (!currentNode.hasChildNodes()) {
         if (isAnchorElement(currentNode)) {
           selectionTracker.willRemoveNode(currentNode);
-          var parentNode = /** @type {!Node} */(currentNode.context);
-          parentNode.removeChild(parentNode, currentNode);
+          var parentNode = /** @type {!Node} */(currentNode.parentNode);
+          context.removeChild(parentNode, currentNode);
         }
-        continue;
+        return;
       }
 
       if (!isAnchorElement(currentNode))
-        continue;
+        return;
 
       var anchorElement = /** @type {!Element} */(currentNode);
       unwrapAnchorContents(context, anchorElement);
       expandInlineStyle(context, anchorElement);
       anchorElements.push(anchorElement);
-    }
+    });
 
     while (anchorElements.length) {
       var endNode = lastOf(effectiveNodes);

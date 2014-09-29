@@ -152,7 +152,7 @@ editing.defineCommand('removeFormat', (function() {
     }
 
     /** @type {!Array.<!Element>} */ var styleElements = [];
-    for (var currentNode of effectiveNodes) {
+    effectiveNodes.forEach(function(currentNode) {
       var styleElement = lastOf(styleElements);
       if (styleElement && styleElement == currentNode.previousSibling) {
         removeStyle(styleElement, null);
@@ -165,12 +165,12 @@ editing.defineCommand('removeFormat', (function() {
           var parentNode = /** @type {!Node} */(currentNode.parentNode);
           context.removeChild(parentNode, currentNode);
         }
-        continue;
+        return;
       }
       if (!isStyleElement(currentNode))
-        continue;
+        return;
       styleElements.push(currentNode);
-    }
+    });
 
     while (styleElements.length) {
       var endNode = lastOf(effectiveNodes);
