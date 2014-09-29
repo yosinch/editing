@@ -11,7 +11,7 @@ editing.define('nodes', (function() {
   /**
    * @constructor
    * @final
-   * @param {?Node} startNode
+   * @param {Node} startNode
    */
   function NextNodes(startNode) {
     this.currentNode_ = startNode;
@@ -48,7 +48,7 @@ editing.define('nodes', (function() {
   /**
    * @param {!Node} node1
    * @param {!Node} node2
-   * @return {?Node}
+   * @return {Node}
    */
   function commonAncestor(node1, node2) {
     console.assert(node1.ownerDocument === node2.ownerDocument);
@@ -123,10 +123,10 @@ editing.define('nodes', (function() {
       endOffset = 0;
     }
 
-    /** @const @type {?Node} */
+    /** @const @type {Node} */
     var startNode = startContainer.childNodes[startOffset] ||
                     nextNode(selection.startContainer.lastChild);
-    /** @const @type {?Node} */
+    /** @const @type {Node} */
     var endNode = endContainer.childNodes[endOffset] ||
                   nextNodeSkippingChildren(endContainer.lastChild);
 
@@ -255,7 +255,7 @@ editing.define('nodes', (function() {
 
   /**
    * @param {!Node} current
-   * @return {?Node}
+   * @return {Node}
    */
   function lastWithIn(current) {
     var descendant = current.lastChild;
@@ -275,8 +275,8 @@ editing.define('nodes', (function() {
   }
 
   /**
-   * @param {?Node} current
-   * @return {?Node}
+   * @param {Node} current
+   * @return {Node}
    * nextNode(<a><b>foo|</b><a>bar) = bar
    */
   function nextNode(current) {
@@ -290,7 +290,7 @@ editing.define('nodes', (function() {
   }
 
   /**
-   * @param {?Node} node
+   * @param {Node} node
    * @return {!NextNodes}
    */
   function nextNodes(node) {
@@ -299,7 +299,7 @@ editing.define('nodes', (function() {
 
   /**
    * @param {!Node} current
-   * @return {?Node}
+   * @return {Node}
    */
   function nextAncestorOrSibling(current) {
     console.assert(!current.nextSibling);
@@ -311,8 +311,8 @@ editing.define('nodes', (function() {
   }
 
   /**
-   * @param {?Node} current
-   * @return {?Node}
+   * @param {Node} current
+   * @return {Node}
    */
   function nextNodeSkippingChildren(current) {
     if (!current)
@@ -340,7 +340,7 @@ editing.define('nodes', (function() {
 
   /**
    * @param {!Node} current
-   * @return {?Node}
+   * @return {Node}
    */
   function previousNode(current) {
     var previous = current.previousSibling;
@@ -355,7 +355,7 @@ editing.define('nodes', (function() {
 
   /**
    * @param {!Node} current
-   * @return {?Node}
+   * @return {Node}
    */
   function previousNodeSkippingChildren(current) {
     if (current.previousSibling)

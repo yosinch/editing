@@ -28,7 +28,7 @@ testing.Sample.prototype.startingSelection;
 testing.browserId;
 
 /**
- * @param {?Node} node
+ * @param {Node} node
  * @param {!Object=} opt_options
  */
 testing.serializeNode = function(node, opt_options) {};

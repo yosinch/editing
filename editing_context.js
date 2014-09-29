@@ -74,7 +74,7 @@ editing.define('EditingContext', (function() {
    * @this {!EditingContext}
    * @param {!Node} parentNode
    * @param {!Node} newChild
-   * @param {?Node} refChild
+   * @param {Node} refChild
    */
   EditingContext.prototype.insertBefore = function(
       parentNode, newChild, refChild) {};
@@ -310,7 +310,7 @@ editing.define('EditingContext', (function() {
 
     /**
      * @param {!editing.EditingContext} context
-     * @param {?Node} node
+     * @param {Node} node
      * @param {number} offset
      */
     function splitIfNeeded(context, node, offset) {
@@ -376,7 +376,7 @@ editing.define('EditingContext', (function() {
     }
 
     /**
-     * @param {?Node} node
+     * @param {Node} node
      * @param {number} offset
      */
     function useContainerIfPossible(node, offset) {
@@ -757,7 +757,7 @@ editing.define('EditingContext', (function() {
   /**
    * @this {!EditingContext}
    * @param {!Element} parent
-   * @param {?Node} stopChild
+   * @param {Node} stopChild
    */
    function unwrapElement(parent, stopChild) {
       console.assert(!stopChild || stopChild.parentNode == parent,

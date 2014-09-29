@@ -35,7 +35,7 @@ editing.AppendChild = function(parentNode, newChild) {}
  * @final
  * @param {!Node} parentNode
  * @param {!Node} newChild
- * @param {?Node} refChild
+ * @param {Node} refChild
  */
 editing.InsertBefore = function(parentNode, newChild, refChild) {}
 

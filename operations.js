@@ -93,7 +93,7 @@ editing.define('InsertBefore', (function() {
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
    * @param {!Node} newChild
-   * @param {?Node} refChild
+   * @param {Node} refChild
    */
   function InsertBefore(parentNode, newChild, refChild) {
     console.assert(!newChild.parentNode);
@@ -185,7 +185,7 @@ editing.define('RemoveChild', (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
-   * @param {?Node} oldChild
+   * @param {Node} oldChild
    */
   function RemoveChild(parentNode, oldChild) {
     editing.Operation.call(this, 'removeChild');
@@ -230,7 +230,7 @@ editing.define('ReplaceChild', (function() {
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
    * @param {!Node} newChild
-   * @param {?Node} oldChild
+   * @param {Node} oldChild
    */
   function ReplaceChild(parentNode, newChild, oldChild) {
     console.assert(!newChild.parentNode);

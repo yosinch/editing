@@ -42,7 +42,7 @@ window['TestRunner'] = (function() {
   /**
    * @param {!TestRunner} testRunner
    * @param {string} testName
-   * @return {?HTMLElement}
+   * @return {HTMLElement}
    */
   function addSectionIfNeeded(testRunner, testName) {
     var dotIndex = testName.indexOf('.');
@@ -50,7 +50,7 @@ window['TestRunner'] = (function() {
     if (testRunner.sectionName_ == sectionName) {
       var ol = document.getElementById(sectionName).nextSibling
                     .querySelector('ol');
-      return /** @type {?HTMLElement} */(ol);
+      return /** @type {HTMLElement} */(ol);
     }
 
     testRunner.sectionName_ = sectionName;
@@ -69,7 +69,7 @@ window['TestRunner'] = (function() {
     var ol = document.createElement('ol');
     ol.classList.add('log');
     div.appendChild(ol);
-    return /** @type {?HTMLElement} */(ol);
+    return /** @type {HTMLElement} */(ol);
   }
 
   /**
@@ -132,7 +132,7 @@ window['TestRunner'] = (function() {
 
   /**
    * @param {!Object} result
-   * @param {?Object|undefined} moreResult
+   * @param {Object|undefined} moreResult
    */
   function mergeResult(result, moreResult){
     if (!moreResult)

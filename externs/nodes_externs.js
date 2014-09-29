@@ -19,7 +19,7 @@ editing.nodes.computeSelectedNodes = function(selection) {};
 
 /**
  * @param {!Node} node
- * @param {?Node} other
+ * @param {Node} other
  * @return {boolean}
  */
 editing.nodes.isDescendantOf = function(node, other) {};
@@ -67,8 +67,8 @@ editing.nodes.isVisibleNode = function(node) {};
 editing.nodes.isWhitespaceNode = function(node) {};
 
 /**
- * @param {?Node} node
- * @return {?Node}
+ * @param {Node} node
+ * @return {Node}
  */
 editing.nodes.lastWithIn = function(node) {};
 
@@ -79,8 +79,8 @@ editing.nodes.lastWithIn = function(node) {};
 editing.nodes.maxOffset = function(node) {};
 
 /**
- * @param {?Node} node
- * @return {?Node}
+ * @param {Node} node
+ * @return {Node}
  */
 editing.nodes.nextNodeSkippingChildren = function(node) {};
 
@@ -91,7 +91,7 @@ editing.nodes.nextNodeSkippingChildren = function(node) {};
 editing.nodes.nodeIndex = function(node) {};
 
 /**
- * @param {?Node} node
- * @return {?Node}
+ * @param {Node} node
+ * @return {Node}
  */
 editing.nodes.previousNode = function(node) {};

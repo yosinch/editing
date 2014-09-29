@@ -54,7 +54,7 @@ window['editing']= {};
 
   /**
    * @param {string} name
-   * @return {?CommandFunction}
+   * @return {CommandFunction}
    */
   function lookupCommand(name) {
     return commandTable.get(name.toLowerCase()) || null;

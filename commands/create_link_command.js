@@ -11,7 +11,7 @@ editing.defineCommand('createLink', (function() {
   /** @const */ var isPhrasing = editing.nodes.isPhrasing;
 
   /**
-   * @param {?Node} node
+   * @param {Node} node
    * @param {string} url
    * @return {boolean}
    */
@@ -101,7 +101,7 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!Element} anchorElement
-   * @return {?string}
+   * @return {string}
    */
   function getAnchorUrl(anchorElement) {
     console.assert(isAnchorElement(anchorElement));
@@ -129,7 +129,7 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {?Node} node
+   * @param {Node} node
    * @return {boolean}
    */
   function isAnchorElement(node) {
@@ -147,7 +147,7 @@ editing.defineCommand('createLink', (function() {
   /**
    * @template T
    * @param {!Array.<T>} array
-   * @return {?T}
+   * @return {T}
    */
   function lastOf(array) {
     return array.length ? array[array.length - 1] : null;
@@ -193,7 +193,7 @@ editing.defineCommand('createLink', (function() {
   function normalizeSelectedStartNode(context, selection) {
     console.assert(selection.isNormalized);
     var startContainer = /** @type {!Element} */(selection.startContainer);
-    /** @type {?Element} */ var anchorElement = null;
+    /** @type {Element} */ var anchorElement = null;
     var elements = [];
     for (var runner = startContainer;
          runner && runner.parentNode && isPhrasing(runner);
@@ -238,7 +238,7 @@ editing.defineCommand('createLink', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
-   * @param {?string} url
+   * @param {string} url
    */
   function setAnchorUrl(context, anchorElement, url) {
     console.assert(isAnchorElement(anchorElement));
@@ -349,7 +349,7 @@ editing.defineCommand('createLink', (function() {
   function createLinkForRange(context, urlValue) {
     console.assert(urlValue !== '');
 
-    /** @type {?Element} */var currentAnchorElement = null;
+    /** @type {Element} */var currentAnchorElement = null;
 
     function endAnchorElement() {
       if (!currentAnchorElement)
@@ -475,7 +475,7 @@ editing.defineCommand('createLink', (function() {
       firstNode = effectiveNodes[0];
     }
 
-    /** @const @type {?Node} */
+    /** @const @type {Node} */
     var endNode = editing.nodes.nextNodeSkippingChildren(lastNode);
     var atomicElements = [];
     effectiveNodes.every(function(currentNode) {

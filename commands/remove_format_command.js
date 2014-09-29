@@ -16,7 +16,7 @@ editing.defineCommand('removeFormat', (function() {
 
   /**
    * @param {!Node} startNode
-   * @return {?Element}
+   * @return {Element}
    */
   function computeHighestStyleElement(startNode) {
     var styleElement = null;

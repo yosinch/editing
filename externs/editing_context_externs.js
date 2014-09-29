@@ -51,18 +51,18 @@ editing.EditingContext.prototype.inDocument = function(node) {};
 
 /**
  * @this {!editing.EditingContext}
- * @param {?Node} parentNode
+ * @param {Node} parentNode
  * @param {!Node} newChild
- * @param {?Node} refChild
+ * @param {Node} refChild
  */
 editing.EditingContext.prototype.insertAfter = function(
     parentNode, newChild, refChild) {};
 
 /**
  * @this {!editing.EditingContext}
- * @param {?Node} parentNode
+ * @param {Node} parentNode
  * @param {!Node} newChild
- * @param {?Node} refChild
+ * @param {Node} refChild
  */
 editing.EditingContext.prototype.insertBefore = function(
     parentNode, newChild, refChild) {};
@@ -85,7 +85,7 @@ editing.EditingContext.prototype.removeAttribute = function(element, name) {};
 
 /**
  * @this {!editing.EditingContext}
- * @param {?Node} parentNode
+ * @param {Node} parentNode
  * @param {!Node} oldChild
  */
 editing.EditingContext.prototype.removeChild = function(parentNode,
@@ -197,6 +197,6 @@ editing.EditingContext.prototype.startingSelection;
 /**
  * @this {!editing.EditingContext}
  * @param {!Element} parent
- * @param {?Node} stopChild
+ * @param {Node} stopChild
  */
 editing.EditingContext.prototype.unwrapElement = function(parent, stopChild) {};

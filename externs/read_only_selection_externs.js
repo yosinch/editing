@@ -10,9 +10,9 @@
 /**
  * @constructor
  * @final
- * @param {?Node} anchorNode
+ * @param {Node} anchorNode
  * @param {number} anchorOffset
- * @param {?Node} focusNode
+ * @param {Node} focusNode
  * @param {number} focusOffset
  * @param {!editing.SelectionDirection} direction
  */

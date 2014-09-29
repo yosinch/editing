@@ -44,7 +44,7 @@ editing.define('Editor', (function() {
   Editor.prototype.getDomSelection = function() {};
 
   /**
-   * @type {?editing.ReadOnlySelection}
+   * @type {editing.ReadOnlySelection}
    */
   Editor.prototype.selection_;
 
@@ -154,9 +154,9 @@ editing.define('Editor', (function() {
     }
 
     /**
-     * @param {?Node} container1
+     * @param {Node} container1
      * @param {number} offset1
-     * @param {?Node} container2
+     * @param {Node} container2
      * @param {number} offset2
      * @return {boolean}
      */

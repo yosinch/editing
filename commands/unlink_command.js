@@ -86,7 +86,7 @@ editing.defineCommand('Unlink', (function() {
   }
 
   /**
-   * @param {?Node} node
+   * @param {Node} node
    * @return {boolean}
    */
   function isAnchorElement(node) {
@@ -105,7 +105,7 @@ editing.defineCommand('Unlink', (function() {
   /**
    * @template T
    * @param {!Array.<T>} array
-   * @return {?T}
+   * @return {T}
    */
   function lastOf(array) {
     return array.length ? array[array.length - 1] : null;
