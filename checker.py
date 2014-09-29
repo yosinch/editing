@@ -54,8 +54,10 @@ CLOSURE_OPTIONS = [
 ];
 
 FILES_IGNORING_TEST = [
-    './DocumentExecCommandInJavaScript.js',    
-    './polyfill.js',
+    os.path.join('.', name) for name in [
+        'DocumentExecCommandInJavaScript.js',
+        'polyfill.js',
+    ]
 ];
 
 def makeOptions(name, values):
