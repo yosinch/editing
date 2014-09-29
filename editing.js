@@ -61,25 +61,10 @@ window['editing']= {};
     return commandTable.get(name.toLowerCase()) || null;
   }
 
-  /**
-   * @param {!Array.<string>} members
-   * @return {!Set.<string>}
-   * IE11 doesn't support |new Set(Array)|.
-   */
-  function newSet(members) {
-    var set = new Set(members);
-    if (!set.size) {
-      for (var member of members)
-        set.add(member);
-    }
-    return set;
-  }
-
   Object.defineProperties(editing, {
     define: {value: define},
     defineCommand: {value: defineCommand},
     isContentEditable: {value: isContentEditable},
-    lookupCommand: {value: lookupCommand},
-    newSet: {value: newSet}
+    lookupCommand: {value: lookupCommand}
   });
 })();

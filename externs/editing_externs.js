@@ -9,8 +9,7 @@
  *  define: function(string, !function()),
  *  defineCommand: function(string, !function()),
  *  isContentEditable: function(!Node) : boolean,
- *  lookupCommand: function(string) : ?function(),
- *  newSet: function(!Array) : !Set
+ *  lookupCommand: function(string) : ?function()
  * }}
  */
 var editing;

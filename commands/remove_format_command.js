@@ -8,7 +8,7 @@ editing.defineCommand('removeFormat', (function() {
 
   // TODO(yosin) We should move |TAG_NAMES_TO_REMOVE| to "content_model.js".
   /** @const */
-  var TAG_NAMES_TO_REMOVE = editing.newSet([
+  var TAG_NAMES_TO_REMOVE = new Set([
         'ACRONYM', 'B', 'BDO', 'BIG', 'CITE', 'CODE',
         'DFN', 'EM', 'FONT', 'I', 'INS', 'KBD', 'NOBR', 'Q', 'S',
         'SAMP', 'SMALL', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
