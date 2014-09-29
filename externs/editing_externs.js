@@ -4,9 +4,7 @@
 
 /**
  * @typedef {{
- *  CONTENT_CATEGORY: string,
  *  contentModel: !Object.<string, !editing.ContentModel>,
- *  define: function(string, !function()),
  *  defineCommand: function(string, !function()),
  *  isContentEditable: function(!Node) : boolean,
  *  lookupCommand: function(string) : ?function()

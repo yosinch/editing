@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-editing.define('EditingContext', (function() {
+editing.EditingContext = (function() {
   'use strict';
 
   function ASSERT_EDITING_IN_PROGRESS(context) {
@@ -822,4 +822,4 @@ editing.define('EditingContext', (function() {
     unwrapElement: {value: unwrapElement}
   });
   return EditingContext;
-})());
+})();

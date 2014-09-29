@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-editing.define('nodes', (function() {
+editing.nodes = (function() {
   'use strict';
 
   /** @const */ var INTERACTIVE = editing.CONTENT_CATEGORY.INTERACTIVE;
@@ -391,4 +391,4 @@ editing.define('nodes', (function() {
     previousNode: {value: previousNode},
     previousNodeSkippingChildren: {value: previousNodeSkippingChildren},
   });
-})());
+})();

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// To avoid "redefinition error" from closure compiler, we use bracket for
+// initializing |CONTENT_CATEGORY|.
 // See http://www.whatwg.org/specs/web-apps/current-work/multipage/dom.html#content-models
-editing.define('CONTENT_CATEGORY', {
+editing['CONTENT_CATEGORY'] = {
   EMBEDDED: 'EMBEDDED',
   FLOW: 'FLOW',
   HEADING: 'HEADING',
@@ -12,9 +14,9 @@ editing.define('CONTENT_CATEGORY', {
   PHRASING: 'PHRASING',
   SECTIONING_ROOT: 'SECTIONING_ROOT',
   TRANSPARENT: 'TRANSPARENT',
-});
+};
 
-editing.define('contentModel', (function() {
+editing.contentModel = (function() {
   'use strict';
 
   /**
@@ -124,12 +126,13 @@ editing.define('contentModel', (function() {
   var tagNames =
     'applet br button embed frame hr img input meter object output progress'
     .split(' ')
-  for (var tagName of tagNames) {
+  // TODO(yosin) We should use |for-of| once closure-compiler #643 fixed.
+  tagNames.forEach(function(tagName) {
     var model = contentModel[tagName.toUpperCase()];
     if (!model)
-      continue;
+      return;
     model.canContainRangeEndPoint = false;
-  }
+  });
 
   return contentModel;
-})());
+})();
