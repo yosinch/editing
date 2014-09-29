@@ -260,8 +260,9 @@ editing.defineCommand('InsertOrderedList', (function() {
         isListItemLastChildText =
           editing.nodes.isText(childNodes[childNodes.length - 1]);
       }
-      insertChildNodesBefore(context, secondList.parentNode, listItemNode,
-                             secondList);
+      insertChildNodesBefore(context,
+                             /** @type {!Node} */(secondList.parentNode),
+                             listItemNode, secondList);
       if (isListItemLastChildText &&
           (secondList.parentNode.lastChild !== secondList ||
            secondList.hasChildNodes())) {
@@ -502,8 +503,9 @@ editing.defineCommand('InsertOrderedList', (function() {
             effectiveNodes.indexOf(nodes[0].previousSibling) === -1) {
           context.splitTree(listItemNode, nodes[0]);
           var newListItem = listItemNode;
-          insertChildNodesBefore(context, newList.parentNode, newListItem,
-                                 newList);
+          insertChildNodesBefore(
+            context, /** @type {!Node} */(newList.parentNode), newListItem,
+            newList);
           context.removeChild(newList, newListItem);
         }
         if (nodes[nodes.length - 1].nextSibling &&
