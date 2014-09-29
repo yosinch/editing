@@ -162,9 +162,9 @@ editing.defineCommand('createLink', (function() {
   // TODO(yosin) We should move |moveAllChildren()| to |EditingContext| to
   // share with other commands.
   function moveAllChildren(context, newElement, oldElement) {
-    while (oldElement.hasChildNodes())
-      context.appendChild(newElement,
-                          /** @type {!Node} */(oldElement.firstChild));
+    var child;
+    while (child = oldElement.firstChild)
+      context.appendChild(newElement, child);
   }
 
   /**
@@ -194,7 +194,8 @@ editing.defineCommand('createLink', (function() {
   function normalizeSelectedStartNode(context, selection) {
     console.assert(selection.isNormalized);
     var startContainer = /** @type {!Element} */(selection.startContainer);
-    /** @type {Element} */ var anchorElement = null;
+    /** @type {Element} */
+    var anchorElement = null;
     var elements = [];
     for (var runner = startContainer;
          runner && runner.parentNode && isPhrasing(runner);
@@ -304,7 +305,7 @@ editing.defineCommand('createLink', (function() {
       return Array.prototype.every.call(element.childNodes, function(child) {
         return isElement(child) && isPhrasing(child) &&
                child.nodeName === firstChild.nodeName &&
-               !!child.firstChild;
+               child.firstChild;
       });
     }
 

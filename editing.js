@@ -26,7 +26,8 @@ window['editing']= {};
   function defineCommand(name, commandFunction) {
     var canonicalName = name.toLowerCase();
     commandTable.set(canonicalName, commandFunction);
-    if (canonicalName == 'backcolor')
+    // For historical reasons, backColor and hiliteColor behave identically.
+    if (canonicalName === 'backcolor')
       defineCommand('hilitecolor', commandFunction);
   }
 

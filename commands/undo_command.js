@@ -15,6 +15,8 @@ editing.defineCommand('redo', (function() {
     return context.editor.redo(context);
   }
 
+  // Note: For ease of debugging, we would like to see function name in stack
+  // trace, we use named function rather than anonymous function.
   return redoCommand;
 })());
 
@@ -31,5 +33,7 @@ editing.defineCommand('undo', (function() {
     return context.editor.undo(context);
   }
 
+  // Note: For ease of debugging, we would like to see function name in stack
+  // trace, we use named function rather than anonymous function.
   return undoCommand;
 })());
