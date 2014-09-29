@@ -83,6 +83,18 @@ editing.defineCommand('InsertOrderedList', (function() {
 
   /**
    * @param {!editing.EditingContext} context
+   * @param {!Node} parent
+   * @param {!Node} node
+   * @param {Node} ref
+   */
+  function insertChildNodesBefore(context, parent, node, ref) {
+    var child = null;
+    while (child = node.firstChild)
+      context.insertBefore(parent, child, ref);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
    * @param {!Node} node
    * @param {string} name
    * @return {!Node}
@@ -90,8 +102,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   function replaceNodeName(context, node, name) {
     console.assert(node.parentNode);
     var newNode = context.createElement(name);
-    while (node.hasChildNodes())
-      context.appendChild(newNode, /** @type {!Node} */(node.firstChild));
+    insertChildNodesBefore(context, newNode, node, null);
     // TODO(hajimehoshi): Copy attributes
     var parent = /** @type {!Node} */(node.parentNode);
     context.replaceChild(parent, newNode, node);
@@ -241,19 +252,16 @@ editing.defineCommand('InsertOrderedList', (function() {
     //
     // NOTE: Even when the new list item's parent is a <li>, that is, the <li>
     // is in a <li>, it is treated as if it was in a list. See w3c.40.
-    if ((!listItemNode.parentNode || !isList(listItemNode.parentNode)) &&
-        (!listItemNode.parentNode || !isListItem(listItemNode.parentNode))) {
+    if (!listItemNode.parentNode || (!isList(listItemNode.parentNode) &&
+                                     !isListItem(listItemNode.parentNode))) {
       var isListItemLastChildText = false;
       if (listItemNode.hasChildNodes()) {
         var childNodes = listItemNode.childNodes;
         isListItemLastChildText =
           editing.nodes.isText(childNodes[childNodes.length - 1]);
       }
-      while (listItemNode.hasChildNodes()) {
-        context.insertBefore(secondList.parentNode,
-                             /** @type {!Node} */(listItemNode.firstChild),
+      insertChildNodesBefore(context, secondList.parentNode, listItemNode,
                              secondList);
-      }
       if (isListItemLastChildText &&
           (secondList.parentNode.lastChild !== secondList ||
            secondList.hasChildNodes())) {
@@ -301,10 +309,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         listNode.childNodes, function(node) {
           return isListItem(node) || canContentOfDL(node);
         }));
-      while (listNode.hasChildNodes()) {
-        context.appendChild(firstList,
-                            /** @type {!Node} */(listNode.firstChild));
-      }
+      insertChildNodesBefore(context, firstList, listNode, null);
       context.removeChild(listNode.parentNode, listNode);
     }
 
@@ -356,6 +361,8 @@ editing.defineCommand('InsertOrderedList', (function() {
     // the same group. Otherwise, the node is in a single group.
     var listItemCandidates = getListItemCandidates(effectiveNodes);
     var listItemCandidateGroups = [];
+    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
+    // fixed.
     listItemCandidates.forEach(function(node) {
       if (!listItemCandidateGroups.length) {
         listItemCandidateGroups.push([node]);
@@ -375,6 +382,8 @@ editing.defineCommand('InsertOrderedList', (function() {
     });
 
     var listsToBeReplaced = [];
+    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
+    // fixed.
     listItemCandidateGroups.forEach(function(nodes) {
       if (!nodes.length)
         return;
@@ -400,9 +409,9 @@ editing.defineCommand('InsertOrderedList', (function() {
     });
 
     var mergableListCandidates = [];
-    listItemCandidateGroups.forEach(function(nodes) {
+    listItemCandidateGroups.filter(function(nodes) {
       if (!nodes.length)
-        return;
+        return false;
 
       if (editing.nodes.isText(nodes[0])) {
         console.assert(Array.prototype.every.call(nodes, function(node) {
@@ -412,9 +421,14 @@ editing.defineCommand('InsertOrderedList', (function() {
 
       if (isBreakElement(nodes[0])) {
         context.removeChild(nodes[0].parentNode, nodes[0]);
-        return;
+        return false;
       }
 
+      return true;
+
+    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
+    // fixed.
+    }).forEach(function(nodes) {
       if (isList(nodes[0])) {
         var list = nodes[0];
         if (listsToBeReplaced.indexOf(list) === -1) {
@@ -488,11 +502,8 @@ editing.defineCommand('InsertOrderedList', (function() {
             effectiveNodes.indexOf(nodes[0].previousSibling) === -1) {
           context.splitTree(listItemNode, nodes[0]);
           var newListItem = listItemNode;
-          while (newListItem.hasChildNodes()) {
-            context.insertBefore(newList.parentNode,
-                                 /** @type {!Node} */(newListItem.firstChild),
+          insertChildNodesBefore(context, newList.parentNode, newListItem,
                                  newList);
-          }
           context.removeChild(newList, newListItem);
         }
         if (nodes[nodes.length - 1].nextSibling &&
@@ -503,14 +514,13 @@ editing.defineCommand('InsertOrderedList', (function() {
           var newListItem = listItemNode.nextSibling;
           var insertAfter = newList;
           var br = null;
-          while (newListItem.hasChildNodes()) {
+          var child = null;
+          while (child = newListItem.firstChild) {
             var node = newListItem.firstChild;
-            context.insertAfter(newList.parentNode,
-                                /** @type {!Node} */(newListItem.firstChild),
-                                insertAfter);
+            context.insertAfter(newList.parentNode, child, insertAfter);
             insertAfter = node;
             // Insert <br> after the text node. See w3c.76.
-            if (node && editing.nodes.isText(node) && !newListItem.firstChild) {
+            if (node && editing.nodes.isText(node)) {
               br = context.createElement('BR');
               context.insertAfter(newList.parentNode, br, insertAfter);
               insertAfter = br;
@@ -540,6 +550,8 @@ editing.defineCommand('InsertOrderedList', (function() {
         mergableListCandidates.push(newNode);
     });
 
+    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
+    // fixed.
     mergableListCandidates.forEach(function(node) {
       console.assert(node.nodeName === 'OL');
 
@@ -587,6 +599,8 @@ editing.defineCommand('InsertOrderedList', (function() {
       return !!node.parentNode;
     });
     // TODO(hajimehoshi): Remove the variable |list| and use method chain.
+    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
+    // fixed.
     lists.forEach(function(node) {
       // Already merged with other lists.
       if (!node.parentNode)
