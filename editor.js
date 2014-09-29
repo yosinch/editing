@@ -78,9 +78,8 @@ editing.Editor = (function() {
       console.log('execCommand name', name);
       throw new Error('execCommand takes string: ' + name);
     }
-    var userInterface = arguments.length >= 2 ? Boolean(opt_userInterface)
-                                              : false;
-    var value = arguments.length >= 3 ? String(opt_value) : '';
+    var userInterface = Boolean(opt_userInterface);
+    var value = opt_value === undefined ? '' : String(opt_value);
     var commandFunction = editing.lookupCommand(name);
     if (!commandFunction)
       throw new Error('No such command ' + name);
@@ -100,10 +99,12 @@ editing.Editor = (function() {
       returnValue = commandFunction(context, userInterface, value);
       this.currentContext_ = null;
       this.setDomSelection(context.endingSelection);
-      this.undoStack_.push({commandName: name,
-                            endingSelection: context.endingSelection,
-                            operations: context.operations,
-                            startingSelection: context.startingSelection});
+      this.undoStack_.push({
+        commandName: name,
+        endingSelection: context.endingSelection,
+        operations: context.operations,
+        startingSelection: context.startingSelection
+      });
       return returnValue;
     }
     try {
@@ -120,10 +121,12 @@ editing.Editor = (function() {
       console.assert(context.startingSelection instanceof
                      editing.ReadOnlySelection);
       this.setDomSelection(context.endingSelection);
-      this.undoStack_.push({commandName: name,
-                            endingSelection: context.endingSelection,
-                            operations: context.operations,
-                            startingSelection: context.startingSelection});
+      this.undoStack_.push({
+        commandName: name,
+        endingSelection: context.endingSelection,
+        operations: context.operations,
+        startingSelection: context.startingSelection
+      });
       return returnValue;
     }
   }
@@ -146,11 +149,12 @@ editing.Editor = (function() {
             editing.SelectionDirection.ANCHOR_IS_START :
             editing.SelectionDirection.FOCUS_IS_START;
       }
-      return equalPositions(range.startContainer, range.startOffset,
+      if (equalPositions(range.startContainer, range.startOffset,
                             domSelection.anchorNode,
-                            domSelection.anchorOffset) ?
-        editing.SelectionDirection.ANCHOR_IS_START :
-        editing.SelectionDirection.FOCUS_IS_START;
+                            domSelection.anchorOffset)) {
+        return editing.SelectionDirection.ANCHOR_IS_START;
+      }
+      return editing.SelectionDirection.FOCUS_IS_START;
     }
 
     /**
@@ -246,21 +250,17 @@ editing.Editor = (function() {
     return true;
   }
 
-  Object.defineProperties(Editor.prototype, {
-    createContext: {value: createContext},
-    currentContext: {value: function() { return this.currentContext_; }},
-    currentContext_: {writable: true},
-    document: {get: function() { return this.document_; }},
-    document_: {writable: true},
-    execCommand: {value: execCommand},
-    getDomSelection: {value: getDomSelection },
-    selection: {get: function() { return this.selection_; }},
-    selection_: {writable: true},
-    setDomSelection: {value: setDomSelection },
-    redo: {value: redo},
-    redoStack_: {writable: true},
-    undo: {value: undo},
-    undoStack_: {writable: true}
-  });
+  Editor.prototype = {
+    createContext: createContext,
+    currentContext: function() { return this.currentContext_; },
+    execCommand: execCommand,
+    getDomSelection: getDomSelection ,
+    get document() { return this.document_; },
+    get selection() { return this.selection_; },
+    setDomSelection: setDomSelection,
+    redo: redo,
+    undo: undo
+  };
+  Object.seal(Editor.prototype);;
   return Editor;
 })();
