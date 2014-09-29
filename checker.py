@@ -53,6 +53,11 @@ CLOSURE_OPTIONS = [
     '--warning_level=VERBOSE',
 ];
 
+FILES_IGNORING_TEST = [
+    './DocumentExecCommandInJavaScript.js',    
+    './polyfill.js',
+];
+
 def makeOptions(name, values):
     if not len(values):
       return ''
@@ -110,7 +115,7 @@ def main():
             filenames.extend(glob.glob(dir + '/*.js'))
         js_sources = [filename for filename in filenames
                       if not (filename.endswith('_unittest.js') or
-                              filename == './polyfill.js')]
+                              filename in FILES_IGNORING_TEST)]
         if len(js_sources) == 0:
             return 0
 

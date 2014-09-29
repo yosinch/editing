@@ -124,12 +124,12 @@ editing.define('contentModel', (function() {
   var tagNames =
     'applet br button embed frame hr img input meter object output progress'
     .split(' ')
-  for (var tagName of tagNames) {
+  tagNames.forEach(function(tagName) {
     var model = contentModel[tagName.toUpperCase()];
     if (!model)
-      continue;
+      return;
     model.canContainRangeEndPoint = false;
-  }
+  });
 
   return contentModel;
 })());
