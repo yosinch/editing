@@ -149,8 +149,8 @@ editing.defineCommand('InsertOrderedList', (function() {
     if (!nodes.length)
       return null;
 
-    var list = context.createElement('ol');
-    var listItem = context.createElement('li');
+    var list = context.createElement('OL');
+    var listItem = context.createElement('LI');
 
     context.appendChild(list, listItem);
     var firstNode = nodes[0];
@@ -167,7 +167,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   /**
    * @param {!Node} node
    * @param {function(!Node):boolean} predicate
-   * @return {?Node}
+   * @return {Node}
    */
   function firstSelfOrAncestor(node, predicate) {
     if (predicate(node))
@@ -203,7 +203,10 @@ editing.defineCommand('InsertOrderedList', (function() {
       context.appendChild(secondList, node);
     context.insertBefore(secondList.parentNode, listItemNode, secondList);
 
-    return [firstList, secondList];
+    return {
+      first: firstList,
+      second: secondList,
+    };
   }
 
   /**
@@ -229,8 +232,8 @@ editing.defineCommand('InsertOrderedList', (function() {
       });
 
     var lists = splitList(context, listItemNode);
-    var firstList = lists[0];
-    var secondList = lists[1];
+    var firstList = lists.first;
+    var secondList = lists.second;
 
     // If the new list item is NOT in the outer list, get the content out of
     // the <li> and remove the <li>.
@@ -252,13 +255,13 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (isListItemLastChildText &&
           (secondList.parentNode.lastChild !== secondList ||
            secondList.hasChildNodes())) {
-        var br = context.createElement('br');
+        var br = context.createElement('BR');
         context.insertBefore(secondList.parentNode, br, secondList);
       }
       context.removeChild(listItemNode.parentNode, listItemNode);
       if (!firstList.childNodes.length && firstList.previousSibling &&
           editing.nodes.isText(firstList.previousSibling)) {
-        var br = context.createElement('br');
+        var br = context.createElement('BR');
         context.insertBefore(firstList.parentNode, br, firstList);
       }
     }
@@ -468,8 +471,8 @@ editing.defineCommand('InsertOrderedList', (function() {
         var lists = splitList(context, listItemNode);
         var newList = context.createElement('OL');
         context.appendChild(newList, listItemNode);
-        context.insertBefore(lists[1].parentNode, newList, lists[1]);
-        for (var list of lists) {
+        context.insertBefore(lists.second.parentNode, newList, lists.second);
+        for (var list of [lists.first, lists.second]) {
           if (!list.hasChildNodes())
             context.removeChild(list.parentNode, list);
         }
@@ -504,7 +507,7 @@ editing.defineCommand('InsertOrderedList', (function() {
             insertAfter = node;
             // Insert <br> after the text node. See w3c.76.
             if (editing.nodes.isText(node) && !newListItem.firstChild) {
-              br = context.createElement('br');
+              br = context.createElement('BR');
               context.insertAfter(newList.parentNode, br, insertAfter);
               insertAfter = br;
             }
@@ -520,7 +523,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       // See w3c.18.
       if (nodes.length === 1 && canContentOfDL(nodes[0])) {
         var listItem = nodes[0];
-        var list = context.createElement('ol');
+        var list = context.createElement('OL');
         context.replaceChild(listItem.parentNode, list, listItem);
         context.appendChild(list, listItem);
         mergableListCandidates.push(list);
