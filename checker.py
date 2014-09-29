@@ -47,7 +47,8 @@ CLOSURE_WARNINGS = [
 CLOSURE_OPTIONS = [
     '--compilation_level=SIMPLE',
     '--formatting=PRETTY_PRINT',
-    '--language_in=ECMASCRIPT5_STRICT',
+    '--language_in=ECMASCRIPT6_STRICT',
+    '--language_out=ECMASCRIPT3',
     '--summary_detail_level=3',
     '--warning_level=VERBOSE',
 ];
