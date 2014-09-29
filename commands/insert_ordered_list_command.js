@@ -143,14 +143,14 @@ editing.defineCommand('InsertOrderedList', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Array.<!Node>} nodes
-   * @return {Node} list
+   * @return {!Node} list
    */
   function listify(context, nodes) {
     if (!nodes.length)
       return null;
 
-    var list = context.createElement('ol');
-    var listItem = context.createElement('li');
+    var list = context.createElement('OL');
+    var listItem = context.createElement('LI');
 
     context.appendChild(list, listItem);
     var firstNode = nodes[0];
@@ -165,15 +165,59 @@ editing.defineCommand('InsertOrderedList', (function() {
   }
 
   /**
+   * @param {!Node} node
+   * @param {function(!Node):boolean} predicate
+   * @return {Node}
+   */
+  function firstSelfOrAncestor(node, predicate) {
+    if (predicate(node))
+      return node;
+    var ancestors = editing.nodes.ancestorsWhile(node, function(node) {
+      return !predicate(node)
+    });
+    if (!ancestors.length)
+      return node.parentNode;
+    return ancestors[ancestors.length - 1].parentNode;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Node} listItemNode
+   * @return {{first: !Node, second: !Node}}
+   */
+  function splitList(context, listItemNode) {
+    console.assert(isListItem(listItemNode));
+    var listNode = listItemNode.parentNode;
+    console.assert(isList(listNode));
+
+    // Separate |listNode| into |firstList| and |secondList|.
+    var firstList = listNode;
+    var secondList = context.createElement(listNode.nodeName);
+    context.insertAfter(listNode.parentNode, secondList, firstList);
+    
+    // TOOD(hajimehoshi): Use nextSiblingsWhile in the future.
+    var siblings = [];
+    for (var node = listItemNode.nextSibling; node; node = node.nextSibling)
+      siblings.push(node);
+    for (var node of siblings)
+      context.appendChild(secondList, node);
+    context.insertBefore(secondList.parentNode, listItemNode, secondList);
+
+    return {
+      first: firstList,
+      second: secondList,
+    };
+  }
+
+  /**
    * @param {!editing.EditingContext} context
    * @param {!Node} originalNode
    * @param {!Array.<!Node>} effectiveNodes
    */
   function unlistify(context, originalNode, effectiveNodes) {
-    // TODO(hajimehoshi): Split list into two lists
-    var listItemNode = originalNode;
-    while (listItemNode && !isListItem(listItemNode))
-      listItemNode = listItemNode.parentNode;
+    var listItemNode = firstSelfOrAncestor(originalNode, function(node) {
+      return isListItem(node);
+    });
     if (!listItemNode)
       return;
 
@@ -187,21 +231,9 @@ editing.defineCommand('InsertOrderedList', (function() {
         return effectiveNodes.indexOf(node) !== -1;
       });
 
-    var listNode = listItemNode.parentNode;
-    console.assert(listNode.nodeName === 'OL');
-
-    // Separate |listNode| into |firstList| and |secondList|.
-    var firstList = listNode;
-    var secondList = context.createElement('ol');
-    context.insertAfter(listNode.parentNode, secondList, firstList);
-    
-    // TOOD(hajimehoshi): Use nextSiblingsWhile in the future.
-    var siblings = [];
-    for (var node = listItemNode.nextSibling; node; node = node.nextSibling)
-      siblings.push(node);
-    for (var node of siblings)
-      context.appendChild(secondList, node);
-    context.insertBefore(secondList.parentNode, listItemNode, secondList);
+    var lists = splitList(context, listItemNode);
+    var firstList = lists.first;
+    var secondList = lists.second;
 
     // If the new list item is NOT in the outer list, get the content out of
     // the <li> and remove the <li>.
@@ -223,13 +255,13 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (isListItemLastChildText &&
           (secondList.parentNode.lastChild !== secondList ||
            secondList.hasChildNodes())) {
-        var br = context.createElement('br');
+        var br = context.createElement('BR');
         context.insertBefore(secondList.parentNode, br, secondList);
       }
       context.removeChild(listItemNode.parentNode, listItemNode);
       if (!firstList.childNodes.length && firstList.previousSibling &&
           editing.nodes.isText(firstList.previousSibling)) {
-        var br = context.createElement('br');
+        var br = context.createElement('BR');
         context.insertBefore(firstList.parentNode, br, firstList);
       }
     }
@@ -239,9 +271,9 @@ editing.defineCommand('InsertOrderedList', (function() {
     if (!secondList.hasChildNodes())
       context.removeChild(secondList.parentNode, secondList);
 
+    // Unlistify recursively.
     for (var listNode of childLists) {
-      var nodes = Array.prototype.slice.call(listNode.childNodes, 0);
-      for (var listItem of nodes) {
+      for (var listItem of Array.prototype.slice.call(listNode.childNodes)) {
         console.assert(isListItem(listItem));
         unlistify(context, listItem, effectiveNodes);
       }
@@ -309,23 +341,6 @@ editing.defineCommand('InsertOrderedList', (function() {
       effectiveNodes.unshift(sibling);
     }
 
-    // Extend as far as the closest list item if exists.
-    var listItemAncestors =
-      editing.nodes.ancestorsWhile(effectiveNodes[0], function(node) {
-        return !isListItem(node);
-      });
-    var listItemCandidate = null;
-    if (listItemAncestors.length) {
-      listItemCandidate =
-        listItemAncestors[listItemAncestors.length - 1].parentNode;
-    } else {
-      listItemCandidate = effectiveNodes[0].parentNode;
-    }
-    if (listItemCandidate && isListItem(listItemCandidate)) {
-      effectiveNodes = listItemAncestors.reverse().concat(effectiveNodes);
-      effectiveNodes.unshift(listItemCandidate);
-    }
-
     // Extend the tailing text nodes.
     for (var sibling = effectiveNodes[effectiveNodes.length - 1].nextSibling;
          sibling && editing.nodes.isText(sibling);
@@ -355,48 +370,177 @@ editing.defineCommand('InsertOrderedList', (function() {
       listItemCandidateGroups.push([node]);
     }
 
-    var listItemCandidatesAfterListifying = [];
+    var listsToBeReplaced = [];
     for (var nodes of listItemCandidateGroups) {
       if (!nodes.length)
         continue;
 
       var node = nodes[0];
-      if (editing.nodes.isElement(node)) {
-        console.assert(nodes.length === 1);
+      if (!isList(node))
+        continue;
 
-        if (isBreakElement(node)) {
-          context.removeChild(nodes[0].parentNode, node);
-          continue;
+      var list = node;
+      if (list.nodeName !== 'UL')
+        continue;
+
+      // In some special cases, the list is not replaced. See w3c.90, w3c.90.1,
+      // w3c.90.2, w3c.92.
+      var next = list;
+      while (!next.nextSibling)
+        next = next.parentNode;
+      next = next.nextSibling;
+      if (isInList(list.parentNode) && effectiveNodes.indexOf(next) === -1)
+        continue;
+
+      listsToBeReplaced.push(list);
+    }
+
+    var mergableListCandidates = [];
+    for (var nodes of listItemCandidateGroups) {
+      if (!nodes.length)
+        continue;
+
+      // If the text nodes is in <li>,
+      var node = nodes[0];
+
+      if (editing.nodes.isText(node)) {
+        console.assert(Array.prototype.every.call(nodes, function(node) {
+          return editing.nodes.isText(node);
+        }));
+      }
+
+      if (isBreakElement(node)) {
+        context.removeChild(nodes[0].parentNode, node);
+        continue;
+      }
+
+      if (isList(node)) {
+        var list = node;
+        if (listsToBeReplaced.indexOf(list) === -1) {
+          // If |list| is in another list but it is not replaced with another
+          // type of list for some reasons, the selected items will be
+          // extracted. See w3c.90, w3c.96.
+          if (list.parentNode && isInList(list.parentNode)) {
+            context.splitTree(list.parentNode, list);
+            for (var listItem of effectiveNodes.filter(function(node) {
+              return Array.prototype.indexOf.call(list.childNodes, node) !== -1;
+            })) {
+              var insertBefore = list.parentNode;
+              context.insertBefore(insertBefore.parentNode, listItem,
+                                   insertBefore);
+            }
+            // See w3c.96.
+            var followingNodes = [];
+            for (var node = list.nextSibling; node;
+                 node = node.nextSibling) {
+              followingNodes.push(node);
+            }
+            for (var node of followingNodes.reverse()) {
+              var outerList = list.parentNode.parentNode;
+              context.insertAfter(outerList.parentNode, node, outerList);
+            }
+
+            if (!list.hasChildNodes()) {
+              var listItem = list.parentNode;
+              context.removeChild(list.parentNode, list);
+              if (!listItem.hasChildNodes())
+                context.removeChild(listItem.parentNode, listItem);
+            }
+          }
+          continue
         }
-        if (isList(node)) {
-          listItemCandidatesAfterListifying.push(node);
-          continue;
-        }
-        if (isInList(node)) {
+        list = replaceNodeName(context, list, 'OL')
+        console.assert(list);
+        mergableListCandidates.push(list);
+        continue;
+      }
+
+      if (isInList(node)) {
+        var listItemNode = firstSelfOrAncestor(node, function(node) {
+          return isListItem(node);
+        });
+        console.assert(listItemNode);
+        var listNode = listItemNode.parentNode;
+        if (listNode.nodeName === 'OL') {
           unlistify(context, node, effectiveNodes);
           continue;
         }
-        if (nodes.length === 1 && canContentOfDL(nodes[0])) {
-          var listItem = nodes[0];
-          var list = context.createElement('ol');
-          context.replaceChild(listItem.parentNode, list, listItem);
-          context.appendChild(list, listItem);
-          listItemCandidatesAfterListifying.push(list);
-          continue;
+
+        console.assert(listNode.nodeName === 'UL');
+
+        var lists = splitList(context, listItemNode);
+        var newList = context.createElement('OL');
+        context.appendChild(newList, listItemNode);
+        context.insertBefore(lists.second.parentNode, newList, lists.second);
+        for (var list of [lists.first, lists.second]) {
+          if (!list.hasChildNodes())
+            context.removeChild(list.parentNode, list);
         }
+        mergableListCandidates.push(newList);
+
+        if (isListItem(nodes[0]))
+          continue
+
+        // Split the list item and extract outside the selection. See w3c.76.
+        if (nodes[0].previousSibling &&
+            effectiveNodes.indexOf(nodes[0].previousSibling) === -1) {
+          context.splitTree(listItemNode, nodes[0]);
+          var newListItem = listItemNode;
+          while (newListItem.hasChildNodes()) {
+            context.insertBefore(newList.parentNode, newListItem.firstChild,
+                                 newList);
+          }
+          context.removeChild(newList, newListItem);
+        }
+        if (nodes[nodes.length - 1].nextSibling &&
+            effectiveNodes.indexOf(nodes[nodes.length - 1].nextSibling) ===
+            -1) {
+          context.splitTree(listItemNode,
+                            nodes[nodes.length - 1].nextSibling);
+          var newListItem = listItemNode.nextSibling;
+          var insertAfter = newList;
+          var br = null;
+          while (newListItem.hasChildNodes()) {
+            var node = newListItem.firstChild;
+            context.insertAfter(newList.parentNode, newListItem.firstChild,
+                                insertAfter);
+            insertAfter = node;
+            // Insert <br> after the text node. See w3c.76.
+            if (editing.nodes.isText(node) && !newListItem.firstChild) {
+              br = context.createElement('BR');
+              context.insertAfter(newList.parentNode, br, insertAfter);
+              insertAfter = br;
+            }
+          }
+          // <br> is not needed when it is at the end. See w3c.93.
+          if (br && br.parentNode.lastChild === br)
+            context.removeChild(br.parentNode, br);
+          context.removeChild(newList, newListItem);
+        }
+        continue;
+      }
+
+      // See w3c.18.
+      if (nodes.length === 1 && canContentOfDL(nodes[0])) {
+        var listItem = nodes[0];
+        var list = context.createElement('OL');
+        context.replaceChild(listItem.parentNode, list, listItem);
+        context.appendChild(list, listItem);
+        mergableListCandidates.push(list);
+        continue;
       }
 
       var newNode = listify(context, nodes);
       console.assert(newNode);
-      listItemCandidatesAfterListifying.push(newNode);
+      if (newNode.nodeName === 'OL')
+        mergableListCandidates.push(newNode);
     }
 
-    for (var node of listItemCandidatesAfterListifying) {
+    for (var node of mergableListCandidates) {
+      console.assert(node.nodeName === 'OL');
+
       // Already merged with its siblings.
       if (!node.parentNode)
-        continue;
-
-      if (node.nodeName !== 'OL')
         continue;
 
       var listsToBeMerged = [node];
@@ -435,9 +579,10 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     // Merge lists beyond <p> and so on.
-    var lists = listItemCandidatesAfterListifying.filter(function(node) {
-      return !!node.parentNode && node.nodeName === 'OL';
+    var lists = mergableListCandidates.filter(function(node) {
+      return !!node.parentNode;
     });
+    // TODO(hajimehoshi): Remove the variable |list| and use method chain.
     for (var node of lists) {
       // Already merged with other lists.
       if (!node.parentNode)
