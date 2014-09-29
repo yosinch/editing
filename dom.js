@@ -107,6 +107,14 @@ editing.dom = (function() {
    * @param {!Node} node
    * @return {!$jscomp.Iterable.<!Node>}
    */
+  function ancestors(node) {
+    return ancestorsOrSelf(node.parentNode);
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {!$jscomp.Iterable.<!Node>}
+   */
   function ancestorsOrSelf(node) {
     return new AncestorsOrSelf(node);
   }
@@ -427,6 +435,7 @@ editing.dom = (function() {
 
   var dom = {
     HTMLIterable: HTMLIterable,
+    ancestors: ancestors,
     ancestorsOrSelf: ancestorsOrSelf,
     ancestorsWhile: ancestorsWhile,
     canContainRangeEndPoint: canContainRangeEndPoint,

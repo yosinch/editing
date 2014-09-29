@@ -20,7 +20,7 @@ editing.contentModel = (function() {
     ('HTML HEAD TITLE BASE LINK META STYLE' +
      ' FRAME FRAMESET' +
      // Grouping
-     ' P HR PRE OL UL LI DL DT DD FIGURE MAIN DIV' +
+     ' P HR PRE BLOCKQUOTE OL UL LI DL DT DD FIGURE MAIN DIV' +
      // Sections
      ' BODY ARTICLE SECTION NAV ASIDE H1 H2 H3 H4 H5 H6 HGROUP' +
      ' HEADER FOOTER ADDRESS' +

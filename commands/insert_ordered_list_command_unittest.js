@@ -64,3 +64,22 @@ testCaseFor('insertOrderedList.w3c.90.2', {
   before: '<div contenteditable><ul><li>^foo<ul><li>bar</li></ul></li><li>baz|</li></ul></div>',
   after: '<div contenteditable><ol><li>^foo<ol><li>bar</li></ol></li><li>baz|</li></ol></div>',
 });
+
+// TODO(hajimehoshi): Add more tests for inline styles
+testCaseFor('insertOrderedList.w3c.119.1', {
+  before: '<div contenteditable><ul style="text-height:1em; text-indent:0.5em"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="text-height:1em; text-indent:0.5em"><li>foo</li></ul><span style="text-height:1em; text-indent:0.5em"><ol><li>^bar|</li></ol></span><ul style="text-height:1em; text-indent:0.5em"><li>baz</li></ul></div>',
+  sampleId: '119.1'
+});
+
+testCaseFor('insertOrderedList.w3c.120.1', {
+  before: '<div contenteditable><ul style="text-indent:1em"><li>^foo</li><li>bar</li><li>baz|</li></ul></div>',
+  after: '<div contenteditable><span style="text-indent:1em"><span style="text-indent:1em"><ol><li>|foo</li></ol></span></span><span style="text-indent:1em"><span style="text-indent:1em"><ol><li>bar</li></ol></span></span><span style="text-indent:1em"><span style="text-indent:1em"><ol><li>baz</li></ol></span></span></div>',
+  sampleId: '120.1'
+});
+
+testCaseFor('insertOrderedList.w3c.122.1', {
+  after: '<div contenteditable><ul id="abc"><li>foo</li></ul><ol><li>^bar|</li></ol><ul><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul id="abc"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
+  sampleId: '122.1'
+});
