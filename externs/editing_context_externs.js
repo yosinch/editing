@@ -62,7 +62,7 @@ editing.EditingContext.prototype.insertAfter = function(
  * @this {!editing.EditingContext}
  * @param {Node} parentNode
  * @param {!Node} newChild
- * @param {Node} refChild
+ * @param {?Node} refChild
  */
 editing.EditingContext.prototype.insertBefore = function(
     parentNode, newChild, refChild) {};

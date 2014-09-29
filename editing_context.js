@@ -22,135 +22,136 @@ editing.EditingContext = (function() {
     console.assert(editor instanceof editing.Editor);
     console.assert(selection instanceof editing.ReadOnlySelection);
     var document = editor.document;
+
+    /** @private @type {!Document} */
     this.document_ = document;
+
+    /** @private @type {!editing.Editor} */
     this.editor_ = editor;
+
+    /** @private @type {?editing.ReadOnlySelection} */
     this.endingSelection_ = null;
+
+    /** @private @type {string} */
     this.name_ = name;
+
+    /** @private @type {!Array.<!editing.Operation>} */
     this.operations_ = [];
+
     // We don't make ending selection as starting selection here. Because,
     // |ReadOnlySelection| doesn't track DOM modification during command
     // execution.
+    /** @private @type {?editing.ReadOnlySelection} */
     this.startingSelection_ = selection;
+
+    /** @private @type {!Map.<!Element, !editing.SetStyle>} */
     this.styledElements_ = new Map();
+
     Object.seal(this);
   }
 
-  /** @type {!Document} */
-  EditingContext.prototype.document;
+  // Forward type declarations for closure compiler.
+  EditingContext.prototype = {
+    /**
+     * @this {!EditingContext}
+     * @param {!Node} parentNode
+     * @param {!Node} newChild
+     */
+    appendChild: function(parentNode, newChild) {},
 
-  /** @type {!editing.Editor} */
-  EditingContext.prototype.editor_;
+    /**
+     * @this {!EditingContext}
+     * @param {!Node} node
+     * @return {boolean}
+     */
+    inDocument: function(node) {},
 
-  /** @type {!Array.<!editing.Operation>} */
-  EditingContext.prototype.operations_;
+    /**
+     * @this {!EditingContext}
+     * @param {!Node} parentNode
+     * @param {!Node} newChild
+     * @param {!Node} refChild
+     */
+    insertAfter: function(parentNode, newChild, refChild) {},
 
-  /** @type {!Map.<!Element, !editing.SetStyle>} */
-  EditingContext.prototype.styledElements_;
+    /**
+     * @this {!EditingContext}
+     * @param {!Node} parentNode
+     * @param {!Node} newChild
+     * @param {?Node} refChild
+     */
+    insertBefore: function(parentNode, newChild, refChild) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Node} parentNode
-   * @param {!Node} newChild
-   */
-  EditingContext.prototype.appendChild = function(parentNode, newChild) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Element} element
+     * @param {string} name
+     */
+    removeAttribute: function(element, name) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Node} node
-   * @return {boolean}
-   */
-  EditingContext.prototype.inDocument = function(node) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Node} parentNode
+     * @param {!Node} oldChild
+     */
+    removeChild: function(parentNode, oldChild) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Node} parentNode
-   * @param {!Node} newChild
-   * @param {!Node} refChild
-   */
-  EditingContext.prototype.insertAfter = function(
-      parentNode, newChild, refChild) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Node} parentNode
+     * @param {!Node} newChild
+     * @param {!Node} oldChild
+     */
+    replaceChild: function(parentNode, newChild, oldChild) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Node} parentNode
-   * @param {!Node} newChild
-   * @param {Node} refChild
-   */
-  EditingContext.prototype.insertBefore = function(
-      parentNode, newChild, refChild) {};
+    /**
+     * @this {!editing.EditingContext}
+     * @param {!Element} element
+     * @param {string} propertyName
+     * @param {string} propertyValue
+     */
+    setStyle: function(element, propertyName, propertyValue) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Element} element
-   * @param {string} name
-   */
-  EditingContext.prototype.removeAttribute = function(element, name) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Element} element
+     * @param {!Node} child
+     * @return {!Element}
+     */
+    splitNode: function(element, child) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Node} parentNode
-   * @param {!Node} oldChild
-   */
-  EditingContext.prototype.removeChild = function(parentNode, oldChild) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Element} element
+     * @param {!Node} refChild
+     * @return {!Element}
+     */
+    splitNodeLeft: function(element, refChild) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Node} parentNode
-   * @param {!Node} newChild
-   * @param {!Node} oldChild
-   */
-  EditingContext.prototype.replaceChild = function(
-      parentNode, newChild, oldChild) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Text} node
+     * @param {number} offset
+     * @return {!Text}
+     */
+    splitText: function(node, offset) {},
 
-  /**
-   * @this {!editing.EditingContext}
-   * @param {!Element} element
-   * @param {string} propertyName
-   * @param {string} propertyValue
-   */
-  EditingContext.prototype.setStyle = function(element, propertyName,
-                                               propertyValue) {};
+    /**
+      * @this {!EditingContext}
+      * @param {!Element} element
+      * @param {!Node} refNode
+      * @return {!Element}
+     */
+    splitTree: function(element, refNode) {},
 
-  /**
-   * @this {!EditingContext}
-   * @param {!Element} element
-   * @param {!Node} child
-   * @return {!Element}
-   */
-  EditingContext.prototype.splitNode = function(element, child) {};
-
-  /**
-   * @this {!EditingContext}
-   * @param {!Element} element
-   * @param {!Node} refChild
-   * @return {!Element}
-   */
-  EditingContext.prototype.splitNodeLeft = function(element, refChild) {};
-
-  /**
-   * @this {!EditingContext}
-   * @param {!Text} node
-   * @param {number} offset
-   * @return {!Text}
-   */
-  EditingContext.prototype.splitText = function(node, offset) {};
-
-  /**
-    * @this {!EditingContext}
-    * @param {!Element} element
-    * @param {!Node} refNode
-    * @return {!Element}
-   */
-  EditingContext.prototype.splitTree = function(element, refNode) {};
-
-
-  /**
-   * @this {!EditingContext}
-   * @param {!Element} element
-   * @param {!Node} refNode
-   * @return {!Element}
-   */
-  EditingContext.prototype.splitTreeLeft = function(element, refNode) {};
+    /**
+     * @this {!EditingContext}
+     * @param {!Element} element
+     * @param {!Node} refNode
+     * @return {!Element}
+     */
+    splitTreeLeft: function(element, refNode) {}
+  };
 
   /**
    * @this {!EditingContext}
@@ -232,6 +233,9 @@ editing.EditingContext = (function() {
    * @return {boolean}
    */
   function inDocument(node) {
+    // TODO(yosin) We should use |return node.ownerDocument.contains(node)|,
+    // once fixing closure compiler's wrong Node.prototype.contains() JS
+    // externs.
     for (var runner = node; runner; runner = runner.parentNode) {
       if (runner === this.document_)
         return true;
@@ -260,7 +264,7 @@ editing.EditingContext = (function() {
    * @this {!EditingContext}
    * @param {!Node} parentNode
    * @param {!Node} newChild
-   * @param {!Node} refChild
+   * @param {?Node} refChild
    */
   function insertBefore(parentNode, newChild, refChild) {
     ASSERT_EDITING_IN_PROGRESS(this);
@@ -330,6 +334,9 @@ editing.EditingContext = (function() {
       // TODO(yosin) Once http://crbug.com/346613 is fixed, we don't need to
       // have this code fragment.
       if (!node.previousSibling) {
+        // TODO(yosin) We should consider whitespace definition differences
+        // between JS and HTML5, e.g. |preserve-whitespace| CSS property,
+        // |xml:whitespace| attribute.
         var trimLeft = text.trimLeft();
         var visibleLeft = text.length - trimLeft.length;
         if (offset <= visibleLeft) {
@@ -776,50 +783,45 @@ editing.EditingContext = (function() {
       this.removeChild(ancestor, parent);
    }
 
-  Object.defineProperties(EditingContext.prototype, {
-    appendChild: {value: appendChild},
-    constructor: {value: EditingContext},
-    cloneNode: {value: cloneNode },
-    document: {get: function() { return this.document_; }},
-    document_: {writable: true},
-    createElement: {value: createElement},
-    createTextNode: {value: createTextNode},
-    editor: {get: function() { return this.editor_; }},
-    editor_: {writable: true},
+  EditingContext.prototype = {
+    appendChild: appendChild,
+    constructor: EditingContext,
+    cloneNode: cloneNode ,
+    createElement: createElement,
+    createTextNode: createTextNode,
+    execCommand: execCommand,
+    get editor() { return this.editor_; },
     // Selection after executing editing command. This |ReadOnlySelection| is
     // put into undo stack for redo operation. See also |startingSelection|
-    endingSelection: {get: endingSelection},
-    endingSelection_: {writable: true},
-    execCommand: {value: execCommand},
-    inDocument: {value: inDocument},
-    insertAfter: {value: insertAfter},
-    insertBefore: {value: insertBefore},
-    insertChildrenBefore: {value: insertChildrenBefore},
-    operations: {get: function() { return this.operations_; }},
-    operations_: {writable: true},
-    name: {get: function() { return this.name_; }},
-    name_: {writable: true},
-    normalizeSelection: {value: normalizeSelection},
-    removeAttribute: {value: removeAttribute},
-    removeChild: {value: removeChild},
-    removeStyle: {value: removeStyle},
-    replaceChild: {value: replaceChild},
-    setAttribute: {value: setAttribute},
-    setEndingSelection: {value: setEndingSelection },
-    setStyle: {value: setStyle},
-    setUpEffectiveNodes: {value: setUpEffectiveNodes},
-    setUpEffectiveNodesWithSplitter: {value: setUpEffectiveNodesWithSplitter},
-    shouldUseCSS: {get: shouldUseCSS},
-    splitNode: {value: splitNode},
-    splitNodeLeft: {value: splitNodeLeft},
-    splitText: {value: splitText},
-    splitTree: {value: splitTree},
-    splitTreeLeft: {value: splitTreeLeft},
+    get endingSelection() { return endingSelection.call(this); },
+    get document() { return this.document_; },
+    get operations() { return this.operations_; },
+    get name() { return this.name_; },
+    get shouldUseCSS() { return shouldUseCSS.call(this) },
     // Selection before executing editing command. This |ReadOnlySelection| is
     // put into undo stack for undo operation. See also |endingSelection|
-    startingSelection: {get: function() { return this.startingSelection_; }},
-    startingSelection_: {writable: true},
-    unwrapElement: {value: unwrapElement}
-  });
+    get startingSelection() { return this.startingSelection_; },
+    inDocument: inDocument,
+    insertAfter: insertAfter,
+    insertBefore: insertBefore,
+    insertChildrenBefore: insertChildrenBefore,
+    normalizeSelection: normalizeSelection,
+    removeAttribute: removeAttribute,
+    removeChild: removeChild,
+    removeStyle: removeStyle,
+    replaceChild: replaceChild,
+    setAttribute: setAttribute,
+    setEndingSelection: setEndingSelection ,
+    setStyle: setStyle,
+    setUpEffectiveNodes: setUpEffectiveNodes,
+    setUpEffectiveNodesWithSplitter: setUpEffectiveNodesWithSplitter,
+    splitNode: splitNode,
+    splitNodeLeft: splitNodeLeft,
+    splitText: splitText,
+    splitTree: splitTree,
+    splitTreeLeft: splitTreeLeft,
+    unwrapElement: unwrapElement
+  };
+  Object.freeze(EditingContext.prototype);
   return EditingContext;
 })();
