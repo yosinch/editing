@@ -15,18 +15,22 @@ editing.nodes = (function() {
     Object.seal(this);
   }
 
-  /** @type {!function(): {done: boolean, value: !Node}} */
-  NextNodes.prototype.next;
-
-  Object.defineProperty(NextNodes.prototype, 'next', {
-    value: function() {
+  NextNodes.prototype = {
+    /** @this {!NextNodes}
+     * @return {{done: boolean, value: (!Node|undefined)}}
+     */
+    next: function() {
       var resultNode = this.currentNode_;
       if (!resultNode)
-        return {done: true};
+        return {done: true, value: undefined};
       this.currentNode_ = nextNode(this.currentNode_);
       return {done: false, value: resultNode};
     }
-  });
+  };
+
+  // TODO(yosin) Once V8 and closure compiler support E6 object literal syntax,
+  // we should put below in |NextNodes.prototype = {...}|.
+  NextNodes.prototype[Symbol.iterator] = function() { return this; };
 
   /**
    * @param {!Node} node
@@ -228,12 +232,7 @@ editing.nodes = (function() {
     if (node.nodeType != Node.ELEMENT_NODE)
       return Boolean(node.parentNode && isVisibleNode(node.parentNode));
     var element = /** @type {!Element} */(node);
-    var style = window.getComputedStyle(element);
-    if (style)
-      return style.display != 'none';
-    if (!node.parentNode)
-      return node.nodeType == Node.TEXT_NODE;
-    return isVisibleNode(node.parentNode);
+    return window.getComputedStyle(element).display !== 'none';
   }
 
   /**
@@ -243,8 +242,7 @@ editing.nodes = (function() {
   function isWhitespaceNode(node) {
     if (!isText(node))
       return false;
-    var text = node.nodeValue.replace(/[ \t\r\n]/g, '');
-    return text == '';
+    return /^\s*$/.test(node.nodeValue);
   }
 
   /**

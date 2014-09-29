@@ -78,3 +78,12 @@ String.prototype.endsWith = function(searchString, opt_position) {};
  * @return {boolean}
  */
 String.prototype.startsWith = function(searchString, opt_position) {};
+
+//////////////////////////////////////////////////////////////////////
+//
+// Symbol
+//
+/** @constructor */
+function Symbol(string) {}
+
+Symbol.iterator;
