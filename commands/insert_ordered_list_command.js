@@ -183,7 +183,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Node} listItemNode
-   * @return {!Array.<!Node>}
+   * @return {{first: !Node, second: !Node}}
    */
   function splitList(context, listItemNode) {
     console.assert(isListItem(listItemNode));
