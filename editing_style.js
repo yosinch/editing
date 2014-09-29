@@ -160,17 +160,18 @@ editing.define('EditingStyle', (function() {
     /** @type {!Map.<string, string>} */ var properties = new Map();
     for (var propertyName of Array.prototype.slice.call(domStyle))
       properties.set(propertyName, domStyle[propertyName]);
-    for (var propertyName of CREATE_ELEMENT_ORDER) {
+    // TODO(yosin) We should use |for-of| once closure-compiler #643 fixed.
+    CREATE_ELEMENT_ORDER.forEach(function(propertyName) {
       var propertyValue = properties.get(propertyName);
       if (typeof(propertyValue) !== 'string')
-        continue;
+        return;
       var property = {name: propertyName, value: propertyValue};
       var data = CSS_PROPRTY_DATA[propertyName];
       var styleElement = data.createStyleElement(context, property);
       if (!styleElement)
-        continue;
+        return;
       callback(context, property, styleElement);
-    }
+    });
   }
 
   /**
