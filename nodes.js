@@ -5,9 +5,6 @@
 editing.nodes = (function() {
   'use strict';
 
-  /** @const */ var INTERACTIVE = editing.CONTENT_CATEGORY.INTERACTIVE;
-  /** @const */ var PHRASING = editing.CONTENT_CATEGORY.PHRASING;
-
   /**
    * @constructor
    * @final
@@ -94,8 +91,7 @@ editing.nodes = (function() {
   function canContainRangeEndPoint(node) {
     if (!isElement(node))
       return true;
-    var model = editing.contentModel[node.nodeName];
-    return model !== undefined && model.canContainRangeEndPoint;
+    return editing.contentModel.canContainRangeEndPoint(node.nodeName);
   }
 
   /**
@@ -201,8 +197,7 @@ editing.nodes = (function() {
    * @return {boolean}
    */
   function isInteractive(node) {
-    var model = editing.contentModel[node.nodeName];
-    return model !== undefined && Boolean(model.categories[INTERACTIVE]);
+    return editing.contentModel.isInteractive(node.nodeName);
   }
 
   /**
@@ -212,8 +207,7 @@ editing.nodes = (function() {
   function isPhrasing(node) {
     if (!isElement(node))
       return true;
-    var model = editing.contentModel[node.nodeName];
-    return model !== undefined && Boolean(model.categories[PHRASING]);
+    return editing.contentModel.isPhrasing(node.nodeName);
   }
 
   /**

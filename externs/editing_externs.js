@@ -4,7 +4,6 @@
 
 /**
  * @typedef {{
- *  contentModel: !Object.<string, !editing.ContentModel>,
  *  defineCommand: function(string, !function()),
  *  isContentEditable: function(!Node) : boolean,
  *  lookupCommand: function(string) : ?function()
@@ -17,29 +16,29 @@ var editing;
  */
 var CommandFunction;
 
-/**
- * @typedef {{
- *  categories: string,
- *  contextModel: (!Array.<string>|!Set.<string>),
- *  usableContexts: (!Array.<string>|!Set.<string>)
- * }}
- */
-editing.ContentModel;
-
-/** @enum {string} */
-editing.CONTENT_CATEGORY = {
-  EMBEDDED: 'EMBEDDED',
-  FLOW: 'FLOW',
-  HEADING: 'HEADING',
-  INTERACTIVE: 'INTERACTIVE',
-  PALPABLE: 'PALPABLE',
-  PHRASING: 'PHRASING',
-  SECTIONING_ROOT: 'SECTIONING_ROOT',
-  TRANSPARENT: 'TRANSPARENT',
-};
-
 /** @enum {string} */
 editing.SelectionDirection = {
   ANCHOR_IS_START: 'ANCHOR_IS_START',
   FOCUS_IS_START: 'FOCUS_IS_START'
 };
+
+/** @type {!Object} */
+editing.contentModel;
+
+/**
+ * @param {string} tagName
+ * @return {boolean}
+ */
+editing.contentModel.canContainRangeEndPointSet = function(tagName) {};
+
+/**
+ * @param {string} tagName
+ * @return {boolean}
+ */
+editing.contentModel.isInteractive = function(tagName) {};
+
+/**
+ * @param {string} tagName
+ * @return {boolean}
+ */
+editing.contentModel.isPhrasing = function(tagName) {};
