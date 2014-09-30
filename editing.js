@@ -53,9 +53,9 @@ window['editing']= {};
     return commandTable.get(name.toLowerCase()) || null;
   }
 
-  Object.defineProperties(editing, {
-    defineCommand: {value: defineCommand},
-    isContentEditable: {value: isContentEditable},
-    lookupCommand: {value: lookupCommand}
-  });
+  editing = {
+    defineCommand: defineCommand,
+    isContentEditable: isContentEditable,
+    lookupCommand: lookupCommand
+  };
 })();

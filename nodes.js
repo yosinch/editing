@@ -359,28 +359,30 @@ editing.nodes = (function() {
     return null;
   }
 
-  return Object.defineProperties({}, {
-    ancestorsWhile: {value: ancestorsWhile},
-    canContainRangeEndPoint: {value: canContainRangeEndPoint},
-    commonAncestor: {value: commonAncestor},
-    computeSelectedNodes: {value: computeSelectedNodes},
-    isContentEditable: {value: isContentEditable},
-    isDescendantOf: {value: isDescendantOf},
-    isEditable: {value: isEditable},
-    isElement: {value: isElement},
-    isInteractive: {value: isInteractive},
-    isPhrasing: {value: isPhrasing},
-    isText: {value: isText},
-    isVisibleNode: {value: isVisibleNode},
-    isWhitespaceNode: {value: isWhitespaceNode},
-    lastWithIn: {value: lastWithIn},
-    maxOffset: {value: maxOffset},
-    nextNode: {value: nextNode},
-    nextNodes: {value: nextNodes},
-    nextAncestorOrSibling: {value: nextAncestorOrSibling},
-    nextNodeSkippingChildren: {value: nextNodeSkippingChildren},
-    nodeIndex: {value: nodeIndex},
-    previousNode: {value: previousNode},
-    previousNodeSkippingChildren: {value: previousNodeSkippingChildren},
-  });
+  var nodes = {
+    ancestorsWhile: ancestorsWhile,
+    canContainRangeEndPoint: canContainRangeEndPoint,
+    commonAncestor: commonAncestor,
+    computeSelectedNodes: computeSelectedNodes,
+    isContentEditable: isContentEditable,
+    isDescendantOf: isDescendantOf,
+    isEditable: isEditable,
+    isElement: isElement,
+    isInteractive: isInteractive,
+    isPhrasing: isPhrasing,
+    isText: isText,
+    isVisibleNode: isVisibleNode,
+    isWhitespaceNode: isWhitespaceNode,
+    lastWithIn: lastWithIn,
+    maxOffset: maxOffset,
+    nextNode: nextNode,
+    nextNodes: nextNodes,
+    nextAncestorOrSibling: nextAncestorOrSibling,
+    nextNodeSkippingChildren: nextNodeSkippingChildren,
+    nodeIndex: nodeIndex,
+    previousNode: previousNode,
+    previousNodeSkippingChildren: previousNodeSkippingChildren,
+  };
+  Object.freeze(nodes);
+  return nodes;
 })();

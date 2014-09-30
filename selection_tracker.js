@@ -30,15 +30,12 @@ editing.SelectionTracker = (function() {
    * @param {number} offset
    */
   function NodeAndOffset(node, offset) {
+    /** @type {!Node} */
     this.node = node;
+    /** @type {number} */
     this.offset = offset;
     Object.seal(this);
   }
-
-  Object.defineProperties(NodeAndOffset.prototype, {
-    node: {writable: true},
-    offset: {writable: true}
-  });
 
   /**
    * @constructor
@@ -52,46 +49,44 @@ editing.SelectionTracker = (function() {
     console.assert(offset >= 0, node, offset);
     var maxOffset = editing.nodes.maxOffset(node);
     console.assert(offset <= maxOffset, node, offset);
+    /** @type {TrackingType} */
+    var type;
+    /** @type {?Node} */
+    var refNode;
     if (!node.hasChildNodes()) {
-      this.type_ = TrackingType.BEFORE_ALL_CHILDREN;
-      this.node_ = node;
+      type = TrackingType.BEFORE_ALL_CHILDREN;
+      refNode = node;
     } else if (maxOffset == offset) {
-      this.type_ = TrackingType.AFTER_NODE;
-      this.node_ = node.lastChild;
+      type = TrackingType.AFTER_NODE;
+      refNode = node.lastChild;
     } else if (offset && startOrEnd == StartOrEnd.END) {
-      this.type_ = TrackingType.AFTER_NODE;
-      this.node_ = node.childNodes[offset - 1];
+      type = TrackingType.AFTER_NODE;
+      refNode = node.childNodes[offset - 1];
     } else {
-      this.type_ = TrackingType.NODE;
-      this.node_ = node.childNodes[offset];
+      type = TrackingType.NODE;
+      refNode = node.childNodes[offset];
     }
-    console.assert(this.node_, this, node, offset, startOrEnd, maxOffset,
-                   maxOffset == offset);
+    if (!refNode) {
+      console.log('refNode should not be null', type, node, offset, startOrEnd,
+                  maxOffset, maxOffset == offset);
+      throw new Error('We can not track');
+    }
+    /** @private @type {TrackingType} */
+    this.type_ = type;
+    /** @private @type {!Node} */
+    this.node_ = refNode;
     Object.seal(this);
   }
 
-  /**
-   * @type {!function(): !NodeAndOffset}
-   */
-  TrackablePosition.prototype.convertToNodeAndOffset;
-
-  /**
-   * @type {!function(!Node)}
-   */
-  TrackablePosition.prototype.willRemoveNode;
-
-  /**
-   * @type {!function(!Element)}
-   */
-  TrackablePosition.prototype.willUnwrapElement;
-
-  Object.defineProperties(TrackablePosition.prototype, (function() {
+  TrackablePosition.prototype = {
     /**
      * @this {!TrackablePosition}
      * @return {!NodeAndOffset}
      */
-    function convertToNodeAndOffset() {
+    convertToNodeAndOffset: function() {
       var node = this.node_;
+      if (!node.parentNode)
+        throw new Error('Node should be in document.');
       switch (this.type_) {
         case TrackingType.AFTER_NODE:
           return new NodeAndOffset(node.parentNode,
@@ -104,13 +99,13 @@ editing.SelectionTracker = (function() {
         default:
           throw new Error('Bad TrackablePosition.type ' + this.type_);
       }
-    }
+    },
 
     /**
      * @this {!TrackablePosition}
      * @param {!Node} node
      */
-    function willRemoveNode(node) {
+    willRemoveNode: function(node) {
       if (this.node_ !== node &&
           !editing.nodes.isDescendantOf(this.node_, node)) {
         return;
@@ -118,26 +113,32 @@ editing.SelectionTracker = (function() {
       var oldNode = this.node_;
       var oldType = this.type_;
       this.type_ = TrackingType.AFTER_NODE;
-      this.node_ = editing.nodes.previousNode(oldNode);
-      console.assert(this.node_, this, oldNode, oldType, node);
-    }
+      var refNode = editing.nodes.previousNode(oldNode);
+      if (!refNode) {
+        console.log('oldNode', oldNode, 'have no previous node.');
+        throw new Error('We should not remove first node.');
+      }
+      this.node_ = refNode;
+    },
 
     /**
      * @this {!TrackablePosition}
      * @param {!Element} element
      */
-    function willUnwrapElement(element) {
+    willUnwrapElement: function(element) {
       if (this.node_ !== element)
         return;
       var oldNode = this.node_;
       var oldType = this.type_;
+      /** @type {Node} */
+      var refNode;
       switch (oldType) {
         case TrackingType.AFTER_NODE:
           this.type_ = TrackingType.NODE;
-          this.node_ = editing.nodes.nextNodeSkippingChildren(oldNode);
-          if (!this.node_) {
+          refNode = editing.nodes.nextNodeSkippingChildren(oldNode);
+          if (!refNode) {
             this.type_ = TrackingType.AFTER_NODE;
-            this.node_ = oldNode.lastChild;
+            refNode = oldNode.lastChild;
           }
           break;
         case TrackingType.BEFORE_ALL_CHILDREN:
@@ -146,22 +147,19 @@ editing.SelectionTracker = (function() {
           break;
         case TrackingType.NODE:
           this.type_ = TrackingType.NODE;
-          this.node_ = oldNode.firstChild;
+          refNode = oldNode.firstChild;
           break;
         default:
           throw new Error('Bad TrackablePosition.type ' + this.type_);
       }
-      console.assert(this.node_, this, oldNode, oldType, element.outerHTML);
+      if (!refNode) {
+        console.log(this.node_, this, oldNode, oldType, element.outerHTML);
+        throw new Error('We failed to track selection.');
+      }
+      this.node_ = refNode;
     }
-
-    return {
-      convertToNodeAndOffset: {value: convertToNodeAndOffset},
-      node_: {writable: true},
-      type_: {writable: true},
-      willRemoveNode: {value: willRemoveNode},
-      willUnwrapElement: {value: willUnwrapElement}
-    }
-  })());
+  };
+  Object.seal(TrackablePosition.prototype);
 
   /**
    * @constructor
@@ -170,14 +168,17 @@ editing.SelectionTracker = (function() {
    * @param {!editing.ReadOnlySelection} selection
    */
   function SelectionTracker(context, selection) {
+    /** @private @type {!editing.EditingContext} */
     this.context_ = context;
+    /** @private @type {!TrackablePosition} */
     this.start_ = new TrackablePosition(selection.startContainer,
                                         selection.startOffset,
                                         StartOrEnd.START);
+    /** @private @type {!TrackablePosition} */
     this.end_ = new TrackablePosition(selection.endContainer,
                                       selection.endOffset,
                                       StartOrEnd.END);
-    Object.seal(this);
+    Object.freeze(this);
   }
 
   /**
@@ -236,16 +237,14 @@ editing.SelectionTracker = (function() {
     this.end_.willUnwrapElement(element);
   }
 
-  Object.defineProperties(SelectionTracker.prototype, {
-    constructor: {value: SelectionTracker},
-    context_: {writable: true},
-    end_:{writable: true},
-    finish: {value: finish},
-    finishWithStartAsAnchor: {value: finishWithStartAsAnchor},
-    start_: {writable: true},
-    willRemoveNode: {value: willRemoveNode},
-    willUnwrapElement: {value: willUnwrapElement}
-  });
+  SelectionTracker.prototype = {
+    constructor: SelectionTracker,
+    finish: finish,
+    finishWithStartAsAnchor: finishWithStartAsAnchor,
+    willRemoveNode: willRemoveNode,
+    willUnwrapElement: willUnwrapElement
+  };
+  Object.seal(SelectionTracker.prototype);
 
   return SelectionTracker;
 })();

@@ -119,20 +119,24 @@ editing.EditingStyle = (function() {
    * @param {!Element} element
    */
   function EditingStyle(element) {
+    /** @private @type {!CSSStyleDeclaration} */
     this.domStyle_ = element.style;
     Object.seal(this);
   }
 
-  /**
-   * @this {!EditingStyle}
-   * @param {!editing.EditingContext} context
-   * @param {!function(!editing.EditingContext, editing.Property, !Element)}
-   *    callback
-   */
-  EditingStyle.prototype.createElements;
+  // Forward declaration for closure compiler.
+  EditingStyle.prototype = {
+    /**
+     * @this {!EditingStyle}
+     * @param {!editing.EditingContext} context
+     * @param {!function(!editing.EditingContext, editing.Property, !Element)}
+     *    callback
+     */
+    createElements: function(context, callback) {},
 
-  /** @type {!Array.<!editing.Property>} */
-  EditingStyle.prototype.properties;
+    /** @type {!Array.<!editing.Property>} */
+    get properties() {}
+  };
 
   /**
    * @this {!EditingStyle}
@@ -208,12 +212,13 @@ editing.EditingStyle = (function() {
     });
   }
 
-  Object.defineProperties(EditingStyle.prototype, {
-    applyInheritedStyle: {value: applyInheritedStyle},
-    constructor: {value: EditingStyle},
-    createElements: {value: createElements},
-    hasStyle: {get: hasStyle},
-    properties: {get: properties}
-  });
+  EditingStyle.prototype = {
+    applyInheritedStyle: applyInheritedStyle,
+    constructor: EditingStyle,
+    createElements: createElements,
+    get hasStyle() { return hasStyle.call(this); },
+    get properties() { return properties.call(this); }
+  };
+  Object.seal(EditingStyle.prototype);
   return EditingStyle;
 })();

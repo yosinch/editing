@@ -12,6 +12,7 @@ editing.Operation = (function() {
    * @param {string} operationName
    */
   function Operation(operationName) {
+    /** @private @type {string} */
     this.operationName_ = operationName;
   }
 
@@ -29,14 +30,13 @@ editing.Operation = (function() {
     throw new Error('Abstract method Operation.prototype.undo called', this);
   }
 
-  Object.defineProperties(Operation.prototype, {
+  Operation.prototype = {
     constructor: Operation,
-    execute: {value: function() { this.redo(); }},
-    operationName: {get: function() { return this.operationName_; }},
-    operationName_: {writable: true},
-    redo: {value: redo },
-    undo: {value: undo }
-  });
+    execute: function() { this.redo(); },
+    get operationName() { return this.operationName_; },
+    redo: redo,
+    undo: undo
+  };
 
   return Operation;
 })();
@@ -54,7 +54,9 @@ editing.AppendChild = (function() {
   function AppendChild(parentNode, newChild) {
     console.assert(!newChild.parentNode);
     editing.Operation.call(this, 'appendChild');
+    /** @private @type {!Node} */
     this.parentNode_ = parentNode;
+    /** @private @type {!Node} */
     this.newChild_ = newChild;
     Object.seal(this);
   }
@@ -99,8 +101,11 @@ editing.InsertBefore = (function() {
     console.assert(!newChild.parentNode);
     console.assert(parentNode === refChild.parentNode);
     editing.Operation.call(this, 'insertBefore');
+    /** @private @type {!Node} */
     this.parentNode_ = parentNode;
+    /** @private @type {!Node} */
     this.newChild_ = newChild;
+    /** @private @type {!Node} */
     this.refChild_ = refChild;
     Object.seal(this);
   }
@@ -121,9 +126,6 @@ editing.InsertBefore = (function() {
 
   InsertBefore.prototype = Object.create(editing.Operation.prototype, {
     constructor: InsertBefore,
-    newChild_: {writable: true},
-    parentNode_: {writable: true},
-    refChild_: {writable: true},
     redo: {value: redo},
     undo: {value: undo}
   });
@@ -143,11 +145,16 @@ editing.RemoveAttribute = (function() {
    */
   function RemoveAttribute(element, attrName) {
     editing.Operation.call(this, 'removeAttribute');
+    /** @private @type {!Element} */
     this.element_ = element;
+    /** @private @type {string} */
     this.attrName_ = attrName;
-    this.oldValue_ = element.getAttribute(attrName);
-    if (this.oldValue_ === null)
+    /** @private @type {(string|null)} */
+    var oldValue = element.getAttribute(attrName);
+    if (oldValue === null)
       throw new Error('You can not remove non-existing attribute ' + attrName);
+    /** @private @type {string} */
+    this.oldValue_ = oldValue;
     Object.seal(this);
   }
 
@@ -167,9 +174,6 @@ editing.RemoveAttribute = (function() {
 
   RemoveAttribute.prototype = Object.create(editing.Operation.prototype, {
     constructor: RemoveAttribute,
-    attrName_: {writable: true},
-    element_: {writable: true},
-    oldValue_: {writable: true},
     redo: {value: redo},
     undo: {value: undo}
   });
@@ -185,12 +189,15 @@ editing.RemoveChild = (function() {
   /**
    * @constructor @final @extends {editing.Operation}
    * @param {!Node} parentNode
-   * @param {Node} oldChild
+   * @param {!Node} oldChild
    */
   function RemoveChild(parentNode, oldChild) {
     editing.Operation.call(this, 'removeChild');
+    /** @private @type {!Node} */
     this.parentNode_ = parentNode;
+    /** @private @type {!Node} */
     this.oldChild_ = oldChild;
+    /** @private @type {Node} */
     this.refChild_ = oldChild.nextSibling;
     Object.seal(this);
   }
@@ -211,9 +218,6 @@ editing.RemoveChild = (function() {
 
   RemoveChild.prototype = Object.create(editing.Operation.prototype, {
     constructor: RemoveChild,
-    oldChild_: {writable: true},
-    parentNode_: {writable: true},
-    refChild_: {writable: true},
     redo: {value: redo},
     undo: {value: undo}
   });
@@ -236,8 +240,11 @@ editing.ReplaceChild = (function() {
     console.assert(!newChild.parentNode);
     console.assert(parentNode === oldChild.parentNode);
     editing.Operation.call(this, 'replaceChild');
+    /** @private @type {!Node} */
     this.parentNode_ = parentNode;
+    /** @private @type {!Node} */
     this.newChild_ = newChild;
+    /** @private @type {Node} */
     this.oldChild_ = oldChild;
     Object.seal(this);
   }
@@ -258,9 +265,6 @@ editing.ReplaceChild = (function() {
 
   ReplaceChild.prototype = Object.create(editing.Operation.prototype, {
     constructor: ReplaceChild,
-    newChild_: {writable: true},
-    oldChild_: {writable: true},
-    parentNode_: {writable: true},
     redo: {value: redo},
     undo: {value: undo}
   });
@@ -283,9 +287,13 @@ editing.SetAttribute = (function() {
     if (newValue === null)
       throw new Error('You can not use null for attribute ' + attrName);
     editing.Operation.call(this, 'setAttribute');
+    /** @private @type {!Element} */
     this.element_ = element;
+    /** @private @type {string} */
     this.attrName_ = attrName;
+    /** @private @type {string} */
     this.newValue_ = newValue;
+    /** @private @type {(string|null)} */
     this.oldValue_ = element.getAttribute(attrName);
     Object.seal(this);
   }
@@ -309,10 +317,6 @@ editing.SetAttribute = (function() {
 
   SetAttribute.prototype = Object.create(editing.Operation.prototype, {
     constructor: SetAttribute,
-    attrName_: {writable: true},
-    element_: {writable: true},
-    newValue_: {writable: true},
-    oldValue_: {writable: true},
     redo: {value: redo},
     undo: {value: undo}
   });
@@ -333,20 +337,13 @@ editing.SetStyle = (function() {
    */
   function SetStyle(element) {
     editing.Operation.call(this, 'setStyle');
+    /** @private @type {!Array.<{name: string, value: string}>} */
     this.changes_ = [];
+    /** @private @type {!Element} */
     this.element_ = element;
     this.oldStyleText_ = element.getAttribute('style');
     Object.seal(this);
   }
-
-  /** @type {!Array.<{name: string, value: string}>} */
-  SetStyle.prototype.changes_;
-
-  /** @type {!Element} */
-  SetStyle.prototype.element_;
-
-  /** @type {string} */
-  SetStyle.prototype.oldStyleText_;
 
   /**
    * @this {!SetStyle}
@@ -384,9 +381,6 @@ editing.SetStyle = (function() {
 
   SetStyle.prototype = Object.create(editing.Operation.prototype, {
     constructor: SetStyle,
-    changes_: {writable: true},
-    element_: {writable: true},
-    oldStyleText_: {writable: true},
     redo: {value: redo},
     setProperty: {value: setProperty},
     undo: {value: undo}
@@ -407,7 +401,9 @@ editing.SplitText = (function() {
    */
   function SplitText(textNode, newNode) {
     editing.Operation.call(this, 'splitText');
+    /** @private @type {!Text} */
     this.newNode_ = newNode;
+    /** @private @type {!Text} */
     this.textNode_ = textNode;
     Object.seal(this);
   }
@@ -433,9 +429,7 @@ editing.SplitText = (function() {
 
   SplitText.prototype = Object.create(editing.Operation.prototype, {
     constructor: SplitText,
-    newNode_: {writable: true},
     redo: {value: redo},
-    textNode_: {writable: true},
     undo: {value: undo}
   });
 

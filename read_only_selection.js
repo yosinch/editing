@@ -23,31 +23,39 @@ editing.ReadOnlySelection = (function() {
    */
   function ReadOnlySelection(anchorNode, anchorOffset, focusNode, focusOffset,
                              direction) {
+    /** @private @type {!Node} */
     this.anchorNode_ = anchorNode;
+    /** @private @type {number} */
     this.anchorOffset_ = anchorOffset;
+    /** @private @type {editing.SelectionDirection} */
     this.direction_ = direction;
+    /** @private @type {!Node} */
     this.focusNode_ = focusNode;
+    /** @private @type {number} */
     this.focusOffset_ = focusOffset;
-    Object.seal(this);
+    Object.freeze(this);
   }
 
-  /** @type {!Node} */
-  ReadOnlySelection.prototype.anchorNode;
+  // Forward declaration for closure compiler
+  ReadOnlySelection.prototype = {
+    /** @type {!Node} */
+    get anchorNode() {},
 
-  /** @type {number} */
-  ReadOnlySelection.prototype.anchorOffset;
+    /** @type {number} */
+    get anchorOffset() {},
 
-  /** @type {!Node} */
-  ReadOnlySelection.prototype.focusNode;
+    /** @type {!Node} */
+    get focusNode() {},
 
-  /** @type {number} */
-  ReadOnlySelection.prototype.focusOffset;
+    /** @type {number} */
+    get focusOffset() {},
 
-  /** @type {boolean} */
-  ReadOnlySelection.prototype.isCaret;
+    /** @type {boolean} */
+    get isCaret() {},
 
-  /** @type {boolean} */
-  ReadOnlySelection.prototype.isEmpty;
+    /** @type {boolean} */
+    get isEmpty() {}
+  };
 
   /**
    * @this {!ReadOnlySelection}
@@ -142,26 +150,22 @@ editing.ReadOnlySelection = (function() {
         this.anchorOffset_ : this.focusOffset_;
   }
 
-  Object.defineProperties(ReadOnlySelection.prototype, {
-    anchorNode: {get: function () { return this.anchorNode_; }},
-    anchorNode_: {writable: true},
-    anchorOffset: {get: function () { return this.anchorOffset_; }},
-    anchorOffset_: {writable: true},
-    direction: {get: function() { return this.direction_; }},
-    direction_: {writable: true},
-    endContainer: {get: endContainer},
-    endOffset: {get: endOffset},
-    focusNode: {get: function () { return this.focusNode_; }},
-    focusNode_: {writable: true},
-    focusOffset: {get: function () { return this.focusOffset_; }},
-    focusOffset_: {writable: true},
-    isCaret: {get: isCaret},
-    isEditable: {get: isEditable},
-    isEmpty: {get: isEmpty},
-    isNormalized: {get: isNormalized},
-    isRange: {get: isRange},
-    startContainer: {get: startContainer},
-    startOffset: {get: startOffset},
-  });
+  ReadOnlySelection.prototype = {
+    get anchorNode() { return this.anchorNode_; },
+    get anchorOffset() { return this.anchorOffset_; },
+    get direction() { return this.direction_; },
+    get endContainer() { return endContainer.call(this); },
+    get endOffset() { return endOffset.call(this); },
+    get focusNode() { return this.focusNode_; },
+    get focusOffset() { return this.focusOffset_; },
+    get isCaret() { return isCaret.call(this); },
+    get isEditable() { return isEditable.call(this); },
+    get isEmpty() { return isEmpty.call(this); },
+    get isNormalized() { return isNormalized.call(this); },
+    get isRange() { return isRange.call(this); },
+    get startContainer() { return startContainer.call(this); },
+    get startOffset() { return startOffset.call(this); },
+  };
+  Object.seal(ReadOnlySelection.prototype);
   return ReadOnlySelection;
 })();

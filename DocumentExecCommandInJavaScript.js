@@ -29,7 +29,7 @@ installClass('Document', function(documentPrototype) {
     return editor.execCommand(commandName, userInterface, commandValue);
   }
 
-  Object.defineProperties(documentPrototype, {
-    execCommandInJavaScript: {value: execCommandInJavaScript},
-  });
+  // For ease of debugging, we use named function |execCommandInJavaScript| to
+  // see it in stack trace.
+  documentPrototype['execCommandInJavaScript'] = execCommandInJavaScript;
 });
