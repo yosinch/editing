@@ -13,14 +13,6 @@ window['editing']= {};
 
   /**
    * @param {string} name
-   * @param {*} value
-   */
-  function define(name, value) {
-    Object.defineProperty(editing, name, {value: value});
-  }
-
-  /**
-   * @param {string} name
    * @param {!CommandFunction} commandFunction
    */
   function defineCommand(name, commandFunction) {
@@ -62,7 +54,6 @@ window['editing']= {};
   }
 
   Object.defineProperties(editing, {
-    define: {value: define},
     defineCommand: {value: defineCommand},
     isContentEditable: {value: isContentEditable},
     lookupCommand: {value: lookupCommand}
