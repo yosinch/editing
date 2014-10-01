@@ -6,8 +6,8 @@ editing.defineCommand('Unlink', (function() {
 
   'use strict';
 
-  /** @const */ var isElement = editing.nodes.isElement;
-  /** @const */ var isPhrasing = editing.nodes.isPhrasing;
+  /** @const */ var isElement = editing.dom.isElement;
+  /** @const */ var isPhrasing = editing.dom.isPhrasing;
 
   /**
    * @param {!editing.EditingContext} context
@@ -54,7 +54,7 @@ editing.defineCommand('Unlink', (function() {
             context.appendChild(lastElement, child);
             return;
           }
-          if (editing.nodes.isWhitespaceNode(child)) {
+          if (editing.dom.isWhitespaceNode(child)) {
             // We don't need to wrap whitespaces with style element.
             // See createLink.style.7
             return;

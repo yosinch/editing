@@ -11,7 +11,7 @@ function dumpNodes(nodes) {
     sink += delimiter;
     if (node === null)
       sink += "(null)";
-    else if (editing.nodes.isText(node))
+    else if (editing.dom.isText(node))
       sink += node.nodeValue;
     else
       sink += node.nodeName;
@@ -29,31 +29,31 @@ testCaseWithSample('nodes.ancestorsWhile.Nodes',
     var node = selection.anchorNode;
     expectEq('U,I,B,A', function() {
         return dumpNodes(
-          editing.nodes.ancestorsWhile(node, function(node) {
+          editing.dom.ancestorsWhile(node, function(node) {
             return node.nodeName !== 'DIV';
           }));
       });
     expectEq('U,I,B', function() {
         return dumpNodes(
-          editing.nodes.ancestorsWhile(node, function(node) {
+          editing.dom.ancestorsWhile(node, function(node) {
             return node.nodeName !== 'A';
           }));
       });
     expectEq('U,I', function() {
         return dumpNodes(
-          editing.nodes.ancestorsWhile(node, function(node) {
+          editing.dom.ancestorsWhile(node, function(node) {
             return node.nodeName !== 'B';
           }));
       });
     expectEq('U', function() {
         return dumpNodes(
-          editing.nodes.ancestorsWhile(node, function(node) {
+          editing.dom.ancestorsWhile(node, function(node) {
             return node.nodeName !== 'I';
           }));
       });
     expectEq('', function() {
         return dumpNodes(
-          editing.nodes.ancestorsWhile(node, function(node) {
+          editing.dom.ancestorsWhile(node, function(node) {
             return node.nodeName !== 'U';
           }));
       });
@@ -68,7 +68,7 @@ testCaseWithSample('nodes.canContainRangeEndPoint.NodesText',
   function(context) {
     function canContainRangeEndPoint(tagName) {
       var element = context.createElement(tagName);
-      return editing.nodes.canContainRangeEndPoint(element);
+      return editing.dom.canContainRangeEndPoint(element);
     }
 
     expectTrue(function() { return canContainRangeEndPoint('a'); });
@@ -87,7 +87,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesText',
   '<p contenteditable>^abcd|</p>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('abcd', function() { return dumpNodes(nodes); });
 });
 
@@ -95,7 +95,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTextPartial',
   '<p contenteditable>ab^c|d</p>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('c', function() { return dumpNodes(nodes); });
   });
 
@@ -103,7 +103,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree',
   '<p contenteditable><e1><e2>e2Before<e3>^e3</e3>e2After</e2>e1After|</e1></p>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('e3,e2After,e1After', function() { return dumpNodes(nodes); });
   });
 
@@ -111,7 +111,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree2',
   '<p contenteditable>^abcd<b>efg</b>|</p>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('abcd,B,efg', function() { return dumpNodes(nodes); });
   });
 
@@ -119,7 +119,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree3',
   '<p contenteditable>ab^cd<b>efg</b>|</p>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('cd,B,efg', function() { return dumpNodes(nodes); });
   });
 
@@ -127,7 +127,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTree4',
   '<p contenteditable><e1><e2>e2Before<e3>^e3</e3>e2After</e2><e4>e4|</e4></e1></p>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('e3,e2After,E4,e4', function() { return dumpNodes(nodes); });
   });
 
@@ -135,7 +135,7 @@ testCaseWithSample('nodes.computeSelectedNodes.Nodes.Tree.Empty',
   '<div contenteditable><span>foo^</span><span>|bar</span></div>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('', function() { return dumpNodes(nodes); });
   });
 
@@ -143,7 +143,7 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTreeUL',
   '<div contenteditable>^<ul><li>one</li><li>two</li></ul>|</div>',
   function(context, selection) {
     var normalizedSelection = context.normalizeSelection(selection);
-    var nodes = editing.nodes.computeSelectedNodes(normalizedSelection);
+    var nodes = editing.dom.computeSelectedNodes(normalizedSelection);
     expectEq('UL,LI,one,LI,two', function() { return dumpNodes(nodes); });
   });
 
@@ -152,14 +152,14 @@ testCaseWithSample('nodes.computeSelectedNodes.NodesTreeUL',
 //
 testCaseWithSample('nodes.isEditable', '', function(context, selection) {
   var elementA = context.createElement('a');
-  expectFalse(function () { return editing.nodes.isEditable(elementA); });
+  expectFalse(function () { return editing.dom.isEditable(elementA); });
 
   var elementB = context.createElement('b');
   context.appendChild(elementA, elementB);
   context.setAttribute(elementA, 'contentEditable', 'true');
-  expectTrue(function () { return editing.nodes.isContentEditable(elementA); });
-  expectFalse(function () { return editing.nodes.isEditable(elementA); });
-  expectTrue(function () { return editing.nodes.isEditable(elementB); });
+  expectTrue(function () { return editing.dom.isContentEditable(elementA); });
+  expectFalse(function () { return editing.dom.isEditable(elementA); });
+  expectTrue(function () { return editing.dom.isEditable(elementB); });
 });
 
 //
@@ -168,8 +168,8 @@ testCaseWithSample('nodes.isEditable', '', function(context, selection) {
 testCaseWithSample('nodes.isInteractive', '', function(context, selection) {
   var elementA = context.createElement('a');
   var elementB = context.createElement('b');
-  expectTrue(function () { return editing.nodes.isInteractive(elementA); });
-  expectFalse(function () { return editing.nodes.isInteractive(elementB); });
+  expectTrue(function () { return editing.dom.isInteractive(elementA); });
+  expectFalse(function () { return editing.dom.isInteractive(elementB); });
 });
 
 //
@@ -180,10 +180,10 @@ testCaseWithSample('nodes.isPhrasing', '', function(context, selection) {
   var elementB = context.createElement('b');
   var elementDiv = context.createElement('div');
   var elementH1 = context.createElement('h1');
-  expectTrue(function () { return editing.nodes.isPhrasing(elementA); });
-  expectTrue(function () { return editing.nodes.isPhrasing(elementB); });
-  expectFalse(function () { return editing.nodes.isPhrasing(elementDiv); });
-  expectFalse(function () { return editing.nodes.isPhrasing(elementH1); });
+  expectTrue(function () { return editing.dom.isPhrasing(elementA); });
+  expectTrue(function () { return editing.dom.isPhrasing(elementB); });
+  expectFalse(function () { return editing.dom.isPhrasing(elementDiv); });
+  expectFalse(function () { return editing.dom.isPhrasing(elementH1); });
 });
 
 //
@@ -193,7 +193,7 @@ testCaseWithSample('nodes.isWhitespaceNode', '', function(context, selection) {
   var elementA = context.createElement('a');
   var textB = context.createTextNode('b');
   var textC = context.createTextNode('  ');
-  expectFalse(function () { return editing.nodes.isWhitespaceNode(elementA); });
-  expectFalse(function () { return editing.nodes.isWhitespaceNode(textB); });
-  expectTrue(function () { return editing.nodes.isWhitespaceNode(textC); });
+  expectFalse(function () { return editing.dom.isWhitespaceNode(elementA); });
+  expectFalse(function () { return editing.dom.isWhitespaceNode(textB); });
+  expectTrue(function () { return editing.dom.isWhitespaceNode(textC); });
 });

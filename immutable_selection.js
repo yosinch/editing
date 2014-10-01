@@ -95,12 +95,12 @@ editing.ImmutableSelection = (function() {
   function isEditable() {
     if (!this.anchorNode_)
       return false;
-    if (editing.nodes.isElement(this.anchorNode_))
-      return editing.nodes.isContentEditable(this.anchorNode_);
+    if (editing.dom.isElement(this.anchorNode_))
+      return editing.dom.isContentEditable(this.anchorNode_);
     var parentNode = this.anchorNode_.parentNode;
     if (!parentNode)
       return false;
-    return editing.nodes.isContentEditable(parentNode);
+    return editing.dom.isContentEditable(parentNode);
   }
 
   /**
@@ -118,8 +118,8 @@ editing.ImmutableSelection = (function() {
   function isNormalized() {
     if (this.isEmpty)
       return true;
-    return !editing.nodes.isText(this.anchorNode_) &&
-           !editing.nodes.isText(this.focusNode_);
+    return !editing.dom.isText(this.anchorNode_) &&
+           !editing.dom.isText(this.focusNode_);
   }
 
   /**

@@ -20,7 +20,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    */
   function isPhrasingElement(node) {
     return node.nodeType === Node.ELEMENT_NODE &&
-      editing.nodes.isPhrasing(node);
+      editing.dom.isPhrasing(node);
   }
 
   /**
@@ -115,7 +115,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    */
   function isList(node) {
     var name = node.nodeName;
-    return editing.nodes.isElement(node) && (name === 'OL' || name === 'UL');
+    return editing.dom.isElement(node) && (name === 'OL' || name === 'UL');
   }
 
   /**
@@ -183,7 +183,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   function firstSelfOrAncestor(node, predicate) {
     if (predicate(node))
       return node;
-    var ancestors = editing.nodes.ancestorsWhile(node, function(node) {
+    var ancestors = editing.dom.ancestorsWhile(node, function(node) {
       return !predicate(node)
     });
     if (!ancestors.length)
@@ -258,7 +258,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (listItemNode.hasChildNodes()) {
         var childNodes = listItemNode.childNodes;
         isListItemLastChildText =
-          editing.nodes.isText(childNodes[childNodes.length - 1]);
+          editing.dom.isText(childNodes[childNodes.length - 1]);
       }
       insertChildNodesBefore(context,
                              /** @type {!Node} */(secondList.parentNode),
@@ -271,7 +271,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
       context.removeChild(listItemNode.parentNode, listItemNode);
       if (!firstList.childNodes.length && firstList.previousSibling &&
-          editing.nodes.isText(firstList.previousSibling)) {
+          editing.dom.isText(firstList.previousSibling)) {
         var br = context.createElement('BR');
         context.insertBefore(firstList.parentNode, br, firstList);
       }
@@ -323,7 +323,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    */
   function wrapByOrderedList(context, selection) {
     var effectiveNodes = context.setUpEffectiveNodes(selection, function(node) {
-      return editing.nodes.isText(node) || isPhrasingElement(node);
+      return editing.dom.isText(node) || isPhrasingElement(node);
     });
 
     // The outermost node is a container node or null. Remove this.
@@ -334,7 +334,7 @@ editing.defineCommand('InsertOrderedList', (function() {
     if (!effectiveNodes.length) {
       var childNodes = selection.startContainer.childNodes;
       if (Array.prototype.every.call(childNodes, function(node) {
-        return editing.nodes.isText(node) || isPhrasingElement(node);
+        return editing.dom.isText(node) || isPhrasingElement(node);
       })) {
         effectiveNodes = Array.prototype.map.call(childNodes, function(node) {
           return node;
@@ -346,14 +346,14 @@ editing.defineCommand('InsertOrderedList', (function() {
 
     // Extend the heading text nodes.
     for (var sibling = effectiveNodes[0].previousSibling;
-         sibling && editing.nodes.isText(sibling);
+         sibling && editing.dom.isText(sibling);
          sibling = sibling.previousSibling) {
       effectiveNodes.unshift(sibling);
     }
 
     // Extend the tailing text nodes.
     for (var sibling = effectiveNodes[effectiveNodes.length - 1].nextSibling;
-         sibling && editing.nodes.isText(sibling);
+         sibling && editing.dom.isText(sibling);
          sibling = sibling.nextSibling) {
       effectiveNodes.push(sibling);
     }
@@ -371,9 +371,9 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
       var lastGroup =
         listItemCandidateGroups[listItemCandidateGroups.length - 1];
-      if (editing.nodes.isText(node)) {
+      if (editing.dom.isText(node)) {
         var lastNode = lastGroup[lastGroup.length - 1];
-        if (editing.nodes.isText(lastNode) &&
+        if (editing.dom.isText(lastNode) &&
             lastNode === node.previousSibling) {
           lastGroup.push(node);
           return;
@@ -414,9 +414,9 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (!nodes.length)
         return false;
 
-      if (editing.nodes.isText(nodes[0])) {
+      if (editing.dom.isText(nodes[0])) {
         console.assert(Array.prototype.every.call(nodes, function(node) {
-          return editing.nodes.isText(node);
+          return editing.dom.isText(node);
         }));
       }
 
@@ -522,7 +522,7 @@ editing.defineCommand('InsertOrderedList', (function() {
             context.insertAfter(newList.parentNode, child, insertAfter);
             insertAfter = node;
             // Insert <br> after the text node. See w3c.76.
-            if (node && editing.nodes.isText(node)) {
+            if (node && editing.dom.isText(node)) {
               br = context.createElement('BR');
               context.insertAfter(newList.parentNode, br, insertAfter);
               insertAfter = br;

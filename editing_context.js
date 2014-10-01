@@ -318,7 +318,7 @@ editing.EditingContext = (function() {
      * @param {number} offset
      */
     function splitIfNeeded(context, node, offset) {
-      if (!node || !editing.nodes.isText(node) || !offset)
+      if (!node || !editing.dom.isText(node) || !offset)
         return;
       var textNode = /** @type {!Text} */(node);
       var text = node.nodeValue;
@@ -364,7 +364,7 @@ editing.EditingContext = (function() {
       // Split text node for using container and offset in container as
       // boundary points.
       var containerNode = textNode.parentNode;
-      var nodeIndex = editing.nodes.nodeIndex(textNode);
+      var nodeIndex = editing.dom.nodeIndex(textNode);
       var newTextNode = context.splitText(textNode, offset);
       if (anchorNode === containerNode) {
         if (anchorOffset >= nodeIndex)
@@ -387,10 +387,10 @@ editing.EditingContext = (function() {
      * @param {number} offset
      */
     function useContainerIfPossible(node, offset) {
-      if (!node || !editing.nodes.isText(node))
+      if (!node || !editing.dom.isText(node))
         return;
       var container = node.parentNode;
-      var offsetInContainer = editing.nodes.nodeIndex(node);
+      var offsetInContainer = editing.dom.nodeIndex(node);
       if (anchorNode === node && anchorOffset == offset) {
         anchorNode = container;
         anchorOffset = offset ? offsetInContainer + 1 : offsetInContainer;
@@ -471,7 +471,7 @@ editing.EditingContext = (function() {
    * @param {string} propertyName
    */
   function removeStyle(element, propertyName) {
-    console.assert(editing.nodes.isElement(element));
+    console.assert(editing.dom.isElement(element));
     this.setStyle(element, propertyName, '');
   }
 
@@ -482,7 +482,7 @@ editing.EditingContext = (function() {
    * @param {string} newValue
    */
   function setAttribute(element, name, newValue) {
-    console.assert(editing.nodes.isElement(element),
+    console.assert(editing.dom.isElement(element),
                    'Node ' + element + ' must be an Element.');
     ASSERT_EDITING_IN_PROGRESS(this);
     var operation = new editing.SetAttribute(element, name, newValue);
@@ -510,19 +510,19 @@ editing.EditingContext = (function() {
                       anchorNode + ' parent=' + anchorNode.parentNode);
     }
     if (anchorOffset < 0 ||
-        anchorOffset > editing.nodes.maxOffset(anchorNode)) {
+        anchorOffset > editing.dom.maxOffset(anchorNode)) {
       throw new Error('Invalid anchor offset ' + anchorOffset +
                       ' on ' + anchorNode +
-                      ' max=' + editing.nodes.maxOffset(anchorNode));
+                      ' max=' + editing.dom.maxOffset(anchorNode));
     }
     if (!this.inDocument(focusNode)) {
       throw new Error('Can not set focus node not in document ' +
                       focusNode);
     }
-    if (focusOffset < 0 || focusOffset > editing.nodes.maxOffset(focusNode)) {
+    if (focusOffset < 0 || focusOffset > editing.dom.maxOffset(focusNode)) {
       throw new Error('Invalid focus offset ' + focusOffset +
                       ' on ' + focusNode +
-                      ' max=' + editing.nodes.maxOffset(focusNode));
+                      ' max=' + editing.dom.maxOffset(focusNode));
     }
     this.endingSelection_ = selection;
   }
@@ -534,7 +534,7 @@ editing.EditingContext = (function() {
    * @param {string} newValue
    */
   function setStyle(element, propertyName, newValue) {
-    console.assert(editing.nodes.isElement(element));
+    console.assert(editing.dom.isElement(element));
     var operation = this.styledElements_.get(element);
     if (!operation) {
       operation = new editing.SetStyle(element);
@@ -572,7 +572,7 @@ editing.EditingContext = (function() {
    */
   function setUpEffectiveNodesWithSplitter(selection, predicate, splitter) {
     console.assert(selection.isNormalized);
-    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
+    var selectedNodes = editing.dom.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return [null];
 
@@ -582,17 +582,17 @@ editing.EditingContext = (function() {
     var startNode = selectedNodes[0];
     var needSplits = [];
     var runner = startNode;
-    if (editing.nodes.isText(runner)) {
+    if (editing.dom.isText(runner)) {
       if (runner.previousSibling && runner.parentNode &&
-          editing.nodes.isPhrasing(runner.parentNode)) {
+          editing.dom.isPhrasing(runner.parentNode)) {
         needSplits.push(runner);
       }
       runner = runner.parentNode;
     }
     while (runner && predicate(runner)) {
       if ((needSplits.length || runner.previousSibling) && runner.parentNode &&
-          editing.nodes.isElement(runner.parentNode) &&
-          editing.nodes.isPhrasing(runner.parentNode)) {
+          editing.dom.isElement(runner.parentNode) &&
+          editing.dom.isPhrasing(runner.parentNode)) {
         needSplits.push(runner);
       }
       runner = runner.parentNode;
@@ -723,12 +723,12 @@ editing.EditingContext = (function() {
    * and after |refNode| to new element.
    */
   function splitTree(element, refNode) {
-    console.assert(editing.nodes.isDescendantOf(refNode, element),
+    console.assert(editing.dom.isDescendantOf(refNode, element),
                   'refNode', refNode,
                   'must be descendant of treeNdoe', element);
     var lastNode = refNode;
     for (var runner = refNode.parentNode;
-         runner && runner !== element && editing.nodes.isElement(runner);
+         runner && runner !== element && editing.dom.isElement(runner);
          runner = runner.parentNode) {
       lastNode = this.splitNode(/** @type {!Element} */(runner), lastNode);
     }
@@ -748,12 +748,12 @@ editing.EditingContext = (function() {
    * to new element.
    */
   function splitTreeLeft(element, refNode) {
-    console.assert(editing.nodes.isDescendantOf(refNode, element),
+    console.assert(editing.dom.isDescendantOf(refNode, element),
                   'refNode', refNode,
                   'must be descendant of treeNdoe', element);
     var lastNode = refNode;
     for (var runner = refNode.parentNode;
-         runner && runner !== element && editing.nodes.isElement(runner);
+         runner && runner !== element && editing.dom.isElement(runner);
          runner = runner.parentNode) {
       this.splitNodeLeft(/** @type {!Element} */(runner), lastNode);
       lastNode = runner;

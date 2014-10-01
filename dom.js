@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-editing.nodes = (function() {
+editing.dom = (function() {
   'use strict';
 
   /**
@@ -362,7 +362,7 @@ editing.nodes = (function() {
     return null;
   }
 
-  var nodes = {
+  var dom = {
     ancestorsWhile: ancestorsWhile,
     canContainRangeEndPoint: canContainRangeEndPoint,
     commonAncestor: commonAncestor,
@@ -386,6 +386,6 @@ editing.nodes = (function() {
     previousNode: previousNode,
     previousNodeSkippingChildren: previousNodeSkippingChildren,
   };
-  Object.freeze(nodes);
-  return nodes;
+  Object.freeze(dom);
+  return dom;
 })();

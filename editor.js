@@ -170,11 +170,11 @@ editing.Editor = (function() {
       if (!container1 || !container2)
         return false;
       if (!offset1 && container1.nodeType !== Node.ELEMENT_NODE) {
-        offset1 = editing.nodes.nodeIndex(container1);
+        offset1 = editing.dom.nodeIndex(container1);
         container1 = container1.parentNode;
       }
       if (!offset2 && container2.nodeType !== Node.ELEMENT_NODE) {
-        offset2 = editing.nodes.nodeIndex(container2);
+        offset2 = editing.dom.nodeIndex(container2);
         container2 = container2.parentNode;
       }
       return container1 === container2 && offset1 === offset2;
@@ -221,7 +221,7 @@ editing.Editor = (function() {
     // Chrome throws an IndexError for Selection.extend() when specifying to
     // middle or beyond trailing whitespaces, http://crbug.com/413156
     // Following code is work around of that.
-    if (!editing.nodes.isText(selection.focusNode)) {
+    if (!editing.dom.isText(selection.focusNode)) {
       domSelection.extend(selection.focusNode, selection.focusOffset);
       return;
     }

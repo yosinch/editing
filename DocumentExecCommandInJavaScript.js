@@ -7,10 +7,10 @@ installClass('Document', function(documentPrototype) {
 
   <include src="editing.js">
   <include src="content_model.js">
+  <include src="dom.js">
   <include src="editing_context.js">
   <include src="editing_style.js">
   <include src="editor.js">
-  <include src="nodes.js">
   <include src="operations.js">
   <include src="immutable_selection.js">
   <include src="selection_tracker.js">

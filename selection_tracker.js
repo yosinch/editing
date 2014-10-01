@@ -45,9 +45,9 @@ editing.SelectionTracker = (function() {
    * @param {!StartOrEnd} startOrEnd
    */
   function TrackablePosition(node, offset, startOrEnd) {
-    console.assert(editing.nodes.isElement(node), 'node=' + node);
+    console.assert(editing.dom.isElement(node), 'node=' + node);
     console.assert(offset >= 0, node, offset);
-    var maxOffset = editing.nodes.maxOffset(node);
+    var maxOffset = editing.dom.maxOffset(node);
     console.assert(offset <= maxOffset, node, offset);
     /** @type {TrackingType} */
     var type;
@@ -90,12 +90,12 @@ editing.SelectionTracker = (function() {
       switch (this.type_) {
         case TrackingType.AFTER_NODE:
           return new NodeAndOffset(node.parentNode,
-                                   editing.nodes.nodeIndex(node) + 1);
+                                   editing.dom.nodeIndex(node) + 1);
         case TrackingType.BEFORE_ALL_CHILDREN:
           return new NodeAndOffset(node, 0);
         case TrackingType.NODE:
           return new NodeAndOffset(node.parentNode,
-                                   editing.nodes.nodeIndex(node));
+                                   editing.dom.nodeIndex(node));
         default:
           throw new Error('Bad TrackablePosition.type ' + this.type_);
       }
@@ -107,13 +107,13 @@ editing.SelectionTracker = (function() {
      */
     willRemoveNode: function(node) {
       if (this.node_ !== node &&
-          !editing.nodes.isDescendantOf(this.node_, node)) {
+          !editing.dom.isDescendantOf(this.node_, node)) {
         return;
       }
       var oldNode = this.node_;
       var oldType = this.type_;
       this.type_ = TrackingType.AFTER_NODE;
-      var refNode = editing.nodes.previousNode(oldNode);
+      var refNode = editing.dom.previousNode(oldNode);
       if (!refNode) {
         console.log('oldNode', oldNode, 'have no previous node.');
         throw new Error('We should not remove first node.');
@@ -135,7 +135,7 @@ editing.SelectionTracker = (function() {
       switch (oldType) {
         case TrackingType.AFTER_NODE:
           this.type_ = TrackingType.NODE;
-          refNode = editing.nodes.nextNodeSkippingChildren(oldNode);
+          refNode = editing.dom.nextNodeSkippingChildren(oldNode);
           if (!refNode) {
             this.type_ = TrackingType.AFTER_NODE;
             refNode = oldNode.lastChild;

@@ -3,95 +3,95 @@
 // found in the LICENSE file.
 
 /** @type {!Object} */
-editing.nodes;
+editing.dom;
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.canContainRangeEndPoint = function(node) {};
+editing.dom.canContainRangeEndPoint = function(node) {};
 
 /**
  * @param {!editing.ImmutableSelection} selection
  * @return {!Array.<!Node>}
  */
-editing.nodes.computeSelectedNodes = function(selection) {};
+editing.dom.computeSelectedNodes = function(selection) {};
 
 /**
  * @param {!Node} node
  * @param {Node} other
  * @return {boolean}
  */
-editing.nodes.isDescendantOf = function(node, other) {};
+editing.dom.isDescendantOf = function(node, other) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isEditable = function(node) {};
+editing.dom.isEditable = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isElement = function(node) {};
+editing.dom.isElement = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isInteractive = function(node) {};
+editing.dom.isInteractive = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isPhrasing = function(node) {};
+editing.dom.isPhrasing = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isText = function(node) {};
+editing.dom.isText = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isVisibleNode = function(node) {};
+editing.dom.isVisibleNode = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {boolean}
  */
-editing.nodes.isWhitespaceNode = function(node) {};
+editing.dom.isWhitespaceNode = function(node) {};
 
 /**
  * @param {Node} node
  * @return {Node}
  */
-editing.nodes.lastWithIn = function(node) {};
+editing.dom.lastWithIn = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {number}
  */
-editing.nodes.maxOffset = function(node) {};
+editing.dom.maxOffset = function(node) {};
 
 /**
  * @param {Node} node
  * @return {Node}
  */
-editing.nodes.nextNodeSkippingChildren = function(node) {};
+editing.dom.nextNodeSkippingChildren = function(node) {};
 
 /**
  * @param {!Node} node
  * @return {number}
  */
-editing.nodes.nodeIndex = function(node) {};
+editing.dom.nodeIndex = function(node) {};
 
 /**
  * @param {Node} node
  * @return {Node}
  */
-editing.nodes.previousNode = function(node) {};
+editing.dom.previousNode = function(node) {};

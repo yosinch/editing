@@ -80,7 +80,7 @@ testing.define('serializeNode', (function() {
     }
 
     function visit(node) {
-      if (editing.nodes.isText(node)) {
+      if (editing.dom.isText(node)) {
         var text = node.nodeValue;
         if (!selection)
           return text;
@@ -105,7 +105,7 @@ testing.define('serializeNode', (function() {
         }
         return text;
       }
-      if (!editing.nodes.isElement(node)) {
+      if (!editing.dom.isElement(node)) {
         // To support |Document| node, we iterate over child nodes.
         var sink = '';
         for (var child = node.firstChild; child; child = child.nextSibling) {
@@ -137,8 +137,8 @@ testing.define('serializeNode', (function() {
         sink += marker(node, offset);
         sink += visit(child);
         var nextSibling = child.nextSibling;
-        if (visibleTextNode && editing.nodes.isText(child) && nextSibling &&
-            editing.nodes.isText(nextSibling)) {
+        if (visibleTextNode && editing.dom.isText(child) && nextSibling &&
+            editing.dom.isText(nextSibling)) {
             sink += '_';
         }
         child = nextSibling;

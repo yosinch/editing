@@ -21,9 +21,9 @@ editing.defineCommand('removeFormat', (function() {
   function computeHighestStyleElement(startNode) {
     var styleElement = null;
     for (var runner = startNode; runner; runner = runner.parentNode) {
-      if (!editing.nodes.isEditable(runner))
+      if (!editing.dom.isEditable(runner))
         break;
-      if (!editing.nodes.isElement(runner))
+      if (!editing.dom.isElement(runner))
         continue;
       var element = /** @type {!Element} */(runner);
       if (isStyleElement(element))
@@ -33,7 +33,7 @@ editing.defineCommand('removeFormat', (function() {
   }
 
   function isStyleElement(node) {
-    if (!editing.nodes.isElement(node))
+    if (!editing.dom.isElement(node))
       return false;
     var element = /** @type {!Element} */(node);
     if (TAG_NAMES_TO_REMOVE.has(element.nodeName))
@@ -51,7 +51,7 @@ editing.defineCommand('removeFormat', (function() {
    * @return {!Array.<!Node>}
    */
   function prepareForStyleChange(context, selection) {
-    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
+    var selectedNodes = editing.dom.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return [];
 
@@ -76,7 +76,7 @@ editing.defineCommand('removeFormat', (function() {
     var needSplit = false;
     var splitable = null;
     for (var runner = startNode; runner; runner = runner.parentNode) {
-      if (!editing.nodes.isPhrasing(startNode))
+      if (!editing.dom.isPhrasing(startNode))
         break;
       if (isStyleElement(runner))
         splitable = runner;
@@ -98,10 +98,10 @@ editing.defineCommand('removeFormat', (function() {
    * @return {!Node}
    */
   function wrapWithStyleSpanIfNeeded(context, node) {
-    if (!editing.nodes.isElement(node))
+    if (!editing.dom.isElement(node))
       return node;
     var element = /** @type {!Element} */(node);
-    if (editing.nodes.isPhrasing(element))
+    if (editing.dom.isPhrasing(element))
       return element;
     var style = element.getAttribute('style');
     if (!style)

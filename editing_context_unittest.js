@@ -8,7 +8,7 @@ function dumpNodes(nodes) {
   var sink = ''
   var delimiter = '';
   for (var node of nodes) {
-    if (editing.nodes.isText(node))
+    if (editing.dom.isText(node))
       sink += delimiter + node.nodeValue;
     else
       sink += delimiter + node.nodeName;
@@ -182,7 +182,7 @@ testCaseWithSample('context.setUpEffectiveNodes.3_3',
       var normalizedSelection = context.normalizeSelection(selection);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
-          return editing.nodes.isPhrasing(node);
+          return editing.dom.isPhrasing(node);
         });
       expectEq('P,SPAN,456', function() {
         return dumpNodes(nodes)
@@ -262,7 +262,7 @@ testCaseWithSample('context.setUpEffectiveNodes.8',
       var normalizedSelection = context.normalizeSelection(selection);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
-          return editing.nodes.isPhrasing(node);
+          return editing.dom.isPhrasing(node);
         });
       expectEq('P,bar', function() { return dumpNodes(nodes) });
       var pContents = context.document.body.firstChild;
@@ -283,7 +283,7 @@ testCaseWithSample('context.setUpEffectiveNodes.9',
       var normalizedSelection = context.normalizeSelection(selection);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
-          return editing.nodes.isPhrasing(node);
+          return editing.dom.isPhrasing(node);
         });
       expectEq('P,A,B,barbaz', function() {
         return dumpNodes(nodes)
@@ -344,7 +344,7 @@ testCaseWithSample('context.setUpEffectiveNodes.Junk',
       var normalizedSelection = context.normalizeSelection(selection);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
           function(node) {
-            return node.nodeName === 'A' || editing.nodes.isPhrasing(node);
+            return node.nodeName === 'A' || editing.dom.isPhrasing(node);
           });
       expectEq('P,A,B,bar', function() {
         return dumpNodes(nodes)

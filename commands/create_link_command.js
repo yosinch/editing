@@ -5,10 +5,10 @@
 editing.defineCommand('createLink', (function() {
   'use strict';
 
-  /** @const */ var isDescendantOf = editing.nodes.isDescendantOf;
-  /** @const */ var isEditable = editing.nodes.isEditable;
-  /** @const */ var isElement = editing.nodes.isElement;
-  /** @const */ var isPhrasing = editing.nodes.isPhrasing;
+  /** @const */ var isDescendantOf = editing.dom.isDescendantOf;
+  /** @const */ var isEditable = editing.dom.isEditable;
+  /** @const */ var isElement = editing.dom.isElement;
+  /** @const */ var isPhrasing = editing.dom.isPhrasing;
 
   /**
    * @param {Node} node
@@ -69,7 +69,7 @@ editing.defineCommand('createLink', (function() {
             context.appendChild(lastElement, child);
             return;
           }
-          if (editing.nodes.isWhitespaceNode(child)) {
+          if (editing.dom.isWhitespaceNode(child)) {
             // We don't need to wrap whitespaces with style element.
             // See createLink.style.7
             return;
@@ -115,7 +115,7 @@ editing.defineCommand('createLink', (function() {
    * @param {!Node} anchorPhraseNode
    */
   function insertNewAnchorElement(context, url, anchorPhraseNode) {
-    if (editing.nodes.isWhitespaceNode(anchorPhraseNode))
+    if (editing.dom.isWhitespaceNode(anchorPhraseNode))
       return null;
     var anchorElement = context.createElement('a');
     setAnchorUrl(context, anchorElement, url);
@@ -408,7 +408,7 @@ editing.defineCommand('createLink', (function() {
      */
     function wrapByAnchor(node) {
       if (!currentAnchorElement) {
-        if (!editing.nodes.isVisibleNode(node)) {
+        if (!editing.dom.isVisibleNode(node)) {
           // We don't want to have leading whitespaces in anchor element.
           return;
         }
@@ -451,7 +451,7 @@ editing.defineCommand('createLink', (function() {
     var selection = context.normalizeSelection(context.startingSelection);
     // TODO(yosin) We should not use |computeSelectedNodes()| to check
     // whether selection contains nodes or not. See createLink.EndTag.
-    var selectedNodes = editing.nodes.computeSelectedNodes(selection);
+    var selectedNodes = editing.dom.computeSelectedNodes(selection);
     if (!selectedNodes.length)
       return createLinkForCaret(context, urlValue);
     // TODO(yosin) We should reorder content elements for caret, once Chrome
@@ -478,7 +478,7 @@ editing.defineCommand('createLink', (function() {
     }
 
     /** @const @type {Node} */
-    var endNode = editing.nodes.nextNodeSkippingChildren(lastNode);
+    var endNode = editing.dom.nextNodeSkippingChildren(lastNode);
     var atomicElements = [];
     effectiveNodes.every(function(currentNode) {
       if (currentNode === currentAnchorElement)
@@ -581,13 +581,13 @@ editing.defineCommand('createLink', (function() {
         return !handleLastNode;
       }
 
-      if (editing.nodes.isInteractive(currentNode)) {
+      if (editing.dom.isInteractive(currentNode)) {
         processPendingContents();
         return true;
       }
 
       if (currentNode.hasChildNodes()) {
-        if (editing.nodes.canContainRangeEndPoint(currentNode)) {
+        if (editing.dom.canContainRangeEndPoint(currentNode)) {
           pendingContainers.push(currentNode);
         } else {
           if (currentAnchorElement)
