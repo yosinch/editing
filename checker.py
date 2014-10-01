@@ -48,7 +48,7 @@ CLOSURE_OPTIONS = [
     '--compilation_level=SIMPLE',
     '--formatting=PRETTY_PRINT',
     '--language_in=ECMASCRIPT6_STRICT',
-    '--language_out=ECMASCRIPT3',
+    '--language_out=ECMASCRIPT5',
     '--summary_detail_level=3',
     '--warning_level=VERBOSE',
 ];
