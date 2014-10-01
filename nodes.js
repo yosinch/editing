@@ -243,7 +243,7 @@ editing.nodes = (function() {
     if (!isText(node))
       return false;
     // Since, JS "\s" matches Unicode space characters, we don't use it.
-    // Following Regex comes from HTML5 spec.
+    // Following regexp comes from HTML5 spec.
     // See https://github.com/yosin-chromium/editing/issues/65 for details.
     return /^[\r\n\t\f ]*$/.test(node.nodeValue);
   }
