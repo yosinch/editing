@@ -16,11 +16,11 @@ editing.EditingContext = (function() {
    * @final
    * @param {!editing.Editor} editor
    * @param {string} name A name for this context for error message.
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   function EditingContext(editor, name, selection) {
     console.assert(editor instanceof editing.Editor);
-    console.assert(selection instanceof editing.ReadOnlySelection);
+    console.assert(selection instanceof editing.ImmutableSelection);
     var document = editor.document;
 
     /** @private @type {!Document} */
@@ -29,7 +29,7 @@ editing.EditingContext = (function() {
     /** @private @type {!editing.Editor} */
     this.editor_ = editor;
 
-    /** @private @type {?editing.ReadOnlySelection} */
+    /** @private @type {?editing.ImmutableSelection} */
     this.endingSelection_ = null;
 
     /** @private @type {string} */
@@ -39,9 +39,9 @@ editing.EditingContext = (function() {
     this.operations_ = [];
 
     // We don't make ending selection as starting selection here. Because,
-    // |ReadOnlySelection| doesn't track DOM modification during command
+    // |ImmutableSelection| doesn't track DOM modification during command
     // execution.
-    /** @private @type {?editing.ReadOnlySelection} */
+    /** @private @type {?editing.ImmutableSelection} */
     this.startingSelection_ = selection;
 
     /** @private @type {!Map.<!Element, !editing.SetStyle>} */
@@ -196,7 +196,7 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!EditingContext}
-   * @return {!editing.ReadOnlySelection}
+   * @return {!editing.ImmutableSelection}
    */
   function endingSelection() {
     if (!this.endingSelection_)
@@ -301,7 +301,7 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   function normalizeSelection(selection) {
     if (selection.isEmpty)
@@ -409,7 +409,7 @@ editing.EditingContext = (function() {
     useContainerIfPossible(anchorNode, anchorOffset);
     useContainerIfPossible(focusNode, focusOffset);
 
-    return new editing.ReadOnlySelection(anchorNode, anchorOffset,
+    return new editing.ImmutableSelection(anchorNode, anchorOffset,
                                          focusNode, focusOffset,
                                          selection.direction);
   }
@@ -492,7 +492,7 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!EditingContext}
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   function setEndingSelection(selection) {
     if (this.endingSelection_)
@@ -547,7 +547,7 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    * @param {!function(!Node):boolean} predicate
    * @return {!Array.<!Node>}
    *
@@ -565,7 +565,7 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    * @param {!function(!Node):boolean} predicate
    * @param {!function(!Node, !Node): !Node} splitter
    * @return {!Array.<!Node>}
@@ -791,14 +791,14 @@ editing.EditingContext = (function() {
     createTextNode: createTextNode,
     execCommand: execCommand,
     get editor() { return this.editor_; },
-    // Selection after executing editing command. This |ReadOnlySelection| is
+    // Selection after executing editing command. This |ImmutableSelection| is
     // put into undo stack for redo operation. See also |startingSelection|
     get endingSelection() { return endingSelection.call(this); },
     get document() { return this.document_; },
     get operations() { return this.operations_; },
     get name() { return this.name_; },
     get shouldUseCSS() { return shouldUseCSS.call(this) },
-    // Selection before executing editing command. This |ReadOnlySelection| is
+    // Selection before executing editing command. This |ImmutableSelection| is
     // put into undo stack for undo operation. See also |endingSelection|
     get startingSelection() { return this.startingSelection_; },
     inDocument: inDocument,

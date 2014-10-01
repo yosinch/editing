@@ -6,7 +6,7 @@
  * @constructor
  * @final
  * @param {!editing.EditingContext} context
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  */
 editing.SelectionTracker = function(context, selection) {}
 

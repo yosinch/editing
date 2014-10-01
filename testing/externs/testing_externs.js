@@ -21,7 +21,7 @@ testing.Sample.prototype.document;
 /** @type {!function()} */
 testing.Sample.prototype.finish;
 
-/** @type {!editing.ReadOnlySelection} */
+/** @type {!editing.ImmutableSelection} */
 testing.Sample.prototype.startingSelection;
 
 /** @type {string} */

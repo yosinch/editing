@@ -47,7 +47,7 @@ editing.defineCommand('removeFormat', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    * @return {!Array.<!Node>}
    */
   function prepareForStyleChange(context, selection) {

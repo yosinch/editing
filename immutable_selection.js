@@ -9,7 +9,7 @@ editing['SelectionDirection'] = {
   FOCUS_IS_START: 'FOCUS_IS_START'
 };
 
-editing.ReadOnlySelection = (function() {
+editing.ImmutableSelection = (function() {
   'use strict';
 
   /**
@@ -21,7 +21,7 @@ editing.ReadOnlySelection = (function() {
    * @param {number} focusOffset
    * @param {editing.SelectionDirection} direction
    */
-  function ReadOnlySelection(anchorNode, anchorOffset, focusNode, focusOffset,
+  function ImmutableSelection(anchorNode, anchorOffset, focusNode, focusOffset,
                              direction) {
     /** @private @type {!Node} */
     this.anchorNode_ = anchorNode;
@@ -37,7 +37,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   // Forward declaration for closure compiler
-  ReadOnlySelection.prototype = {
+  ImmutableSelection.prototype = {
     /** @type {!Node} */
     get anchorNode() {},
 
@@ -58,7 +58,7 @@ editing.ReadOnlySelection = (function() {
   };
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {!Node}
    */
   function endContainer() {
@@ -68,7 +68,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {number}
    */
   function endOffset() {
@@ -78,7 +78,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {boolean}
    */
   function isCaret() {
@@ -89,7 +89,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {boolean}
    */
   function isEditable() {
@@ -104,7 +104,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {boolean}
    */
   function isEmpty() {
@@ -112,7 +112,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {boolean}
    */
   function isNormalized() {
@@ -123,7 +123,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {boolean}
    */
   function isRange() {
@@ -131,7 +131,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {!Node}
    */
   function startContainer() {
@@ -141,7 +141,7 @@ editing.ReadOnlySelection = (function() {
   }
 
   /**
-   * @this {!ReadOnlySelection}
+   * @this {!ImmutableSelection}
    * @return {number}
    */
   function startOffset() {
@@ -150,7 +150,7 @@ editing.ReadOnlySelection = (function() {
         this.anchorOffset_ : this.focusOffset_;
   }
 
-  ReadOnlySelection.prototype = {
+  ImmutableSelection.prototype = {
     get anchorNode() { return this.anchorNode_; },
     get anchorOffset() { return this.anchorOffset_; },
     get direction() { return this.direction_; },
@@ -166,6 +166,6 @@ editing.ReadOnlySelection = (function() {
     get startContainer() { return startContainer.call(this); },
     get startOffset() { return startOffset.call(this); },
   };
-  Object.seal(ReadOnlySelection.prototype);
-  return ReadOnlySelection;
+  Object.seal(ImmutableSelection.prototype);
+  return ImmutableSelection;
 })();

@@ -22,7 +22,7 @@ editing.Editor.getOrCreate = function(document) {};
 
 /**
  * @param {string} name
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  * @return {!editing.EditingContext}
  */
 editing.Editor.prototype.createContext = function(name, selection) {};
@@ -39,7 +39,7 @@ editing.Editor.prototype.document;
 editing.Editor.prototype.execCommand = function(commandName, opt_userInterface,
                                         opt_value) {};
 
-/** @return {!editing.ReadOnlySelection} */
+/** @return {!editing.ImmutableSelection} */
 editing.Editor.prototype.getDomSelection = function() {};
 
 /**
@@ -47,11 +47,11 @@ editing.Editor.prototype.getDomSelection = function() {};
  */
 editing.Editor.prototype.redo = function(context) {};
 
-/** @type {!editing.ReadOnlySelection} */
+/** @type {!editing.ImmutableSelection} */
 editing.Editor.prototype.selection;
 
 /**
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  */
 editing.Editor.prototype.setDomSelection = function(selection) {};
 

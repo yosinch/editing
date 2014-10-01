@@ -12,7 +12,7 @@ editing.nodes;
 editing.nodes.canContainRangeEndPoint = function(node) {};
 
 /**
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  * @return {!Array.<!Node>}
  */
 editing.nodes.computeSelectedNodes = function(selection) {};

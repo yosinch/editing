@@ -67,7 +67,7 @@ function testCaseWithSample(name, htmlText, testFunction) {
     var sample = new testing.Sample(htmlText || '^foo|');
     var editor = editing.Editor.getOrCreate(sample.document);
     var context = editor.createContext('noname', sample.startingSelection);
-    if (!(context.startingSelection instanceof editing.ReadOnlySelection))
+    if (!(context.startingSelection instanceof editing.ImmutableSelection))
       throw new Error('No startingSelection');
     if (testRunner.useTryCatch) {
       try {

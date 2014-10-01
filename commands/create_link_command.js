@@ -185,8 +185,8 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
-   * @return {!editing.ReadOnlySelection}
+   * @param {!editing.ImmutableSelection} selection
+   * @return {!editing.ImmutableSelection}
    *
    * Reorder A element which contents is phrasing elements.
    * Example: <a><b><i>foo</i></a> => <b><i><a>foo</a></i></b>
@@ -226,12 +226,12 @@ editing.defineCommand('createLink', (function() {
     var newEndContainer = selection.endContainer === startContainer ?
         anchorElement : selection.endContainer;
     if (selection.direction === editing.SelectionDirection.ANCHOR_IS_START) {
-      return new editing.ReadOnlySelection(
+      return new editing.ImmutableSelection(
           anchorElement, selection.startOffset,
           newEndContainer, selection.endOffset,
           selection.direction);
     }
-    return new editing.ReadOnlySelection(
+    return new editing.ImmutableSelection(
         newEndContainer, selection.endOffset,
         anchorElement, selection.startOffset,
         selection.direction);
@@ -330,7 +330,7 @@ editing.defineCommand('createLink', (function() {
     else
       context.appendChild(selection.anchorNode, textNode);
 
-    var endingSelection = new editing.ReadOnlySelection(
+    var endingSelection = new editing.ImmutableSelection(
         selection.anchorNode, selection.anchorOffset,
         selection.anchorNode, selection.anchorOffset + 1,
         editing.SelectionDirection.ANCHOR_IS_START);

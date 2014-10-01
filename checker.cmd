@@ -15,7 +15,7 @@ python checker.py --compiler %closure_jar% --out_dir %TMP% ^
     externs/editor_externs.js ^
     externs/nodes_externs.js ^
     externs/operations_externs.js ^
-    externs/read_only_selection_externs.js ^
+    externs/immutable_selection_externs.js ^
     externs/selection_tracker_externs.js ^
     testing/externs/sample_externs.js ^
     testing/externs/testing_externs.js ^
@@ -30,7 +30,7 @@ python checker.py --out_dir %TMP% ^ --externs ^
     externs/es6_externs.js ^
     externs/html5_externs.js ^
     externs/operations_externs.js ^
-    externs/read_only_selection_externs.js ^
+    externs/immutable_selection_externs.js ^
     externs/selection_tracker_externs.js ^
     externs/typedefs.js ^
     testing/externs/sample_externs.js ^

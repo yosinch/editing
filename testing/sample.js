@@ -123,7 +123,7 @@ testing.define('Sample', (function() {
     parseAnchorAndFocus(selection, document.body);
     fixupAnchorAndFocus(selection, selection.anchorNode);
     fixupAnchorAndFocus(selection, selection.focusNode);
-    return new editing.ReadOnlySelection(
+    return new editing.ImmutableSelection(
         selection.anchorNode, selection.anchorOffset,
         selection.focusNode, selection.focusOffset,
         selection.direction);

@@ -7,7 +7,7 @@
  * @final
  * @param {!editing.Editor} editor
  * @param {string} name A name for this context for error message.
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  */
 editing.EditingContext = function(editor, name, selection) {}
 
@@ -39,7 +39,7 @@ editing.EditingContext.prototype.createElement = function(tagName) {};
  */
 editing.EditingContext.prototype.createTextNode = function(text) {};
 
-/** @type {!editing.ReadOnlySelection} */
+/** @type {!editing.ImmutableSelection} */
 editing.EditingContext.prototype.endingSelection;
 
 /**
@@ -72,7 +72,7 @@ editing.EditingContext.prototype.operations;
 
 /**
  * @this {!editing.EditingContext}
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  */
 editing.EditingContext.prototype.normalizeSelection = function(selection) {};
 
@@ -119,7 +119,7 @@ editing.EditingContext.prototype.setAttribute = function(element, name,
 
 /**
  * @this {!editing.EditingContext}
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  */
 editing.EditingContext.prototype.setEndingSelection = function(selection) {};
 
@@ -134,7 +134,7 @@ editing.EditingContext.prototype.setStyle = function(element, propertyName,
 
 /**
  * @this {!editing.EditingContext} context
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  * @param {!function(!Node):boolean} predicate
  * @return {!Array.<!Node>}
  */
@@ -143,7 +143,7 @@ editing.EditingContext.prototype.setUpEffectiveNodes = function(selection,
 
 /**
  * @this {!editing.EditingContext} context
- * @param {!editing.ReadOnlySelection} selection
+ * @param {!editing.ImmutableSelection} selection
  * @param {!function(!Node):boolean} predicate
  * @param {!function(!Element, !Node): !Element} splitter
  * @return {!Array.<!Node>}
@@ -191,7 +191,7 @@ editing.EditingContext.prototype.splitTree = function(element, refNode) {};
    */
 editing.EditingContext.prototype.splitTreeLeft = function(element, refNode) {};
 
-/** @type {!editing.ReadOnlySelection} */
+/** @type {!editing.ImmutableSelection} */
 editing.EditingContext.prototype.startingSelection;
 
 /**

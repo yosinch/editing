@@ -54,7 +54,7 @@ testing.define('serializeNode', (function() {
   /**
    * @param {!Node} node
    * @param {Object=} opt_options
-   *    selection: editing.ReadOnlySelection
+   *    selection: editing.ImmutableSelection
    *    visibleTextNode: boolean
    * @return {string}
    */

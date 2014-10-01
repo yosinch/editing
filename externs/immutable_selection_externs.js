@@ -4,7 +4,7 @@
 
 //////////////////////////////////////////////////////////////////////
 //
-// ReadOnlySelection
+// ImmutableSelection
 //
 
 /**
@@ -16,44 +16,44 @@
  * @param {number} focusOffset
  * @param {!editing.SelectionDirection} direction
  */
-editing.ReadOnlySelection = function(anchorNode, anchorOffset,
+editing.ImmutableSelection = function(anchorNode, anchorOffset,
                                      focusNode, focusOffset, direction) {}
 
 /** @type {!Node} */
-editing.ReadOnlySelection.prototype.anchorNode;
+editing.ImmutableSelection.prototype.anchorNode;
 
 /** @type {number} */
-editing.ReadOnlySelection.prototype.anchorOffset;
+editing.ImmutableSelection.prototype.anchorOffset;
 
 /** @type {!editing.SelectionDirection} */
-editing.ReadOnlySelection.prototype.direction;
+editing.ImmutableSelection.prototype.direction;
 
 /** @type {!Node} */
-editing.ReadOnlySelection.prototype.endContainer;
+editing.ImmutableSelection.prototype.endContainer;
 
 /** @type {number} */
-editing.ReadOnlySelection.prototype.endOffset;
+editing.ImmutableSelection.prototype.endOffset;
 
 /** @type {!Node} */
-editing.ReadOnlySelection.prototype.focusNode;
+editing.ImmutableSelection.prototype.focusNode;
 
 /** @type {number} */
-editing.ReadOnlySelection.prototype.focusOffset;
+editing.ImmutableSelection.prototype.focusOffset;
 
 /** @type {boolean} */
-editing.ReadOnlySelection.prototype.isCaret;
+editing.ImmutableSelection.prototype.isCaret;
 
 /** @type {boolean} */
-editing.ReadOnlySelection.prototype.isEmpty;
+editing.ImmutableSelection.prototype.isEmpty;
 
 /** @type {boolean} */
-editing.ReadOnlySelection.prototype.isNormalized;
+editing.ImmutableSelection.prototype.isNormalized;
 
 /** @type {boolean} */
-editing.ReadOnlySelection.prototype.isRange;
+editing.ImmutableSelection.prototype.isRange;
 
 /** @type {!Node} */
-editing.ReadOnlySelection.prototype.startContainer;
+editing.ImmutableSelection.prototype.startContainer;
 
 /** @type {number} */
-editing.ReadOnlySelection.prototype.startOffset;
+editing.ImmutableSelection.prototype.startOffset;

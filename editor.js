@@ -25,7 +25,7 @@ editing.Editor = (function() {
   /**
    * @this {!Editor}
    * @param {string} name
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    * @return {!editing.EditingContext}
    */
   Editor.prototype.createContext = function(name, selection) {};
@@ -40,28 +40,28 @@ editing.Editor = (function() {
     return document.editor_;
   }
 
-  /** @return {!editing.ReadOnlySelection} */
+  /** @return {!editing.ImmutableSelection} */
   Editor.prototype.getDomSelection = function() {};
 
   /**
-   * @type {editing.ReadOnlySelection}
+   * @type {editing.ImmutableSelection}
    */
   Editor.prototype.selection_;
 
   /**
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   Editor.prototype.setDomSelection = function(selection) {};
 
   /**
    * @this {!editing.Editor}
    * @param {string} name
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    * @return {!editing.EditingContext}
    */
   function createContext(name, selection) {
-    console.assert(selection instanceof editing.ReadOnlySelection,
-                   selection + ' must be ReadOnlySelection');
+    console.assert(selection instanceof editing.ImmutableSelection,
+                   selection + ' must be ImmutableSelection');
     return new editing.EditingContext(this, name, selection);
   }
 
@@ -117,9 +117,9 @@ editing.Editor = (function() {
       if (!succeeded)
         return 'FAILED';
       console.assert(context.endingSelection instanceof
-                     editing.ReadOnlySelection);
+                     editing.ImmutableSelection);
       console.assert(context.startingSelection instanceof
-                     editing.ReadOnlySelection);
+                     editing.ImmutableSelection);
       this.setDomSelection(context.endingSelection);
       this.undoStack_.push({
         commandName: name,
@@ -133,7 +133,7 @@ editing.Editor = (function() {
 
   /**
    * @this {!Editor}
-   * @return {!editing.ReadOnlySelection}
+   * @return {!editing.ImmutableSelection}
    */
   function getDomSelection() {
     /**
@@ -181,7 +181,7 @@ editing.Editor = (function() {
     }
 
     var domSelection = this.document_.getSelection();
-    return new editing.ReadOnlySelection(
+    return new editing.ImmutableSelection(
         domSelection.anchorNode, domSelection.anchorOffset,
         domSelection.focusNode, domSelection.focusOffset,
         computeDirection(domSelection));
@@ -206,10 +206,10 @@ editing.Editor = (function() {
 
   /**
    * @this {!Editor}
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   function setDomSelection(selection) {
-    console.assert(selection instanceof editing.ReadOnlySelection, selection);
+    console.assert(selection instanceof editing.ImmutableSelection, selection);
     this.selection_ = selection;
     var domSelection = this.document_.getSelection();
     if (selection.isEmpty) {

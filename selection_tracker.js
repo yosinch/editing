@@ -165,7 +165,7 @@ editing.SelectionTracker = (function() {
    * @constructor
    * @final
    * @param {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   function SelectionTracker(context, selection) {
     /** @private @type {!editing.EditingContext} */
@@ -195,7 +195,7 @@ editing.SelectionTracker = (function() {
       focusNodeAndOffset = this.start_.convertToNodeAndOffset();
       anchorNodeAndOffset = this.end_.convertToNodeAndOffset();
     }
-    this.context_.setEndingSelection(new editing.ReadOnlySelection(
+    this.context_.setEndingSelection(new editing.ImmutableSelection(
         anchorNodeAndOffset.node, anchorNodeAndOffset.offset,
         focusNodeAndOffset.node, focusNodeAndOffset.offset,
         selection.direction));
@@ -207,7 +207,7 @@ editing.SelectionTracker = (function() {
   function finishWithStartAsAnchor() {
     var startNodeAndOffset = this.start_.convertToNodeAndOffset();
     var endNodeAndOffset = this.end_.convertToNodeAndOffset();
-    this.context_.setEndingSelection(new editing.ReadOnlySelection(
+    this.context_.setEndingSelection(new editing.ImmutableSelection(
         startNodeAndOffset.node, startNodeAndOffset.offset,
         endNodeAndOffset.node, endNodeAndOffset.offset,
         editing.SelectionDirection.ANCHOR_IS_START));

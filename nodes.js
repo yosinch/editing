@@ -99,7 +99,7 @@ editing.nodes = (function() {
   }
 
   /**
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    * @return {!Array.<!Node>}
    *
    * Note: When selection range has no node, e.g. <p><a>foo^</a>|</p>; enclosing

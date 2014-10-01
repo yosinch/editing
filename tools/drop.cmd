@@ -12,7 +12,7 @@ set files= ^
     editor.js ^
     nodes.js ^
     operations.js ^
-    read_only_selection.js ^
+    immutable_selection.js ^
     selection_tracker.js ^
     commands\create_link_command.js ^
     commands\undo_command.js

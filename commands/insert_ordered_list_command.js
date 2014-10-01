@@ -319,7 +319,7 @@ editing.defineCommand('InsertOrderedList', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!editing.ReadOnlySelection} selection
+   * @param {!editing.ImmutableSelection} selection
    */
   function wrapByOrderedList(context, selection) {
     var effectiveNodes = context.setUpEffectiveNodes(selection, function(node) {
@@ -649,7 +649,7 @@ editing.defineCommand('InsertOrderedList', (function() {
     wrapByOrderedList(context, selection);
 
     // TODO(hajimehoshi): Fix this selection range
-    context.setEndingSelection(new editing.ReadOnlySelection(
+    context.setEndingSelection(new editing.ImmutableSelection(
         context.document.body.firstChild, 0,
         context.document.body.firstChild, 0,
         editing.SelectionDirection.ANCHOR_IS_START));

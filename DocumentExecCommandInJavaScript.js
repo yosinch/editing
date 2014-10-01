@@ -12,7 +12,7 @@ installClass('Document', function(documentPrototype) {
   <include src="editor.js">
   <include src="nodes.js">
   <include src="operations.js">
-  <include src="read_only_selection.js">
+  <include src="immutable_selection.js">
   <include src="selection_tracker.js">
   <include src="commands/create_link_command.js">
   <include src="commands/undo_command.js">
