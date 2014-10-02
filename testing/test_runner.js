@@ -331,7 +331,7 @@ window['TestRunner'] = (function() {
 
       for (var sectionName of
            Object.keys(testCasesByClass).filter(function(key) {
-             return key != 'pass';
+             return key != 'pass' && !key.startsWith('compatible')
            }).sort(function(key1, key2) {
              return orderOfClass(key1) - orderOfClass(key2);
            })) {
