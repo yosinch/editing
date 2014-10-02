@@ -218,9 +218,8 @@ editing.EditingContext = (function() {
       console.log('execCommand name', name);
       throw new Error('execCommand takes string: ' + name);
     }
-    var userInterface = arguments.length >= 2 ? Boolean(opt_userInterface)
-                                              : false;
-    var value = arguments.length >= 3 ? String(opt_value) : '';
+    var userInterface = Boolean(opt_userInterface);
+    var value = opt_value === undefined ? '' : String(opt_value);
     var commandFunction = editing.lookupCommand(name);
     if (!commandFunction)
       throw new Error('No such command ' + name);
