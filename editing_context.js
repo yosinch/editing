@@ -529,6 +529,15 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!EditingContext}
+   */
+  function setEndingSelectionAsEmpty() {
+    if (this.endingSelection_)
+      throw new Error('ending selection is already set.');
+    this.endingSelection_ = editing.ImmutableSelection.EMPTY_SELECTION;
+  }
+
+  /**
+   * @this {!EditingContext}
    * @param {!Element} element
    * @param {string} propertyName
    * @param {string} newValue
@@ -811,7 +820,8 @@ editing.EditingContext = (function() {
     removeStyle: removeStyle,
     replaceChild: replaceChild,
     setAttribute: setAttribute,
-    setEndingSelection: setEndingSelection ,
+    setEndingSelection: setEndingSelection,
+    setEndingSelectionAsEmpty: setEndingSelectionAsEmpty,
     setStyle: setStyle,
     setUpEffectiveNodes: setUpEffectiveNodes,
     setUpEffectiveNodesWithSplitter: setUpEffectiveNodesWithSplitter,

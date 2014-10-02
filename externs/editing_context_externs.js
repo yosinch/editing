@@ -125,6 +125,11 @@ editing.EditingContext.prototype.setEndingSelection = function(selection) {};
 
 /**
  * @this {!editing.EditingContext}
+ */
+editing.EditingContext.prototype.setEndingSelectionAsEmpty = function() {};
+
+/**
+ * @this {!editing.EditingContext}
  * @param {!Element} element
  * @param {string} propertyName
  * @param {string} propertyValue
