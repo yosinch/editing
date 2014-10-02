@@ -17,7 +17,11 @@
  * @param {!editing.SelectionDirection} direction
  */
 editing.ImmutableSelection = function(anchorNode, anchorOffset,
-                                     focusNode, focusOffset, direction) {}
+                                      focusNode, focusOffset, direction) {}
+
+
+/** @const @type {!editing.ImmutableSelection} */
+editing.ImmutableSelection.EMPTY_SELECTION;
 
 /** @type {!Node} */
 editing.ImmutableSelection.prototype.anchorNode;

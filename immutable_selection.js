@@ -15,21 +15,21 @@ editing.ImmutableSelection = (function() {
   /**
    * @constructor
    * @final
-   * @param {!Node} anchorNode
+   * @param {Node} anchorNode
    * @param {number} anchorOffset
-   * @param {!Node} focusNode
+   * @param {Node} focusNode
    * @param {number} focusOffset
    * @param {editing.SelectionDirection} direction
    */
   function ImmutableSelection(anchorNode, anchorOffset, focusNode, focusOffset,
-                             direction) {
-    /** @private @type {!Node} */
+                              direction) {
+    /** @private @type {Node} */
     this.anchorNode_ = anchorNode;
     /** @private @type {number} */
     this.anchorOffset_ = anchorOffset;
     /** @private @type {editing.SelectionDirection} */
     this.direction_ = direction;
-    /** @private @type {!Node} */
+    /** @private @type {Node} */
     this.focusNode_ = focusNode;
     /** @private @type {number} */
     this.focusOffset_ = focusOffset;
@@ -62,7 +62,8 @@ editing.ImmutableSelection = (function() {
    * @return {!Node}
    */
   function endContainer() {
-    console.assert(this.anchorNode_);
+    if (!this.anchorNode_ || !this.focusNode_)
+      throw new Error('Empty selection');
     return this.direction_ == editing.SelectionDirection.FOCUS_IS_START ?
         this.anchorNode_ : this.focusNode_;
   }
@@ -72,7 +73,8 @@ editing.ImmutableSelection = (function() {
    * @return {number}
    */
   function endOffset() {
-    console.assert(this.anchorNode_);
+    if (!this.anchorNode_ || !this.focusNode_)
+      throw new Error('Empty selection');
     return this.direction_ == editing.SelectionDirection.FOCUS_IS_START ?
         this.anchorOffset_ : this.focusOffset_;
   }
@@ -116,8 +118,8 @@ editing.ImmutableSelection = (function() {
    * @return {boolean}
    */
   function isNormalized() {
-    if (this.isEmpty)
-      return true;
+    if (!this.anchorNode_ || !this.focusNode_)
+      return false;
     return !editing.dom.isText(this.anchorNode_) &&
            !editing.dom.isText(this.focusNode_);
   }
@@ -135,7 +137,8 @@ editing.ImmutableSelection = (function() {
    * @return {!Node}
    */
   function startContainer() {
-    console.assert(this.anchorNode_);
+    if (!this.anchorNode_ || !this.focusNode_)
+      throw new Error('Empty selection');
     return this.direction_ == editing.SelectionDirection.ANCHOR_IS_START ?
         this.anchorNode_ : this.focusNode_;
   }
@@ -167,5 +170,10 @@ editing.ImmutableSelection = (function() {
     get startOffset() { return startOffset.call(this); },
   };
   Object.seal(ImmutableSelection.prototype);
+
+  /** @const @type {!ImmutableSelection} */
+  ImmutableSelection.EMPTY_SELECTION = new ImmutableSelection(
+    null, 0, null, 0, editing.SelectionDirection.ANCHOR_IS_START);
+
   return ImmutableSelection;
 })();
