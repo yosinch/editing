@@ -182,6 +182,7 @@ testing.define('Sample', (function() {
    */
   function execCommand(name, opt_userInterface, opt_value) {
     var editor = editing.Editor.getOrCreate(this.document_);
+    this.setFocus();
     if (testRunner.useTryCatch) {
       var returnValue = 'UNKNOWN';
       try {
@@ -212,6 +213,29 @@ testing.define('Sample', (function() {
     this.iframe_ = null;
   }
 
+  /**
+   * @this {!Sample}
+   * Node: Chrome doesn't allow set focus to P element in below example:
+   * <div contentEditable>foo|<p contenteditable>bar</p>baz</div>
+   */
+  function setFocus() {
+    var domSelection = this.document_.getSelection();
+    var anchorNode = domSelection.anchorNode;
+    if (!anchorNode)
+      return;
+    var anchorOffset = domSelection.anchorOffset;
+    if (anchorNode.nodeType !== Node.ELEMENT_NODE) {
+      anchorOffset = editing.dom.nodeIndex(anchorNode);
+      anchorNode = anchorNode.parentNode;
+    }
+    var node = anchorNode.childNodes[anchorOffset];
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+      anchorNode.focus();
+      return;
+    }
+    node.focus();
+  }
+
   Object.defineProperties(Sample.prototype, {
     document: {get: function() { return this.document_; }},
     document_: {writable: true},
@@ -222,6 +246,7 @@ testing.define('Sample', (function() {
     execCommand: {value: execCommand},
     finish: {value: finish},
     iframe_: {writable: true},
+    setFocus: {value: setFocus},
     startingSelection: {get: function() { return this.startingSelection_; }},
     startingSelection_: {writable: true}
   });
