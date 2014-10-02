@@ -21,6 +21,33 @@ function dumpNodes(nodes) {
 }
 
 //
+// HTMLIterable
+//
+testCaseWithSample('dom.HTMLIterable.1',
+  '|<select><option>1</option><option>2</option><option>3</option></select>',
+  function(context) {
+    var selectElement = context.document.querySelector('select');
+    var results = [];
+    for (var option of new editing.dom.HTMLIterable(selectElement.options))
+      results.push(option.value);
+    expectEq('1,2,3', function() { return results.join(','); });
+  });
+
+//
+// ancestorsOrSelf
+//
+testCaseWithSample('dom.ancestorsOrSelf.1',
+  '<div><foo>0<bar>1<baz>|2</baz>3</bar>4</foo>',
+  function(context, selection) {
+    var results = [];
+    var sample = selection.anchorNode;
+    for (var node of editing.dom.ancestorsOrSelf(sample))
+      results.push(node.nodeName);
+    expectEq('#text,BAZ,BAR,FOO,DIV,BODY,HTML,#document',
+             function() { return results.join(','); });
+  });
+
+//
 // ancestorsWhile
 //
 testCaseWithSample('nodes.ancestorsWhile.Nodes',

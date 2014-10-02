@@ -7,10 +7,81 @@ editing.dom = (function() {
 
   /**
    * @constructor
+   * @implements $jscomp.Iterable.<!Node>
+   * @final
+   * @param {!Node} node
+   */
+  function AncestorsOrSelf(node) {
+    /** @private @type {Node} */
+    this.currentNode_ = node;
+
+    // For closure compiler
+    /** @return {!$jscomp.Iterator.<!Node>} */
+    this.$$iterator;
+
+    Object.seal(this);
+  }
+
+  AncestorsOrSelf.prototype = {
+    /** @this {!AncestorsOrSelf}
+     * @return {{done: boolean, value: (!Node|undefined)}}
+     */
+    next: function() {
+      if (!this.currentNode_)
+        return {done: true, value: undefined};
+      var resultNode = this.currentNode_;
+      this.currentNode_ = this.currentNode_.parentNode;
+      return {done: false, value: resultNode};
+    }
+  };
+
+  // TODO(yosin) Once V8 and closure compiler support E6 object literal syntax,
+  // we should put below in |AncestorsOrSelf.prototype = {...}|.
+  AncestorsOrSelf.prototype[Symbol.iterator] = function() { return this; };
+
+  /**
+   * @constructor
+   * @implements $jscomp.Iterable.<!Element>
+   * @final
+   * @param {!HTMLCollection} collection
+   */
+  function HTMLIterable(collection) {
+    /** @private @type {!HTMLCollection} */
+    this.collection_ = collection;
+    /** @private @type {number} */
+    this.index_ = 0;
+
+    // For closure compiler
+    /** @return {!$jscomp.Iterator.<!Element>} */
+    this.$$iterator;
+
+    Object.seal(this);
+  }
+
+  HTMLIterable.prototype = {
+    /** @this {!HTMLIterable}
+     * @return {{done: boolean, value: (!Element|undefined)}}
+     */
+    next: function() {
+      if (this.index_ >= this.collection_.length)
+        return {done: true, value: undefined}
+      var element = this.collection_[this.index_];
+      ++this.index_;
+      return {done: false, value: element};
+    }
+  };
+
+  // TODO(yosin) Once V8 and closure compiler support E6 object literal syntax,
+  // we should put below in |HTMLIterable.prototype = {...}|.
+  HTMLIterable.prototype[Symbol.iterator] = function() { return this; };
+
+  /**
+   * @constructor
    * @final
    * @param {Node} startNode
    */
   function NextNodes(startNode) {
+    /** @private @type {Node} */
     this.currentNode_ = startNode;
     Object.seal(this);
   }
@@ -31,6 +102,14 @@ editing.dom = (function() {
   // TODO(yosin) Once V8 and closure compiler support E6 object literal syntax,
   // we should put below in |NextNodes.prototype = {...}|.
   NextNodes.prototype[Symbol.iterator] = function() { return this; };
+
+  /**
+   * @param {!Node} node
+   * @return {!$jscomp.Iterable.<!Node>}
+   */
+  function ancestorsOrSelf(node) {
+    return new AncestorsOrSelf(node);
+  }
 
   /**
    * @param {!Node} node
@@ -363,6 +442,8 @@ editing.dom = (function() {
   }
 
   var dom = {
+    HTMLIterable: HTMLIterable,
+    ancestorsOrSelf: ancestorsOrSelf,
     ancestorsWhile: ancestorsWhile,
     canContainRangeEndPoint: canContainRangeEndPoint,
     commonAncestor: commonAncestor,

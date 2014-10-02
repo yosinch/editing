@@ -6,6 +6,25 @@
 editing.dom;
 
 /**
+ * @constructor
+ * @implements $jscomp.Iterable.<!Element>
+ * @final
+ * TODO(yosin) We should use |!HTMLCollection| once we fix JS externs
+ * in closure compiler.
+ * @param {(?HTMLCollection|?HTMLOptionsCollection)} collection
+ */
+editing.dom.HTMLIterable = function(collection) {
+  /** @return {!$jscomp.Iterator.<!Element>} */
+  this.$$iterator;
+};
+
+/**
+ * @param {!Node} node
+ * @return {!$jscomp.Iterable.<!Node>}
+ */
+editing.dom.ancestorsOrSelf = function(node) {};
+
+/**
  * @param {!Node} node
  * @return {boolean}
  */
