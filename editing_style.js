@@ -116,6 +116,7 @@ editing.EditingStyle = (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {!Element} element
    */
   function EditingStyle(element) {
@@ -125,7 +126,7 @@ editing.EditingStyle = (function() {
   }
 
   // Forward declaration for closure compiler.
-  EditingStyle.prototype = {
+  EditingStyle.prototype = /** @struct */ {
     /**
      * @this {!EditingStyle}
      * @param {!editing.EditingContext} context
@@ -212,13 +213,13 @@ editing.EditingStyle = (function() {
     });
   }
 
-  EditingStyle.prototype = {
+  EditingStyle.prototype = /** @struct */ {
     applyInheritedStyle: applyInheritedStyle,
     constructor: EditingStyle,
     createElements: createElements,
     get hasStyle() { return hasStyle.call(this); },
     get properties() { return properties.call(this); }
   };
-  Object.seal(EditingStyle.prototype);
+  Object.freeze(EditingStyle.prototype);
   return EditingStyle;
 })();

@@ -15,6 +15,7 @@ editing.ImmutableSelection = (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {Node} anchorNode
    * @param {number} anchorOffset
    * @param {Node} focusNode
@@ -37,7 +38,7 @@ editing.ImmutableSelection = (function() {
   }
 
   // Forward declaration for closure compiler
-  ImmutableSelection.prototype = {
+  ImmutableSelection.prototype = /** @struct */ {
     /** @type {!Node} */
     get anchorNode() {},
 
@@ -153,7 +154,7 @@ editing.ImmutableSelection = (function() {
         this.anchorOffset_ : this.focusOffset_;
   }
 
-  ImmutableSelection.prototype = {
+  ImmutableSelection.prototype = /** @struct */ {
     get anchorNode() { return this.anchorNode_; },
     get anchorOffset() { return this.anchorOffset_; },
     get direction() { return this.direction_; },
@@ -169,7 +170,7 @@ editing.ImmutableSelection = (function() {
     get startContainer() { return startContainer.call(this); },
     get startOffset() { return startOffset.call(this); },
   };
-  Object.seal(ImmutableSelection.prototype);
+  Object.freeze(ImmutableSelection.prototype);
 
   /** @const @type {!ImmutableSelection} */
   ImmutableSelection.EMPTY_SELECTION = new ImmutableSelection(

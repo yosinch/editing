@@ -26,6 +26,7 @@ editing.SelectionTracker = (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {!Node} node
    * @param {number} offset
    */
@@ -40,6 +41,7 @@ editing.SelectionTracker = (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {!Node} node
    * @param {number} offset
    * @param {!StartOrEnd} startOrEnd
@@ -78,7 +80,7 @@ editing.SelectionTracker = (function() {
     Object.seal(this);
   }
 
-  TrackablePosition.prototype = {
+  TrackablePosition.prototype = /** @struct */ {
     /**
      * @this {!TrackablePosition}
      * @return {!NodeAndOffset}
@@ -159,11 +161,12 @@ editing.SelectionTracker = (function() {
       this.node_ = refNode;
     }
   };
-  Object.seal(TrackablePosition.prototype);
+  Object.freeze(TrackablePosition.prototype);
 
   /**
    * @constructor
    * @final
+   * @struct
    * @param {!editing.EditingContext} context
    * @param {!editing.ImmutableSelection} selection
    */
@@ -237,14 +240,14 @@ editing.SelectionTracker = (function() {
     this.end_.willUnwrapElement(element);
   }
 
-  SelectionTracker.prototype = {
+  SelectionTracker.prototype = /** @struct */ {
     constructor: SelectionTracker,
     finish: finish,
     finishWithStartAsAnchor: finishWithStartAsAnchor,
     willRemoveNode: willRemoveNode,
     willUnwrapElement: willUnwrapElement
   };
-  Object.seal(SelectionTracker.prototype);
+  Object.freeze(SelectionTracker.prototype);
 
   return SelectionTracker;
 })();

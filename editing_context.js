@@ -14,6 +14,7 @@ editing.EditingContext = (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {!editing.Editor} editor
    * @param {string} name A name for this context for error message.
    * @param {!editing.ImmutableSelection} selection
@@ -51,7 +52,7 @@ editing.EditingContext = (function() {
   }
 
   // Forward type declarations for closure compiler.
-  EditingContext.prototype = {
+  EditingContext.prototype = /** @struct */ {
     /**
      * @this {!EditingContext}
      * @param {!Node} parentNode
@@ -791,7 +792,7 @@ editing.EditingContext = (function() {
       this.removeChild(ancestor, parent);
    }
 
-  EditingContext.prototype = {
+  EditingContext.prototype = /** @struct */ {
     appendChild: appendChild,
     constructor: EditingContext,
     cloneNode: cloneNode ,

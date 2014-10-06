@@ -9,6 +9,7 @@
 editing.Operation = (function() {
   /**
    * @constructor
+   * @struct
    * @param {string} operationName
    */
   function Operation(operationName) {
@@ -27,16 +28,17 @@ editing.Operation = (function() {
    * @this {!Operation}
    */
   function undo() {
-    throw new Error('Abstract method Operation.prototype.undo called', this);
+    throw new Error('Abstract method Operation.prototype.undo called');
   }
 
-  Operation.prototype = {
+  Operation.prototype = /** @struct*/ {
     constructor: Operation,
     execute: function() { this.redo(); },
     get operationName() { return this.operationName_; },
     redo: redo,
     undo: undo
   };
+  Object.freeze(Operation.prototype);
 
   return Operation;
 })();
@@ -47,7 +49,10 @@ editing.Operation = (function() {
 //
 editing.AppendChild = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Node} parentNode
    * @param {!Node} newChild
    */
@@ -75,13 +80,13 @@ editing.AppendChild = (function() {
     this.parentNode_.removeChild(this.newChild_);
   }
 
-  AppendChild.prototype = Object.create(editing.Operation.prototype, {
-    constructor: AppendChild,
-    newChild_: {writable: true},
-    parentNode_: {writable: true},
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  AppendChild.prototype = /** @type {!AppendChild} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: AppendChild,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(AppendChild.prototype);
 
   return AppendChild;
 })();
@@ -92,7 +97,10 @@ editing.AppendChild = (function() {
 //
 editing.InsertBefore = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Node} parentNode
    * @param {!Node} newChild
    * @param {Node} refChild
@@ -124,11 +132,13 @@ editing.InsertBefore = (function() {
     this.parentNode_.removeChild(this.newChild_);
   }
 
-  InsertBefore.prototype = Object.create(editing.Operation.prototype, {
-    constructor: InsertBefore,
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  InsertBefore.prototype = /** @type {!InsertBefore} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: InsertBefore,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(InsertBefore.prototype);
 
   return InsertBefore;
 })();
@@ -139,7 +149,9 @@ editing.InsertBefore = (function() {
 //
 editing.RemoveAttribute = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
    * @param {!Element} element
    * @param {string} attrName
    */
@@ -172,11 +184,13 @@ editing.RemoveAttribute = (function() {
     this.element_.setAttribute(this.attrName_, this.oldValue_);
   }
 
-  RemoveAttribute.prototype = Object.create(editing.Operation.prototype, {
-    constructor: RemoveAttribute,
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  RemoveAttribute.prototype = /** @type {!RemoveAttribute} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: RemoveAttribute,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(RemoveAttribute.prototype);
 
   return RemoveAttribute;
 })();
@@ -187,7 +201,10 @@ editing.RemoveAttribute = (function() {
 //
 editing.RemoveChild = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Node} parentNode
    * @param {!Node} oldChild
    */
@@ -216,11 +233,13 @@ editing.RemoveChild = (function() {
     this.parentNode_.insertBefore(this.oldChild_, this.refChild_);
   }
 
-  RemoveChild.prototype = Object.create(editing.Operation.prototype, {
-    constructor: RemoveChild,
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  RemoveChild.prototype = /** @type {!RemoveChild} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: RemoveChild,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(RemoveChild.prototype);
 
   return RemoveChild;
 })();
@@ -231,7 +250,10 @@ editing.RemoveChild = (function() {
 //
 editing.ReplaceChild = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Node} parentNode
    * @param {!Node} newChild
    * @param {Node} oldChild
@@ -263,11 +285,13 @@ editing.ReplaceChild = (function() {
     this.parentNode_.replaceChild(this.oldChild_, this.newChild_);
   }
 
-  ReplaceChild.prototype = Object.create(editing.Operation.prototype, {
-    constructor: ReplaceChild,
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  ReplaceChild.prototype = /** @type {!ReplaceChild} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: ReplaceChild,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(ReplaceChild.prototype);
 
   return ReplaceChild;
 })();
@@ -278,7 +302,10 @@ editing.ReplaceChild = (function() {
 //
 editing.SetAttribute = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Element} element
    * @param {string} attrName
    * @param {string} newValue
@@ -315,11 +342,13 @@ editing.SetAttribute = (function() {
       this.element_.setAttribute(this.attrName_, this.oldValue_);
   }
 
-  SetAttribute.prototype = Object.create(editing.Operation.prototype, {
-    constructor: SetAttribute,
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  SetAttribute.prototype = /** @type {!SetAttribute} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: SetAttribute,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(SetAttribute.prototype);
 
   return SetAttribute;
 })();
@@ -332,7 +361,10 @@ editing.SetAttribute = (function() {
 //
 editing.SetStyle = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Element} element
    */
   function SetStyle(element) {
@@ -379,12 +411,14 @@ editing.SetStyle = (function() {
     this.element_.setAttribute('style', this.oldStyleText_);
   }
 
-  SetStyle.prototype = Object.create(editing.Operation.prototype, {
-    constructor: SetStyle,
-    redo: {value: redo},
-    setProperty: {value: setProperty},
-    undo: {value: undo}
-  });
+  SetStyle.prototype = /** @type {!SetStyle} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: SetStyle,
+      redo: {value: redo},
+      setProperty: {value: setProperty},
+      undo: {value: undo}
+    }));
+  Object.freeze(SetStyle.prototype);
 
   return SetStyle;
 })();
@@ -395,7 +429,10 @@ editing.SetStyle = (function() {
 //
 editing.SplitText = (function() {
   /**
-   * @constructor @final @extends {editing.Operation}
+   * @constructor
+   * @extends {editing.Operation}
+   * @final
+   * @struct
    * @param {!Text} textNode
    * @param {!Text} newNode
    */
@@ -427,11 +464,13 @@ editing.SplitText = (function() {
     this.newNode_.parentNode.removeChild(this.newNode_);
   }
 
-  SplitText.prototype = Object.create(editing.Operation.prototype, {
-    constructor: SplitText,
-    redo: {value: redo},
-    undo: {value: undo}
-  });
+  SplitText.prototype = /** @type {SplitText} */
+    (Object.create(editing.Operation.prototype, {
+      constructor: SplitText,
+      redo: {value: redo},
+      undo: {value: undo}
+    }));
+  Object.freeze(SplitText.prototype);
 
   return SplitText;
 })();

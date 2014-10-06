@@ -8,6 +8,7 @@ editing.Editor = (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {!Document} document
    */
   function Editor(document) {
@@ -236,7 +237,7 @@ editing.Editor = (function() {
     return true;
   }
 
-  Editor.prototype = {
+  Editor.prototype = /** @struct*/ {
     createContext: createContext,
     currentContext: function() { return this.currentContext_; },
     execCommand: execCommand,
@@ -247,6 +248,6 @@ editing.Editor = (function() {
     redo: redo,
     undo: undo
   };
-  Object.seal(Editor.prototype);;
+  Object.freeze(Editor.prototype);;
   return Editor;
 })();

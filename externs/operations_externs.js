@@ -4,6 +4,7 @@
 
 /**
  * @constructor
+ * @struct
  * @param {string} operationName
  */
 editing.Operation = function(operationName) {}
@@ -24,6 +25,7 @@ editing.Operation.prototype.undo = function() {};
  * @constructor
  * @extends {editing.Operation}
  * @final
+ * @struct
  * @param {!Node} parentNode
  * @param {!Node} newChild
  */
