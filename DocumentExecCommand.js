@@ -9,13 +9,9 @@ installClass('Document', function(documentPrototype) {
   <include src="content_model.js">
   <include src="dom.js">
   <include src="editing_context.js">
-  <include src="editing_style.js">
   <include src="editor.js">
-  <include src="operations.js">
   <include src="immutable_selection.js">
-  <include src="selection_tracker.js">
-  <include src="commands/create_link_command.js">
-  <include src="commands/undo_command.js">
+  <include src="commands/select_all_command.js">
 
   /**
    * @this {!Document} document
