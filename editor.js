@@ -5,8 +5,6 @@
 editing.Editor = (function() {
   'use strict';
 
-  var DEBUG = true;
-
   /**
    * @constructor
    * @final
@@ -93,22 +91,6 @@ editing.Editor = (function() {
     this.currentContext_ = context;
     var succeeded = false;
     var returnValue;
-    if (DEBUG) {
-      // TODO(yosin) Once we finish debugging, we should move calling
-      // |commandFunction| into try-finally block.
-      returnValue = commandDefinition.function(context, userInterface, value);
-      this.currentContext_ = null;
-      this.setDomSelection(context.endingSelection);
-      if (commandDefinition.undoable) {
-        this.undoStack_.push({
-          commandName: name,
-          endingSelection: context.endingSelection,
-          operations: context.operations,
-          startingSelection: context.startingSelection
-        });
-      }
-      return returnValue;
-    }
     try {
       returnValue = commandDefinition.function(context, userInterface, value);
       succeeded = true;
