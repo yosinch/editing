@@ -2,14 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(hajimehoshi): Temporal definition: we need to implement this later
-/**
- * @param {Object} obj
- */
-function makeInlineStyleCommand(obj) {}
-
 (function() {
   'use strict';
+
+  // TODO(hajimehoshi): Temporal definition: we need to implement this later
+  /**
+   * @param {Object} obj
+   * @return {!CommandFunction}
+   */
+  function makeInlineStyleCommand(obj) {
+    /**
+     * @param {!editing.EditingContext} context
+     * @param {boolean=} opt_userInterace
+     * @param {string=} opt_value
+     * @return {boolean}
+     */
+    function dummy(context, opt_userInterace, opt_value) {
+      return false;
+    }
+    return dummy;
+  }
 
   editing.defineCommand('backColor', makeInlineStyleCommand({
     cssProperty: 'background-color',

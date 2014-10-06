@@ -138,5 +138,8 @@ editing.defineCommand('selectAll', (function() {
 
   // Note: For ease of debugging, we would like to see function name in stack
   // trace, we use named function rather than anonymous function.
-  return selectAllCommand;
+  return {
+    function: selectAllCommand,
+    undoable: false
+  };
 })());

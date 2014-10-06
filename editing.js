@@ -8,19 +8,24 @@ window['editing']= {};
 (function() {
   'use strict';
 
-  /** @type {!Map.<string, !CommandFunction>} */
+  /** @type {!Map.<string, !CommandDefinition>} */
   var commandTable = new Map();
 
   /**
    * @param {string} name
-   * @param {!CommandFunction} commandFunction
+   * @param {(!CommandDefinition|!CommandFunction)} thing
    */
-  function defineCommand(name, commandFunction) {
+  function defineCommand(name, thing) {
+    var commandDefinition = typeof(thing) === 'function' ?
+        {
+          function: /** @type {!CommandFunction} */(thing),
+          undoable: true
+        } : /** @type {!CommandDefinition} */(thing);
     var canonicalName = name.toLowerCase();
-    commandTable.set(canonicalName, commandFunction);
+    commandTable.set(canonicalName, commandDefinition);
     // For historical reasons, backColor and hiliteColor behave identically.
     if (canonicalName === 'backcolor')
-      defineCommand('hilitecolor', commandFunction);
+      defineCommand('hilitecolor', commandDefinition);
   }
 
   // TODO(yosin) Once, Node.isContentEditable works for nodes without render
@@ -47,7 +52,7 @@ window['editing']= {};
 
   /**
    * @param {string} name
-   * @return {?CommandFunction}
+   * @return {?CommandDefinition}
    */
   function lookupCommand(name) {
     return commandTable.get(name.toLowerCase()) || null;

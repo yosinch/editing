@@ -80,8 +80,8 @@ editing.Editor = (function() {
     }
     var userInterface = Boolean(opt_userInterface);
     var value = opt_value === undefined ? '' : String(opt_value);
-    var commandFunction = editing.lookupCommand(name);
-    if (!commandFunction)
+    var commandDefinition = editing.lookupCommand(name);
+    if (!commandDefinition)
       throw new Error('No such command ' + name);
     if (this.currentContext_) {
       throw new Error("We don't execute document.execCommand('" + name +
@@ -96,19 +96,21 @@ editing.Editor = (function() {
     if (DEBUG) {
       // TODO(yosin) Once we finish debugging, we should move calling
       // |commandFunction| into try-finally block.
-      returnValue = commandFunction(context, userInterface, value);
+      returnValue = commandDefinition.function(context, userInterface, value);
       this.currentContext_ = null;
       this.setDomSelection(context.endingSelection);
-      this.undoStack_.push({
-        commandName: name,
-        endingSelection: context.endingSelection,
-        operations: context.operations,
-        startingSelection: context.startingSelection
-      });
+      if (commandDefinition.undoable) {
+        this.undoStack_.push({
+          commandName: name,
+          endingSelection: context.endingSelection,
+          operations: context.operations,
+          startingSelection: context.startingSelection
+        });
+      }
       return returnValue;
     }
     try {
-      returnValue = commandFunction(context, userInterface, value);
+      returnValue = commandDefinition.function(context, userInterface, value);
       succeeded = true;
     } catch (exception) {
       console.log('execCommand', exception);
@@ -121,12 +123,14 @@ editing.Editor = (function() {
       console.assert(context.startingSelection instanceof
                      editing.ImmutableSelection);
       this.setDomSelection(context.endingSelection);
-      this.undoStack_.push({
-        commandName: name,
-        endingSelection: context.endingSelection,
-        operations: context.operations,
-        startingSelection: context.startingSelection
-      });
+      if (commandDefinition.undoable) {
+        this.undoStack_.push({
+          commandName: name,
+          endingSelection: context.endingSelection,
+          operations: context.operations,
+          startingSelection: context.startingSelection
+        });
+      }
       return returnValue;
     }
   }

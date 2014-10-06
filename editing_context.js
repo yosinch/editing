@@ -220,10 +220,10 @@ editing.EditingContext = (function() {
     }
     var userInterface = Boolean(opt_userInterface);
     var value = opt_value === undefined ? '' : String(opt_value);
-    var commandFunction = editing.lookupCommand(name);
-    if (!commandFunction)
+    var commandDefinition = editing.lookupCommand(name);
+    if (!commandDefinition)
       throw new Error('No such command ' + name);
-    return commandFunction(this, userInterface, value);
+    return commandDefinition.function(this, userInterface, value);
   }
 
   /**
