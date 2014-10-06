@@ -48,18 +48,18 @@ editing.defineCommand('selectAll', (function() {
   }
 
   /**
-   * @param {!Selection} selection
+   * @param {Selection} domSelection
    * @return {boolean}
    */
-  function isFullySelected(selection) {
-    if (!selection.isRange)
+  function isFullySelected(domSelection) {
+    if (!domSelection || !domSelection.anchorNode || !domSelection.focusNode)
       return false;
-    if (selection.anchorNode.tagName !== 'BODY' ||
-        selection.focusNode.tagName !== 'BODY') {
+    if (domSelection.anchorNode.tagName !== 'BODY' ||
+        domSelection.focusNode.tagName !== 'BODY') {
       return false;
     }
-    return !selection.startOffset &&
-           selection.endOffset === selection.anchorNode.childNodes.length;
+    return !domSelection.anchorOffset &&
+           domSelection.focusOffset === domSelection.anchorNode.childNodes.length;
   }
 
   /**
