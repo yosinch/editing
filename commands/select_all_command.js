@@ -41,6 +41,54 @@ editing.defineCommand('selectAll', (function() {
   }
 
   /**
+   * @param {!Document} targetDocument
+   * @return {Element}
+   */
+  function findHostingFrameElement(targetDocument) {
+    var targetWindow = targetDocument.defaultView;
+    if (!targetWindow)
+      return null;
+    return targetWindow.frameElement;
+  }
+
+  /**
+   * @param {!editing.ImmutableSelection} selection
+   * @return {boolean}
+   */
+  function isFullySelected(selection) {
+    if (!selection.isRange)
+      return false;
+    if (selection.anchorNode.tagName !== 'BODY' ||
+        selection.focusNode.tagName !== 'BODY') {
+      return false;
+    }
+    return !selection.startOffset &&
+           selection.endOffset === selection.anchorNode.childNodes.length;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * For ease of deleting frame, we set selection to cover a frame element on
+   * parent window.
+   */
+  function selectFrameElementInParentIfFullySelected(context) {
+    var selection = context.endingSelection;
+    if (!isFullySelected(selection))
+      return;
+    var frameElement = findHostingFrameElement(context.document);
+    if (!frameElement)
+      return;
+    var ownerElement = frameElement.parentNode;
+    if (!ownerElement || !ownerElement.isContentEditable)
+      return;
+    var frameElementNodeIndex = editing.dom.nodeIndex(frameElement);
+    var parentSelection = ownerElement.ownerDocument.getSelection();
+    parentSelection.collapse(ownerElement, frameElementNodeIndex);
+    parentSelection.extend(ownerElement, frameElementNodeIndex + 1);
+    ownerElement.focus();
+  }
+
+  /**
    * @param {!editing.EditingContext} context
    * @param {!Element} element
    */
@@ -70,6 +118,7 @@ editing.defineCommand('selectAll', (function() {
     context.setEndingSelection(new editing.ImmutableSelection(
         contentEditable, 0, contentEditable, contentEditable.childNodes.length,
         editing.SelectionDirection.ANCHOR_IS_START));
+    selectFrameElementInParentIfFullySelected(context);
     return true;
   }
 
@@ -157,6 +206,7 @@ editing.defineCommand('selectAll', (function() {
     context.setEndingSelection(new editing.ImmutableSelection(
         bodyElement, 0, bodyElement, bodyElement.childNodes.length,
         editing.SelectionDirection.ANCHOR_IS_START));
+    selectFrameElementInParentIfFullySelected(context);
     return true;
   }
 

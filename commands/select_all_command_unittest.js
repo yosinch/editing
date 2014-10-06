@@ -64,6 +64,31 @@ testCaseWithSample('selectAll.contentEditable.cancel',
   });
 
 //
+// IFRAME element
+//
+testCaseWithSample('selectAll.frame.1',
+  '|<div contenteditable><iframe></iframe></div>',
+  function(context) {
+    // Execute "selectAll" inside IFRAME element.
+    var iframe = context.document.querySelector('iframe');
+    var iframeDocument = iframe.contentDocument;
+    iframeDocument.body.appendChild(iframeDocument.createTextNode('foo'));
+    var iframeEditor = new editing.Editor(iframeDocument);
+    var iframeContext = new editing.EditingContext(iframeEditor, 'selectAll',
+        editing.ImmutableSelection.EMPTY_SELECTION);
+    iframeContext.execCommand('selectAll');
+
+    // We should select IFRAME element.
+    var domSelection = context.document.getSelection();
+    expectEq(context.document.body.firstChild,
+             function() { return domSelection.anchorNode; });
+    expectEq(0, function() { return domSelection.anchorOffset; })
+    expectEq(context.document.body.firstChild,
+             function() { return domSelection.focusNode; });
+    expectEq(1, function() { return domSelection.focusOffset; })
+  });
+
+//
 // INPUT element
 //
 testCaseWithSample('selectAll.input.1',
