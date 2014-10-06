@@ -19,15 +19,17 @@ testCaseWithSample('selectAll.noEditale.cancel',
     context.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
+    var lastSelection = context.editor.getDomSelection();
     context.execCommand('selectAll');
-    expectEq(context.startingSelection.anchorNode,
-             function() { return context.endingSelection.anchorNode; });
-    expectEq(context.startingSelection.anchorOffset,
-             function() { return context.endingSelection.anchorOffset; });
-    expectEq(context.startingSelection.focusNode,
-             function() { return context.endingSelection.focusNode; });
-    expectEq(context.startingSelection.focusOffset,
-             function() { return context.endingSelection.focusOffset; });
+    var domSelection = context.document.getSelection();
+    expectEq(lastSelection.anchorNode,
+             function() { return domSelection.anchorNode; });
+    expectEq(lastSelection.anchorOffset,
+             function() { return domSelection.anchorOffset; });
+    expectEq(lastSelection.focusNode,
+             function() { return domSelection.focusNode; });
+    expectEq(lastSelection.focusOffset,
+             function() { return domSelection.focusOffset; });
   });
 
 //
@@ -52,15 +54,17 @@ testCaseWithSample('selectAll.contentEditable.cancel',
     context.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
+    var lastSelection = context.editor.getDomSelection();
     context.execCommand('selectAll');
-    expectEq(context.startingSelection.anchorNode,
-             function() { return context.endingSelection.anchorNode; });
-    expectEq(context.startingSelection.anchorOffset,
-             function() { return context.endingSelection.anchorOffset; });
-    expectEq(context.startingSelection.focusNode,
-             function() { return context.endingSelection.focusNode; });
-    expectEq(context.startingSelection.focusOffset,
-             function() { return context.endingSelection.focusOffset; });
+    var domSelection = context.document.getSelection();
+    expectEq(lastSelection.anchorNode,
+             function() { return domSelection.anchorNode; });
+    expectEq(lastSelection.anchorOffset,
+             function() { return domSelection.anchorOffset; });
+    expectEq(lastSelection.focusNode,
+             function() { return domSelection.focusNode; });
+    expectEq(lastSelection.focusOffset,
+             function() { return domSelection.focusOffset; });
   });
 
 //
@@ -98,10 +102,10 @@ testCaseWithSample('selectAll.input.1',
     inputElement.focus();
     inputElement.setSelectionRange(1, 1);
     context.execCommand('selectAll');
-    var selection = context.endingSelection;
-    expectTrue(function() { return context.endingSelection.isCaret; });
-    expectEq(inputElement.parentNode, function() { return selection.anchorNode; });
-    expectEq(1, function() { return selection.anchorOffset; });
+    var domSelection = context.document.getSelection();
+    expectTrue(function() { return domSelection.isCollapsed; });
+    expectEq(inputElement.parentNode, function() { return domSelection.anchorNode; });
+    expectEq(1, function() { return domSelection.anchorOffset; });
     expectEq(0, function() { return inputElement.selectionStart; });
     expectEq(3, function() { return inputElement.selectionEnd; });
   });
@@ -114,15 +118,17 @@ testCaseWithSample('selectAll.input.cancel',
     context.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
+    var lastSelection = context.editor.getDomSelection();
     context.execCommand('selectAll');
-    expectEq(context.startingSelection.anchorNode,
-             function() { return context.endingSelection.anchorNode; });
-    expectEq(context.startingSelection.anchorOffset,
-             function() { return context.endingSelection.anchorOffset; });
-    expectEq(context.startingSelection.focusNode,
-             function() { return context.endingSelection.focusNode; });
-    expectEq(context.startingSelection.focusOffset,
-             function() { return context.endingSelection.focusOffset; });
+    var domSelection = context.document.getSelection();
+    expectEq(lastSelection.anchorNode,
+             function() { return domSelection.anchorNode; });
+    expectEq(lastSelection.anchorOffset,
+             function() { return domSelection.anchorOffset; });
+    expectEq(lastSelection.focusNode,
+             function() { return domSelection.focusNode; });
+    expectEq(lastSelection.focusOffset,
+             function() { return domSelection.focusOffset; });
   });
 
 //
@@ -135,7 +141,8 @@ testCaseWithSample('selectAll.select.multiple',
     var selectElement = context.document.querySelector('select');
     selectElement.focus();
     context.execCommand('selectAll');
-    expectTrue(function() { return context.endingSelection.isEmpty; });
+    var domSelection = context.document.getSelection();
+    expectEq(1, function() { return domSelection.rangeCount; });
     expectTrue(function() { return selectElement.options[0].selected; });
     expectTrue(function() { return selectElement.options[1].selected; });
     expectTrue(function() { return selectElement.options[2].selected; });
@@ -150,8 +157,17 @@ testCaseWithSample('selectAll.select.multiple.cancel',
     context.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
+    var lastSelection = context.editor.getDomSelection();
     context.execCommand('selectAll');
-    expectTrue(function() { return context.endingSelection.isEmpty; });
+    var domSelection = context.document.getSelection();
+    expectEq(lastSelection.anchorNode,
+             function() { return domSelection.anchorNode; });
+    expectEq(lastSelection.anchorOffset,
+             function() { return domSelection.anchorOffset; });
+    expectEq(lastSelection.focusNode,
+             function() { return domSelection.focusNode; });
+    expectEq(lastSelection.focusOffset,
+             function() { return domSelection.focusOffset; });
     expectTrue(function() { return selectElement.options[0].selected; });
     expectTrue(function() { return selectElement.options[1].selected; });
     expectTrue(function() { return selectElement.options[2].selected; });
@@ -173,10 +189,11 @@ testCaseWithSample('selectAll.textArea.1',
     textAreaElement.focus();
     textAreaElement.setSelectionRange(1, 1);
     context.execCommand('selectAll');
-    var selection = context.endingSelection;
-    expectTrue(function() { return context.endingSelection.isCaret; });
-    expectEq(textAreaElement.parentNode, function() { return selection.anchorNode; });
-    expectEq(1, function() { return selection.anchorOffset; });
+    var domSelection = context.document.getSelection();
+    expectTrue(function() { return domSelection.isCollapsed; });
+    expectEq(textAreaElement.parentNode,
+             function() { return domSelection.anchorNode; });
+    expectEq(1, function() { return domSelection.anchorOffset; });
     expectEq(0, function() { return textAreaElement.selectionStart; });
     expectEq(3, function() { return textAreaElement.selectionEnd; });
   });
@@ -189,13 +206,15 @@ testCaseWithSample('selectAll.textArea.cancel',
     context.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
+    var lastSelection = context.editor.getDomSelection();
     context.execCommand('selectAll');
-    expectEq(context.startingSelection.anchorNode,
-             function() { return context.endingSelection.anchorNode; });
-    expectEq(context.startingSelection.anchorOffset,
-             function() { return context.endingSelection.anchorOffset; });
-    expectEq(context.startingSelection.focusNode,
-             function() { return context.endingSelection.focusNode; });
-    expectEq(context.startingSelection.focusOffset,
-             function() { return context.endingSelection.focusOffset; });
+    var domSelection = context.document.getSelection();
+    expectEq(lastSelection.anchorNode,
+             function() { return domSelection.anchorNode; });
+    expectEq(lastSelection.anchorOffset,
+             function() { return domSelection.anchorOffset; });
+    expectEq(lastSelection.focusNode,
+             function() { return domSelection.focusNode; });
+    expectEq(lastSelection.focusOffset,
+             function() { return domSelection.focusOffset; });
   });

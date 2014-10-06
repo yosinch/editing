@@ -12,11 +12,7 @@ editing.defineCommand('selectAll', (function() {
    */
   function dispatchSelectStartEvent(context, element) {
     var event = new Event('selectstart', {bubbles: true, cancelable: true});
-    if (element.dispatchEvent(event))
-      return true;
-    // Since "selectsart" event is canceled, we keep current selection.
-    context.setEndingSelection(context.startingSelection);
-    return false;
+    return element.dispatchEvent(event);
   }
 
   /**
@@ -52,7 +48,7 @@ editing.defineCommand('selectAll', (function() {
   }
 
   /**
-   * @param {!editing.ImmutableSelection} selection
+   * @param {!Selection} selection
    * @return {boolean}
    */
   function isFullySelected(selection) {
@@ -72,7 +68,7 @@ editing.defineCommand('selectAll', (function() {
    * parent window.
    */
   function selectFrameElementInParentIfFullySelected(context) {
-    var selection = context.endingSelection;
+    var selection = context.document.getSelection();
     if (!isFullySelected(selection))
       return;
     var frameElement = findHostingFrameElement(context.document);
@@ -90,18 +86,16 @@ editing.defineCommand('selectAll', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} element
+   * @param {!Element} startContainer
+   * @param {number} startOffset
+   * @param {!Element} endContainer
+   * @param {number} endOffset
    */
-  function setEndingSelectionAt(context, element) {
-    var container = element.parentNode;
-    if (!container) {
-      context.setEndingSelectionAsEmpty();
-      return;
-    }
-    var nodeIndex = editing.dom.nodeIndex(element);
-    context.setEndingSelection(new editing.ImmutableSelection(
-        container, nodeIndex, container, nodeIndex,
-        editing.SelectionDirection.ANCHOR_IS_START));
+  function setEndingSelection(context, startContainer, startOffset,
+                              endContainer, endOffset) {
+    var domSelection = context.document.getSelection();
+    domSelection.collapse(startContainer, startOffset);
+    domSelection.extend(endContainer, endOffset);
   }
 
   /**
@@ -115,9 +109,8 @@ editing.defineCommand('selectAll', (function() {
       return false;
     if (!dispatchSelectStartEvent(context, contentEditable))
       return true;
-    context.setEndingSelection(new editing.ImmutableSelection(
-        contentEditable, 0, contentEditable, contentEditable.childNodes.length,
-        editing.SelectionDirection.ANCHOR_IS_START));
+    setEndingSelection(context, contentEditable, 0, contentEditable,
+                       contentEditable.childNodes.length);
     selectFrameElementInParentIfFullySelected(context);
     return true;
   }
@@ -137,7 +130,6 @@ editing.defineCommand('selectAll', (function() {
     if (!dispatchSelectStartEvent(context, inputElement))
       return true;
     inputElement.setSelectionRange(0, inputElement.value.length);
-    setEndingSelectionAt(context, inputElement);
     return true;
   }
 
@@ -159,7 +151,6 @@ editing.defineCommand('selectAll', (function() {
       var optionElement = /** @type {!HTMLOptionElement} */(element);
       optionElement.selected = true;
     }
-    context.setEndingSelectionAsEmpty();
     return true;
   }
 
@@ -176,7 +167,6 @@ editing.defineCommand('selectAll', (function() {
     if (!dispatchSelectStartEvent(context, textAreaElement))
       return true;
     textAreaElement.setSelectionRange(0, textAreaElement.value.length);
-    setEndingSelectionAt(context, textAreaElement);
     return true;
   }
 
@@ -198,14 +188,12 @@ editing.defineCommand('selectAll', (function() {
       return true;
     var bodyElement = context.document.body;
     if (!bodyElement) {
-      context.setEndingSelectionAsEmpty();
       return true;
     }
     if (!dispatchSelectStartEvent(context, bodyElement))
       return true;
-    context.setEndingSelection(new editing.ImmutableSelection(
-        bodyElement, 0, bodyElement, bodyElement.childNodes.length,
-        editing.SelectionDirection.ANCHOR_IS_START));
+    setEndingSelection(context, bodyElement, 0, bodyElement,
+                       bodyElement.childNodes.length);
     selectFrameElementInParentIfFullySelected(context);
     return true;
   }

@@ -87,8 +87,12 @@ editing.Editor = (function() {
         "') this time, because it is called recursively in" +
         " document.execCommand('" + this.currentContext_.name + "')");
     }
+
     this.selection_ = this.getDomSelection();
     var context = this.createContext(name, this.selection_);
+    if (!commandDefinition.undoable)
+      return commandDefinition.function(context, userInterface, value);
+
     this.currentContext_ = context;
     var succeeded = false;
     var returnValue;
@@ -97,23 +101,22 @@ editing.Editor = (function() {
       succeeded = true;
     } catch (exception) {
       console.log('execCommand', exception);
+      throw exception;
     } finally {
       this.currentContext_ = null;
       if (!succeeded)
-        return 'FAILED';
+        return false;
       console.assert(context.endingSelection instanceof
                      editing.ImmutableSelection);
       console.assert(context.startingSelection instanceof
                      editing.ImmutableSelection);
       this.setDomSelection(context.endingSelection);
-      if (commandDefinition.undoable) {
-        this.undoStack_.push({
-          commandName: name,
-          endingSelection: context.endingSelection,
-          operations: context.operations,
-          startingSelection: context.startingSelection
-        });
-      }
+      this.undoStack_.push({
+        commandName: name,
+        endingSelection: context.endingSelection,
+        operations: context.operations,
+        startingSelection: context.startingSelection
+      });
       return returnValue;
     }
   }
