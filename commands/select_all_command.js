@@ -6,6 +6,20 @@ editing.defineCommand('selectAll', (function() {
   'use strict';
 
   /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   * @return {boolean}
+   */
+  function dispatchSelectStartEvent(context, element) {
+    var event = new Event('selectstart', {bubbles: true, cancelable: true});
+    if (element.dispatchEvent(event))
+      return true;
+    // Since "selectsart" event is canceled, we keep current selection.
+    context.setEndingSelection(context.startingSelection);
+    return false;
+  }
+
+  /**
    * @param {Element} element
    * @return {Element}
    */
@@ -51,6 +65,8 @@ editing.defineCommand('selectAll', (function() {
     var contentEditable = findHighestContentEditableOrBody(activeElement);
     if (!contentEditable)
       return false;
+    if (!dispatchSelectStartEvent(context, contentEditable))
+      return true;
     context.setEndingSelection(new editing.ImmutableSelection(
         contentEditable, 0, contentEditable, contentEditable.childNodes.length,
         editing.SelectionDirection.ANCHOR_IS_START));
@@ -69,6 +85,8 @@ editing.defineCommand('selectAll', (function() {
     var inputElement = /** @type {!HTMLInputElement} */(activeElement);
     if (inputElement.type !== 'text')
       return false;
+    if (!dispatchSelectStartEvent(context, inputElement))
+      return true;
     inputElement.setSelectionRange(0, inputElement.value.length);
     setEndingSelectionAt(context, inputElement);
     return true;
@@ -78,6 +96,8 @@ editing.defineCommand('selectAll', (function() {
    * @param {!editing.EditingContext} context
    * @param {Element} activeElement
    * @return {boolean}
+   * Note: We don't dispatch "selectstart" event for SELECT element to follow
+   * C++ implementation.
    */
   function trySelectAllOnSelectElement(context, activeElement) {
     if (!activeElement || activeElement.tagName !== 'SELECT')
@@ -104,6 +124,8 @@ editing.defineCommand('selectAll', (function() {
       return false;
     /** @type {!HTMLTextAreaElement} */
     var textAreaElement = /** @type {!HTMLTextAreaElement} */(activeElement);
+    if (!dispatchSelectStartEvent(context, textAreaElement))
+      return true;
     textAreaElement.setSelectionRange(0, textAreaElement.value.length);
     setEndingSelectionAt(context, textAreaElement);
     return true;
@@ -130,6 +152,8 @@ editing.defineCommand('selectAll', (function() {
       context.setEndingSelectionAsEmpty();
       return true;
     }
+    if (!dispatchSelectStartEvent(context, bodyElement))
+      return true;
     context.setEndingSelection(new editing.ImmutableSelection(
         bodyElement, 0, bodyElement, bodyElement.childNodes.length,
         editing.SelectionDirection.ANCHOR_IS_START));
