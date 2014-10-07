@@ -41,7 +41,7 @@ testing.define('END_TAG_OMISSIBLE', (function() {
   'use strict';
 
   var omissibleTagNames = new Set();
-  for (var tagName of ['br', 'hr', 'img', 'wbr']) {
+  for (var tagName of ['br', 'hr', 'img', 'input', 'wbr']) {
     omissibleTagNames.add(tagName.toUpperCase());
     omissibleTagNames.add(tagName);
   }
