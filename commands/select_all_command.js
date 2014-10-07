@@ -7,33 +7,12 @@ editing.defineCommand('selectAll', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} element
+   * @param {(!Element|!Document)} eventTarget
    * @return {boolean}
    */
-  function dispatchSelectStartEvent(context, element) {
+  function dispatchSelectStartEvent(context, eventTarget) {
     var event = new Event('selectstart', {bubbles: true, cancelable: true});
-    return element.dispatchEvent(event);
-  }
-
-  /**
-   * @param {Element} element
-   * @return {Element}
-   */
-  function findHighestContentEditableOrBody(element) {
-    if (!element)
-      return null;
-    /** @type {?Element} */
-    var result = null;
-    for (var node of editing.dom.ancestorsOrSelf(element)) {
-      if (node.isContentEditable)
-        result = node;
-      if (node.tagName === 'BODY') {
-        // TODO(yosin) Once closure compiler #643 fixed, we change |return|
-        // to |break|.
-        return result || node;
-      }
-    }
-    return result;
+    return eventTarget.dispatchEvent(event);
   }
 
   /**
@@ -58,8 +37,98 @@ editing.defineCommand('selectAll', (function() {
         domSelection.focusNode.tagName !== 'BODY') {
       return false;
     }
-    return !domSelection.anchorOffset &&
-           domSelection.focusOffset === domSelection.anchorNode.childNodes.length;
+    var maxOffset = domSelection.anchorNode.childNodes.length;
+    return !domSelection.anchorOffset && domSelection.focusOffset === maxOffset;
+  }
+
+  /**
+   * @param {!Element} element
+   * @return {boolean}
+   */
+  function isTextField(element) {
+    if (element.tagName !== 'INPUT')
+      return false;
+    var inputElement = /** @type {!HTMLInputElement} */(element);
+    return inputElement.type === 'text';
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Node} startContainer
+   */
+  function selectAllOnContainer(context, startContainer) {
+    if (startContainer.nodeType === Node.ELEMENT_NODE &&
+        startContainer.isContentEditable) {
+      selectAllOnContentEditable(context,
+                                 /** @type {!Element} */(startContainer));
+      return;
+    }
+    selectAllOnDocument(context);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} contentEditable
+   */
+  function selectAllOnContentEditable(context, contentEditable) {
+    var selection = context.document.getSelection();
+    if (!selection)
+      return;
+    /** @type {(!Element|!Document)} */
+    var rootEditable = contentEditable;
+    for (var runner = contentEditable;
+         runner && runner.nodeType === Node.ELEMENT_NODE;
+         runner = runner.parentNode) {
+      if (runner.isContentEditable)
+        rootEditable = /** @type {!Element} */(runner);
+    }
+    if (!dispatchSelectStartEvent(context, rootEditable))
+      return;
+    selection.selectAllChildren(rootEditable);
+    selectFrameElementInParentIfFullySelected(context);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   */
+  function selectAllOnDocument(context) {
+    var selection = context.document.getSelection();
+    if (!selection)
+      return;
+    var selectStartTarget = context.document.body;
+    if (selectStartTarget &&
+        !dispatchSelectStartEvent(context, selectStartTarget)) {
+      return;
+    }
+    selection.selectAllChildren(document);
+    if (selection.isCollapsed) {
+      var target = context.document.documentElement || context.document.body;
+      if (target)
+        selection.selectAllChildren(target);
+    }
+    selectFrameElementInParentIfFullySelected(context);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!HTMLTextAreaElement} textAreaElement
+   */
+  function selectAllOnTextAreaElement(context, textAreaElement) {
+    if (!dispatchSelectStartEvent(context, textAreaElement))
+      return;
+    textAreaElement.setSelectionRange(0, textAreaElement.value.length);
+    return;
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!HTMLInputElement} inputElement
+   */
+  function selectAllOnTextField(context, inputElement) {
+    if (!dispatchSelectStartEvent(context, inputElement))
+      return;
+    inputElement.setSelectionRange(0, inputElement.value.length);
+    return;
   }
 
   /**
@@ -86,61 +155,12 @@ editing.defineCommand('selectAll', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} startContainer
-   * @param {number} startOffset
-   * @param {!Element} endContainer
-   * @param {number} endOffset
-   */
-  function setEndingSelection(context, startContainer, startOffset,
-                              endContainer, endOffset) {
-    var domSelection = context.document.getSelection();
-    domSelection.collapse(startContainer, startOffset);
-    domSelection.extend(endContainer, endOffset);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {Element} activeElement
-   * @return {boolean}
-   */
-  function trySelectAllOnContentEditable(context, activeElement) {
-    var contentEditable = findHighestContentEditableOrBody(activeElement);
-    if (!contentEditable)
-      return false;
-    if (!dispatchSelectStartEvent(context, contentEditable))
-      return true;
-    setEndingSelection(context, contentEditable, 0, contentEditable,
-                       contentEditable.childNodes.length);
-    selectFrameElementInParentIfFullySelected(context);
-    return true;
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {Element} activeElement
-   * @return {boolean}
-   */
-  function trySelectAllOnInputElement(context, activeElement) {
-    if (!activeElement || activeElement.tagName !== 'INPUT')
-      return false;
-    /** @type {!HTMLInputElement} */
-    var inputElement = /** @type {!HTMLInputElement} */(activeElement);
-    if (inputElement.type !== 'text')
-      return false;
-    if (!dispatchSelectStartEvent(context, inputElement))
-      return true;
-    inputElement.setSelectionRange(0, inputElement.value.length);
-    return true;
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {Element} activeElement
    * @return {boolean}
    * Note: We don't dispatch "selectstart" event for SELECT element to follow
    * C++ implementation.
    */
-  function trySelectAllOnSelectElement(context, activeElement) {
+  function trySelectAllOnSelectElement(context) {
+    var activeElement = context.document.activeElement;
     if (!activeElement || activeElement.tagName !== 'SELECT')
       return false;
     /** @type {!HTMLSelectElement} */
@@ -156,45 +176,55 @@ editing.defineCommand('selectAll', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {Element} activeElement
-   * @return {boolean}
-   */
-  function trySelectAllOnTextAreaElement(context, activeElement) {
-    if (!activeElement || activeElement.tagName !== 'TEXTAREA')
-      return false;
-    /** @type {!HTMLTextAreaElement} */
-    var textAreaElement = /** @type {!HTMLTextAreaElement} */(activeElement);
-    if (!dispatchSelectStartEvent(context, textAreaElement))
-      return true;
-    textAreaElement.setSelectionRange(0, textAreaElement.value.length);
-    return true;
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.
    * @param {string} value Noe used.
    * @return {boolean}
    */
   function selectAllCommand(context, userInterface, value) {
-    var activeElement = context.document.activeElement;
-    if (trySelectAllOnInputElement(context, activeElement))
+    if (trySelectAllOnSelectElement(context))
       return true;
-    if (trySelectAllOnSelectElement(context, activeElement))
-      return true;
-    if (trySelectAllOnTextAreaElement(context, activeElement))
-      return true;
-    if (trySelectAllOnContentEditable(context, activeElement))
-      return true;
-    var bodyElement = context.document.body;
-    if (!bodyElement) {
+
+    var domSelection = context.document.getSelection();
+    if (!domSelection || !domSelection.rangeCount) {
+      selectAllOnDocument(context);
       return true;
     }
-    if (!dispatchSelectStartEvent(context, bodyElement))
+
+    var range = domSelection.getRangeAt(0);
+    var startContainer = range.startContainer;
+    if (startContainer.nodeType !== Node.DOCUMENT_NODE &&
+        startContainer.nodeType !== Node.ELEMENT_NODE) {
+      if (!startContainer.parentNode)
+        return true;
+      selectAllOnContainer(context, startContainer.parentNode);
       return true;
-    setEndingSelection(context, bodyElement, 0, bodyElement,
-                       bodyElement.childNodes.length);
-    selectFrameElementInParentIfFullySelected(context);
+    }
+
+    if (startContainer.isContentEditable) {
+      selectAllOnContainer(context, startContainer);
+      return true;
+    }
+
+    var targetNode = startContainer.childNodes[range.startOffset];
+    if (!targetNode || targetNode.nodeType !== Node.ELEMENT_NODE) {
+      selectAllOnContainer(context, startContainer);
+      return true;
+    }
+
+    var targetElement = /** @type {!Element} */(targetNode);
+    if (isTextField(targetElement)) {
+      selectAllOnTextField(context,
+                           /** @type {!HTMLInputElement} */(targetElement));
+      return true;
+    }
+
+    if (targetElement.tagName === 'TEXTAREA') {
+      selectAllOnTextAreaElement(context,
+          /** @type {!HTMLTextAreaElement} */(targetElement));
+      return true;
+    }
+
+    selectAllOnContainer(context, targetElement);
     return true;
   }
 

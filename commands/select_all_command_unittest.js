@@ -44,12 +44,21 @@ testCaseFor('selectAll.contentEditable.1', {
 // Node: Chrome doesn't allow set focus to P element in below example.
 testCaseFor('selectAll.contentEditable.2', {
   after: '<div contenteditable>^foo<p contenteditable>bar</p>baz|</div>',
-  before: '<div contentEditable>foo|<p contenteditable>bar</p>baz</div>',
+  before: '<div contenteditable>foo|<p contenteditable>bar</p>baz</div>',
+  sampleId: 'editing/selection/mixed-editability-6.html',
+  undo: false
+});
+
+// Note: We should BR should be selected too, but Chrome doesn't.
+testCaseFor('selectAll.contentEditable.3', {
+  after: '<div contenteditable>^<input>|<br></div>',
+  before: '<div contenteditable>|<input><br></div>',
+  sampleId: 'editing/inserting/5994480-2.html',
   undo: false
 });
 
 testCaseWithSample('selectAll.contentEditable.cancel',
-  '<div contentEditable>foo|</div>',
+  '<div contenteditable>foo|</div>',
   function(context) {
     context.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
@@ -66,6 +75,12 @@ testCaseWithSample('selectAll.contentEditable.cancel',
     expectEq(lastSelection.focusOffset,
              function() { return domSelection.focusOffset; });
   });
+
+testCaseFor('selectAll.contentEditable.mixed', {
+  after: '<div contenteditable>|foo<p contenteditable="false">bar<b contenteditable>baz</b></p></div>',
+  before: '<div contenteditable>foo<p contenteditable="false">bar<b contenteditable>|baz</b></p></div>',
+  undo: false
+});
 
 //
 // IFRAME element
