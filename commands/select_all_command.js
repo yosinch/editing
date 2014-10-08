@@ -52,6 +52,24 @@ editing.defineCommand('selectAll', (function() {
     return inputElement.type === 'text';
   }
 
+  // TODO(yosin) We should move |nodeIndex()| to another file to share with
+  // others.
+  /**
+   * @param {!Node} node
+   * @return {number}
+   */
+  function nodeIndex(node) {
+    var index = 0;
+    var parentNode = node.parentNode;
+    console.assert(parentNode, node);
+    for (var child = parentNode.firstChild; child; child = child.nextSibling) {
+      if (child === node)
+        return index;
+      ++index;
+    }
+    throw new Error('NOTREACEHD');
+  }
+
   /**
    * @param {!editing.EditingContext} context
    * @param {!Node} startContainer
@@ -146,7 +164,7 @@ editing.defineCommand('selectAll', (function() {
     var ownerElement = frameElement.parentNode;
     if (!ownerElement || !ownerElement.isContentEditable)
       return;
-    var frameElementNodeIndex = editing.dom.nodeIndex(frameElement);
+    var frameElementNodeIndex = nodeIndex(frameElement);
     var parentSelection = ownerElement.ownerDocument.getSelection();
     parentSelection.collapse(ownerElement, frameElementNodeIndex);
     parentSelection.extend(ownerElement, frameElementNodeIndex + 1);
@@ -167,10 +185,9 @@ editing.defineCommand('selectAll', (function() {
     var selectElement = /** @type {!HTMLSelectElement} */(activeElement);
     if (!selectElement.multiple)
       return false;
-    for (var element of new editing.dom.HTMLIterable(selectElement.options)) {
-      var optionElement = /** @type {!HTMLOptionElement} */(element);
-      optionElement.selected = true;
-    }
+    var options = selectElement.options;
+    for (var index = 0; index < options.length; ++index)
+      options[index].selected = true;
     return true;
   }
 
