@@ -36,7 +36,7 @@ editing.Editor = (function() {
     createContext: function(name, selection) {},
 
     /** @return {!editing.ImmutableSelection} */
-    getDomSelection: function() {},
+    getSelectionFromDom: function() {},
 
     /**
      * @param {!editing.ImmutableSelection} selection
@@ -54,7 +54,7 @@ editing.Editor = (function() {
       console.assert(typeof userInterface === 'boolean', userInterface);
       console.assert(typeof value === 'string', value);
       var editor = Editor.getOrCreate(contextDocument);
-      editor.selection_ = editor.getDomSelection();
+      editor.selection_ = editor.getSelectionFromDom();
       var context = editor.createContext(commandName, editor.selection_);
       editor.currentContext_ = context;
       var succeeded = false;
@@ -130,7 +130,7 @@ editing.Editor = (function() {
    * @this {!Editor}
    * @return {!editing.ImmutableSelection}
    */
-  function getDomSelection() {
+  function getSelectionFromDom() {
     /**
      * @param {!Selection} domSelection
      * @return {editing.SelectionDirection}
@@ -242,7 +242,7 @@ editing.Editor = (function() {
     createContext: createContext,
     currentContext: function() { return this.currentContext_; },
     execCommand: execCommand,
-    getDomSelection: getDomSelection,
+    getSelectionFromDom: getSelectionFromDom,
     get document() { return this.document_; },
     get selection() { return this.selection_; },
     setDomSelection: setDomSelection,

@@ -20,7 +20,7 @@ testCaseWithSample('selectAll.noEditale.cancel',
       event.preventDefault();
     });
     var editor = editing.Editor.getOrCreate(sample.document);
-    var lastSelection = editor.getDomSelection();
+    var lastSelection = editor.getSelectionFromDom();
     editor.execCommand('selectAll');
     var domSelection = editor.document.getSelection();
     expectEq(lastSelection.anchorNode,
@@ -65,7 +65,7 @@ testCaseWithSample('selectAll.contentEditable.cancel',
       event.preventDefault();
     });
     var editor = editing.Editor.getOrCreate(sample.document);
-    var lastSelection = editor.getDomSelection();
+    var lastSelection = editor.getSelectionFromDom();
     editor.execCommand('selectAll');
     var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
@@ -135,7 +135,7 @@ testCaseWithSample('selectAll.input.cancel',
       event.preventDefault();
     });
     var editor = editing.Editor.getOrCreate(sample.document);
-    var lastSelection = editor.getDomSelection();
+    var lastSelection = editor.getSelectionFromDom();
     editor.execCommand('selectAll');
     var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
@@ -176,7 +176,7 @@ testCaseWithSample('selectAll.select.multiple.cancel',
       event.preventDefault();
     });
     var editor = editing.Editor.getOrCreate(sample.document);
-    var lastSelection = editor.getDomSelection();
+    var lastSelection = editor.getSelectionFromDom();
     editor.execCommand('selectAll');
     var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
@@ -227,7 +227,7 @@ testCaseWithSample('selectAll.textArea.cancel',
       event.preventDefault();
     });
     var editor = editing.Editor.getOrCreate(sample.document);
-    var lastSelection = editor.getDomSelection();
+    var lastSelection = editor.getSelectionFromDom();
     editor.execCommand('selectAll');
     var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,

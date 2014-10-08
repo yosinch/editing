@@ -48,7 +48,7 @@ editing.Editor.prototype.execCommand = function(commandName, opt_userInterface,
                                                 opt_value) {};
 
 /** @return {!editing.ImmutableSelection} */
-editing.Editor.prototype.getDomSelection = function() {};
+editing.Editor.prototype.getSelectionFromDom = function() {};
 
 /**
  * @return {boolean}

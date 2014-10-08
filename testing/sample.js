@@ -197,14 +197,14 @@ testing.define('Sample', (function() {
         throw new Error('execCommand ' + exception);
       }
       try {
-        this.endingSelection_ = editor.getDomSelection();
+        this.endingSelection_ = editor.getSelectionFromDom();
       } catch (exception){
         throw new Error('setSelection ' + exception);
       }
     } else {
       returnValue = this.document_.execCommand.apply(
           this.document_, arguments);
-      this.endingSelection_ = editor.getDomSelection();
+      this.endingSelection_ = editor.getSelectionFromDom();
     }
     return returnValue;
   }

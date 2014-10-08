@@ -155,7 +155,7 @@ function testCaseFor(testCaseName, data) {
           editor.document.body.firstChild,
           // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
           // canonicalized selection rather than resulted selection.
-          {selection: editor.getDomSelection()});
+          {selection: editor.getSelectionFromDom()});
       var expectedResult = data['after'];
       if (stripMarker(expectedResult) == stripMarker(actualResult)) {
         testRunner.pass('Result HTML');
@@ -184,7 +184,7 @@ function testCaseFor(testCaseName, data) {
           editor.document.body.firstChild, {
             // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
             // canonicalized selection rather than resulted selection.
-            selection: editor.getDomSelection(),
+            selection: editor.getSelectionFromDom(),
             visibleTextNode: false
         });
 
@@ -236,7 +236,7 @@ function testCaseFor(testCaseName, data) {
             editor.document.body.firstChild,
             // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
             // canonicalized selection rather than resulted selection.
-            {selection: editor.getDomSelection()});
+            {selection: editor.getSelectionFromDom()});
         sample2.execCommand('undo');
         var sampleUndoResult = testing.serializeNode(
             sample2.document.body.firstChild, {
@@ -280,7 +280,7 @@ function testCaseFor(testCaseName, data) {
             editor.document.body.firstChild,
             // TODO(yosin) Until http://crbug.com/346613 is fixed, we use
             // canonicalized selection rather than resulted selection.
-            {selection: editor.getDomSelection()});
+            {selection: editor.getSelectionFromDom()});
         if (redoResult == actualResult) {
           testRunner.pass('redo');
         } else if (stripMarker(redoResult) == stripMarker(actualResult)) {

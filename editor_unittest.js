@@ -5,9 +5,9 @@
 'use strict';
 
 //
-// getDomSelection
+// getSelectionFromDom
 //
-testCaseWithSample('editor.getDomSelection.1',
+testCaseWithSample('editor.getSelectionFromDom.1',
   // editing/style/apply-style-atomic.html
   '<div contenteditable>|1<progress><a style>2</a></progress></div>',
   function(sample) {
@@ -18,7 +18,7 @@ testCaseWithSample('editor.getDomSelection.1',
     sample.document.getSelection().addRange(range);
     // |range| start is DIV,0 and end is DIV,2
     // selection.anchor is "1",0 and focus is DIV,2
-    var selection = editor.getDomSelection();
+    var selection = editor.getSelectionFromDom();
     expectEq('1', function() { return selection.anchorNode.nodeValue; });
     expectEq(0, function() { return selection.anchorOffset; });
     expectEq('DIV', function() { return selection.focusNode.nodeName; });
