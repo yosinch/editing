@@ -51,9 +51,9 @@ editing.Editor.prototype.execCommand = function(commandName, opt_userInterface,
 editing.Editor.prototype.getDomSelection = function() {};
 
 /**
- * @param {!editing.EditingContext} context
+ * @return {boolean}
  */
-editing.Editor.prototype.redo = function(context) {};
+editing.Editor.prototype.redo = function() {};
 
 /** @type {!editing.ImmutableSelection} */
 editing.Editor.prototype.selection;
@@ -64,6 +64,6 @@ editing.Editor.prototype.selection;
 editing.Editor.prototype.setDomSelection = function(selection) {};
 
 /**
- * @param {!editing.EditingContext} context
+ * @return {boolean}
  */
-editing.Editor.prototype.undo = function(context) {};
+editing.Editor.prototype.undo = function() {};

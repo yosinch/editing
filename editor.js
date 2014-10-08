@@ -16,9 +16,11 @@ editing.Editor = (function() {
     this.currentContext_ = null;
     /** @const @type {!Document} */
     this.document_ = document;
+    /** @type {!Array.<!editing.EditingContext>} */
     this.redoStack_ = [];
     /** @type {editing.ImmutableSelection} */
     this.selection_ = null;
+    /** @type {!Array.<!editing.EditingContext>} */
     this.undoStack_ = [];
     Object.seal(this);
   }
@@ -70,12 +72,7 @@ editing.Editor = (function() {
         console.assert(context.endingSelection instanceof
                        editing.ImmutableSelection);
         editor.setDomSelection(context.endingSelection);
-        editor.undoStack_.push({
-          commandName: commandName,
-          endingSelection: context.endingSelection,
-          operations: context.operations,
-          startingSelection: context.startingSelection
-        });
+        editor.undoStack_.push(context);
         return returnValue;
       }
     }
@@ -189,16 +186,14 @@ editing.Editor = (function() {
    * @this {!Editor}
    * @return {boolean}
    */
-  function redo(context) {
-    if (!this.redoStack_.length) {
-      context.setEndingSelection(context.startingSelection);
+  function redo() {
+    if (!this.redoStack_.length)
       return false;
-    }
-    var commandData = this.redoStack_.pop();
-    for (var operation of commandData.operations)
+    var context = this.redoStack_.pop();
+    for (var operation of context.operations)
       operation.redo();
-    this.undoStack_.push(commandData);
-    context.setEndingSelection(commandData.endingSelection);
+    this.undoStack_.push(context);
+    this.setDomSelection(context.endingSelection);
     return true;
   }
 
@@ -230,21 +225,16 @@ editing.Editor = (function() {
 
   /**
    * @this {!Editor}
-   * @param {!editing.EditingContext} context
    * @return {boolean}
    */
-  function undo(context) {
-    if (!this.undoStack_.length) {
-      context.setEndingSelection(context.startingSelection);
+  function undo() {
+    if (!this.undoStack_.length)
       return false;
-    }
-    var commandData = this.undoStack_.pop();
-    // TODO(yosin) We should not use |reverse()| here. We can do this
-    // without copying array.
-    for (var operation of commandData.operations.slice().reverse())
+    var context = this.undoStack_.pop();
+    for (var operation of context.operations.slice().reverse())
       operation.undo();
-    this.redoStack_.push(commandData);
-    context.setEndingSelection(commandData.startingSelection);
+    this.redoStack_.push(context);
+    this.setDomSelection(context.startingSelection);
     return true;
   }
 
