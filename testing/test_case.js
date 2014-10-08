@@ -105,19 +105,6 @@ function testCaseFor(testCaseName, data) {
         .replace('^', '^</span>');
   }
 
-  function setFocus(document) {
-    var selection = document.getSelection();
-    var anchorNode = selection.anchorNode;
-    var anchorOffset = selection.anchorOffset;
-      var domSelection = editor.document.getSelection();
-      if (domSelection.anchorNode) {
-        var element = domSelection.anchorNode;
-        if (element.nodeType !== Node.ELEMENT_NODE)
-          element = element.parentNode;
-        element.focus();
-      }
-  }
-
   function stripMarker(text) {
     return text.replace('^', '').replace('|', '');
   }
@@ -148,7 +135,6 @@ function testCaseFor(testCaseName, data) {
     try {
       var editor = editing.Editor.getOrCreate(sample.document);
       editor.setDomSelection(sample.startingSelection);
-      sample.setFocus();
 
       // Execute command and check return value
       var expectedReturnValue = data.returnValue === undefined ?
