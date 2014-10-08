@@ -51,6 +51,7 @@ testCaseFor('selectAll.contentEditable.2', {
 });
 
 // Note: We should BR should be selected too, but Chrome doesn't.
+// http://jsfiddle.net/1q9jwehp/
 testCaseFor('selectAll.contentEditable.3', {
   after: '<div contenteditable>^<input>|<br></div>',
   before: '<div contenteditable>|<input><br></div>',
