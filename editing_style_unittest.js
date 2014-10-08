@@ -8,11 +8,13 @@
 // applyInheritedStyle
 //
 testCaseWithSample('style.applyInheritedStyle.1',
-    '<p contenteditable>|<span id="sample" style="font-style: italic; font-weight: bold">012</span><span id="target" style="font-weight: normal">345</span></p>',
-  function(context) {
-    var sample = context.document.querySelector('#sample');
-    var style = new editing.EditingStyle(sample);
-    var target = context.document.querySelector('#target');
+    '<p contenteditable>|<span id="test" style="font-style: italic; font-weight: bold">012</span><span id="target" style="font-weight: normal">345</span></p>',
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selection);
+    var test = sample.document.querySelector('#test');
+    var style = new editing.EditingStyle(test);
+    var target = sample.document.querySelector('#target');
     style.applyInheritedStyle(context, target);
 
     // We should not change 'font-weight' to 'bold', because |element| has
@@ -25,43 +27,45 @@ testCaseWithSample('style.applyInheritedStyle.1',
 // createElements
 //
 testCaseWithSample('style.createElements.1',
-    '<p contenteditable>|foo</p>', function(context) {
-  function sample(propertyName, propertyValue) {
-     var element = context.createElement('span');
-     element.style[propertyName] = propertyValue;
-     var style = new editing.EditingStyle(element);
-     var result = [];
-     style.createElements(context, function(context, property, styleElement) {
-       result.push(styleElement);
-     });
-     if (result.length !== 1)
-       return '';
-     return result[0].outerHTML;
+    '<p contenteditable>|foo</p>', function(sample, selection) {
+  function testIt(propertyName, propertyValue) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selection);
+    var element = sample.createElement('span');
+    element.style[propertyName] = propertyValue;
+    var style = new editing.EditingStyle(element);
+    var result = [];
+    style.createElements(context, function(context, property, styleElement) {
+      result.push(styleElement);
+    });
+    if (result.length !== 1)
+      return '';
+    return result[0].outerHTML;
   }
 
   expectEq('<font color="red"></font>', function() {
-    return sample('color', 'red');
+    return testIt('color', 'red');
   });
   expectEq('<font face="monospace"></font>', function() {
-    return sample('font-family', 'monospace');
+    return testIt('font-family', 'monospace');
   });
   expectEq('<b></b>', function() {
-    return sample('font-weight', 'bold');
+    return testIt('font-weight', 'bold');
   });
   expectEq('<i></i>', function() {
-    return sample('font-style', 'italic');
+    return testIt('font-style', 'italic');
   });
   expectEq('<u></u>', function() {
-    return sample('text-decoration', 'underline');
+    return testIt('text-decoration', 'underline');
   });
   expectEq('<s></s>', function() {
-    return sample('text-decoration', 'line-through');
+    return testIt('text-decoration', 'line-through');
   });
   expectEq('<sub></sub>', function() {
-    return sample('vertical-align', 'sub');
+    return testIt('vertical-align', 'sub');
   });
   expectEq('<sup></sup>', function() {
-    return sample('vertical-align', 'super');
+    return testIt('vertical-align', 'super');
   });
 });
 

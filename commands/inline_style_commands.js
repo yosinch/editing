@@ -8,16 +8,16 @@
   // TODO(hajimehoshi): Temporal definition: we need to implement this later
   /**
    * @param {Object} obj
-   * @return {!CommandFunction}
+   * @return {!UndoableCommandFunction}
    */
   function makeInlineStyleCommand(obj) {
     /**
      * @param {!editing.EditingContext} context
-     * @param {boolean=} opt_userInterace
-     * @param {string=} opt_value
+     * @param {boolean} userInterace
+     * @param {string} value
      * @return {boolean}
      */
-    function dummy(context, opt_userInterace, opt_value) {
+    function dummy(context, userInterace, value) {
       return false;
     }
     return dummy;

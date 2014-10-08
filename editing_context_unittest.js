@@ -21,7 +21,9 @@ function dumpNodes(nodes) {
 // normalizeSelection
 //
 testCaseWithSample('context.normalizeSelection.splitTextCaret',
-  '<p contenteditable>ab|cd</p>', function(context, selectionIn) {
+  '<p contenteditable>ab|cd</p>', function(sample, selectionIn) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selectionIn);
   var selection = context.normalizeSelection(selectionIn);
   expectTrue(function() { return selection.isCaret; });
   expectFalse(function() { return selection.isEmpty; });
@@ -34,7 +36,9 @@ testCaseWithSample('context.normalizeSelection.splitTextCaret',
 
 testCaseWithSample('context.normalizeSelection.splitTextCaretInTree',
   '<p contenteditable><b>bold_1<i>italic_1<s>strike_1|strike_2</s>italic_2</i>bold_2</b></p>',
-  function(context, selectionIn) {
+  function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
     var selection = context.normalizeSelection(selectionIn);
     expectTrue(function() { return selection.isCaret; });
     expectFalse(function() { return selection.isEmpty; });
@@ -46,7 +50,9 @@ testCaseWithSample('context.normalizeSelection.splitTextCaretInTree',
   });
 
 testCaseWithSample('context.normalizeSelection.splitTextAnchorFocus',
-  '<p contenteditable>a^bc|d</p>', function(context, selectionIn) {
+  '<p contenteditable>a^bc|d</p>', function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
     var selection = context.normalizeSelection(selectionIn);
     expectFalse(function() { return selection.isCaret; });
     expectFalse(function() { return selection.isEmpty; });
@@ -58,7 +64,9 @@ testCaseWithSample('context.normalizeSelection.splitTextAnchorFocus',
   });
 
 testCaseWithSample('context.normalizeSelection.splitTextFocusAnchor',
-  '<p contenteditable>a|bc^d</p>', function(context, selectionIn) {
+  '<p contenteditable>a|bc^d</p>', function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
     var selection = context.normalizeSelection(selectionIn);
     expectFalse(function() { return selection.isCaret; });
     expectFalse(function() { return selection.isEmpty; });
@@ -71,7 +79,9 @@ testCaseWithSample('context.normalizeSelection.splitTextFocusAnchor',
 
 // We extend selection over leading and trailing whitespaces.
 testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.1',
-  '<p contenteditable> ^0123| </p>', function(context, selectionIn) {
+  '<p contenteditable> ^0123| </p>', function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
     var selection = context.normalizeSelection(selectionIn);
     expectFalse(function() { return selection.isCaret; });
     expectFalse(function() { return selection.isEmpty; });
@@ -84,7 +94,9 @@ testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.1',
 
 testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.2',
   // Boundary points are middle of leading/trailing whitespaces.
-  '<p contenteditable> ^ 0123 | </p>', function(context, selectionIn) {
+  '<p contenteditable> ^ 0123 | </p>', function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
     var selection = context.normalizeSelection(selectionIn);
     expectFalse(function() { return selection.isCaret; });
     expectFalse(function() { return selection.isEmpty; });
@@ -100,7 +112,9 @@ testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.2',
 //
 testCaseWithSample('context.removeAttribute.1',
     '<p contenteditable>|<a id="foo">bar</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var element = context.document.querySelector('a');
       context.removeAttribute(element, 'id');
       expectFalse(function () { return element.hasAttribute('id') });
@@ -108,7 +122,9 @@ testCaseWithSample('context.removeAttribute.1',
 
 testCaseWithSample('context.removeAttribute.2',
     '<p contenteditable>|<a id="foo">bar</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var element = context.document.querySelector('a');
       // No exception for non-existing removing attribute.
       context.removeAttribute(element, 'notexist');
@@ -119,8 +135,10 @@ testCaseWithSample('context.removeAttribute.2',
 //
 testCaseWithSample('context.setUpEffectiveNodes.1',
     '<p contenteditable>foo<b>^bar<i>baz</i></b>|quux</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'B';
@@ -133,8 +151,10 @@ testCaseWithSample('context.setUpEffectiveNodes.1',
 
 testCaseWithSample('context.setUpEffectiveNodes.2',
     '<p contenteditable><span style="font-weight: bold">^foo</span> <span>bar|</span></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'SPAN';
@@ -144,8 +164,10 @@ testCaseWithSample('context.setUpEffectiveNodes.2',
 
 testCaseWithSample('context.setUpEffectiveNodes.3',
     '<p contenteditable>aaa<b>b^bb<i>cc|c</i>ddd<i>eee</i>fff</b>ggg</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'B';
@@ -159,8 +181,10 @@ testCaseWithSample('context.setUpEffectiveNodes.3',
 
 testCaseWithSample('context.setUpEffectiveNodes.3_2',
     '<p contenteditable>123<b>4^56<i>78|9</i>abc<i>def</i>ghi</b>jkl</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           // This will always return true.
@@ -178,8 +202,10 @@ testCaseWithSample('context.setUpEffectiveNodes.3_2',
 // From createLink.w3c.8
 testCaseWithSample('context.setUpEffectiveNodes.3_3',
     '<p contenteditable><span>123^456|</span><span>789</span></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return editing.dom.isPhrasing(node);
@@ -195,8 +221,10 @@ testCaseWithSample('context.setUpEffectiveNodes.3_3',
 
 testCaseWithSample('context.setUpEffectiveNodes.4',
     '<p contenteditable>aaa<b>b^bb<i>ccc</i>dd|d<i>eee</i>fff</b>ggg</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'B';
@@ -210,8 +238,10 @@ testCaseWithSample('context.setUpEffectiveNodes.4',
 
 testCaseWithSample('context.setUpEffectiveNodes.5',
     '<p contenteditable>aaa<b>b^bb<i>ccc</i>ddd<i>ee|e</i>fff</b>ggg</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'B';
@@ -225,8 +255,10 @@ testCaseWithSample('context.setUpEffectiveNodes.5',
 
 testCaseWithSample('context.setUpEffectiveNodes.6',
     '<p contenteditable>aaa<b>bbb<i>c^cc</i>ddd<i>ee|e</i>fff</b>ggg</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'B';
@@ -241,8 +273,10 @@ testCaseWithSample('context.setUpEffectiveNodes.6',
 
 testCaseWithSample('context.setUpEffectiveNodes.7',
     '<p contenteditable>aaa<b>bbb<i>ccc</i>d^dd<i>ee|e</i>fff</b>ggg</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return node.nodeName !== 'B';
@@ -258,8 +292,10 @@ testCaseWithSample('context.setUpEffectiveNodes.7',
 testCaseWithSample('context.setUpEffectiveNodes.8',
     // We should not split non-phrasing element.
     '<p contenteditable>foo^bar|baz</p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return editing.dom.isPhrasing(node);
@@ -279,8 +315,10 @@ testCaseWithSample('context.setUpEffectiveNodes.8',
 testCaseWithSample('context.setUpEffectiveNodes.9',
     // We should not split non-phrasing element.
     '<p contenteditable><a><b>foo^barbaz|</b></a></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
         function(node) {
           return editing.dom.isPhrasing(node);
@@ -296,8 +334,10 @@ testCaseWithSample('context.setUpEffectiveNodes.9',
 
 testCaseWithSample('context.setUpEffectiveNodes.Nesting',
     '<p contenteditable><a href="URL">foo<b>^bar|</b></a></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
           function(node) {
             return node.nodeName !== 'A';
@@ -310,8 +350,10 @@ testCaseWithSample('context.setUpEffectiveNodes.Nesting',
 
 testCaseWithSample('context.setUpEffectiveNodes.Nesting.2',
     '<p contenteditable><a href="URL">foo<b><i>^bar|</i></b></a></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
           function(node) {
             return node.nodeName !== 'A';
@@ -325,8 +367,10 @@ testCaseWithSample('context.setUpEffectiveNodes.Nesting.2',
 
 testCaseWithSample('context.setUpEffectiveNodes.Nesting.3',
     '<p contenteditable><a href="URL">foo<b>^bar</b>baz|</a></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
           function(node) {
             return node.nodeName !== 'A';
@@ -340,8 +384,10 @@ testCaseWithSample('context.setUpEffectiveNodes.Nesting.3',
 
 testCaseWithSample('context.setUpEffectiveNodes.Junk',
     '<p contenteditable><a href="URL">foo<b>^bar|</b>baz</a></p>',
-    function(context, selection) {
-      var normalizedSelection = context.normalizeSelection(selection);
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
+      var normalizedSelection = context.normalizeSelection(selectionIn);
       var nodes = context.setUpEffectiveNodes(normalizedSelection,
           function(node) {
             return node.nodeName === 'A' || editing.dom.isPhrasing(node);
@@ -359,7 +405,9 @@ testCaseWithSample('context.setUpEffectiveNodes.Junk',
 // shouldUseCSS
 //
 testCaseWithSample('context.shouldUseCSS',
-    '<p contenteditable>012|</p>', function(context) {
+    '<p contenteditable>012|</p>', function(sample, selectionIn) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selectionIn);
   context.document.execCommand('styleWithCSS', false, true);
   expectTrue(function() { return context.shouldUseCSS; });
 
@@ -372,7 +420,9 @@ testCaseWithSample('context.shouldUseCSS',
 //
 testCaseWithSample('context.splitNode.1',
     '<p contenteditable><a>one|<b>two</b>three</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('a');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNode(oldTree, refNode);
@@ -386,7 +436,9 @@ testCaseWithSample('context.splitNode.1',
 // We don't copy "id" attribute.
 testCaseWithSample('context.splitNode.2',
     '<p contenteditable><a id="foo">one|<b>two</b>three</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('a');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNode(oldTree, refNode);
@@ -401,7 +453,9 @@ testCaseWithSample('context.splitNode.2',
 // http://crbug.com/411795
 testCaseWithSample('context.splitNode.3',
     '<p contenteditable><a name="foo">one|<b>two</b>three</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('a');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNode(oldTree, refNode);
@@ -416,7 +470,9 @@ testCaseWithSample('context.splitNode.3',
 // http://crbug.com/411795
 testCaseWithSample('context.splitNode.4',
     '<p contenteditable><s name="foo">one|<b>two</b>three</s></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('s');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNode(oldTree, refNode);
@@ -430,7 +486,9 @@ testCaseWithSample('context.splitNode.4',
 // From createLink.style.6.css
 testCaseWithSample('context.splitNode.5',
     '<p contenteditable>|<i> after</i>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var selection = context.normalizeSelection(selectionIn);
       var refNode = context.document.querySelector('i').firstChild; // " after"
       var oldTree = context.document.querySelector('i');
@@ -443,7 +501,9 @@ testCaseWithSample('context.splitNode.5',
 //
 testCaseWithSample('context.splitNodeLeft.1',
     '<p contenteditable><a>one|<b>two</b>three</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('a');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNodeLeft(oldTree, refNode);
@@ -456,7 +516,9 @@ testCaseWithSample('context.splitNodeLeft.1',
 // We don't copy "id" attribute.
 testCaseWithSample('context.splitNodeLeft.2',
     '<p contenteditable><a id="foo">one|<b>two</b>three</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('a');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNodeLeft(oldTree, refNode);
@@ -470,7 +532,9 @@ testCaseWithSample('context.splitNodeLeft.2',
 // http://crbug.com/411795
 testCaseWithSample('context.splitNodeLeft.3',
     '<p contenteditable><a name="foo">one|<b>two</b>three</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('a');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNodeLeft(oldTree, refNode);
@@ -484,7 +548,9 @@ testCaseWithSample('context.splitNodeLeft.3',
 // http://crbug.com/411795
 testCaseWithSample('context.splitNodeLeft.4',
     '<p contenteditable><s name="foo">one|<b>two</b>three</s></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var oldTree = context.document.querySelector('s');
       var refNode = oldTree.childNodes[1];
       var newTree = context.splitNodeLeft(oldTree, refNode);
@@ -499,7 +565,9 @@ testCaseWithSample('context.splitNodeLeft.4',
 //
 testCaseWithSample('context.splitTree.1',
     '<p contenteditable><e1>one</e1>|<e2>two</e2><e3>three</e3></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode;
@@ -512,7 +580,9 @@ testCaseWithSample('context.splitTree.1',
 
 testCaseWithSample('context.splitTree.2',
     '<p contenteditable><b>bold1<i>italic1<s>strike1|strike2</s>italic2</i>bold2</b></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode.parentNode.parentNode;
@@ -526,7 +596,9 @@ testCaseWithSample('context.splitTree.2',
 // From createLink.style.6.css
 testCaseWithSample('context.splitTree.3',
     '<p contenteditable>|<a href="otherurl"><b style="font-style: italic;">world</b><i> after</i></a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var selection = context.normalizeSelection(selectionIn);
       var refNode = context.document.querySelector('i').firstChild; // " after"
       var oldTree = context.document.querySelector('a');
@@ -542,7 +614,9 @@ testCaseWithSample('context.splitTree.3',
 //
 testCaseWithSample('context.splitTreeLeft.shallow',
     '<p contenteditable><e1>one</e1>|<e2>two</e2><e3>three</e3></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode;
@@ -555,7 +629,9 @@ testCaseWithSample('context.splitTreeLeft.shallow',
 
 testCaseWithSample('context.splitTreeLeft.deep',
     '<p contenteditable><b>bold1<i>italic1<s>strike1|strike2</s>italic2</i>bold2</b></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var selection = context.normalizeSelection(selectionIn);
       var refNode = selection.focusNode.childNodes[selection.focusOffset];
       var oldTree = refNode.parentNode.parentNode.parentNode;
@@ -571,7 +647,9 @@ testCaseWithSample('context.splitTreeLeft.deep',
 //
 testCaseWithSample('context.unwrapElement.1',
     '<p contenteditable>|<a>foo</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var parent = context.document.querySelector('a');
       var tree = parent.parentNode;
       context.unwrapElement(parent, null);
@@ -581,7 +659,9 @@ testCaseWithSample('context.unwrapElement.1',
 
 testCaseWithSample('context.unwrapElement.2',
     '<p contenteditable>|<a>foo<b>bar</b></a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var parent = context.document.querySelector('a');
       var tree = parent.parentNode;
       context.unwrapElement(parent, null);
@@ -591,7 +671,9 @@ testCaseWithSample('context.unwrapElement.2',
 
 testCaseWithSample('context.unwrapElement.3',
     '<p contenteditable>|<a>foo<b>bar</b>baz</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var parent = context.document.querySelector('a');
       var tree = parent.parentNode;
       context.unwrapElement(parent, null);
@@ -601,7 +683,9 @@ testCaseWithSample('context.unwrapElement.3',
 
 testCaseWithSample('context.unwrapElement.3.stopChild',
     '<p contenteditable>|<a>foo<b>bar</b>baz</a></p>',
-    function(context, selectionIn) {
+    function(sample, selectionIn) {
+      var editor = editing.Editor.getOrCreate(sample.document);
+      var context = editor.createContext('noname', selectionIn);
       var parent = context.document.querySelector('a');
       var tree = parent.parentNode;
       context.unwrapElement(parent, parent.lastChild);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-editing.defineCommand('selectAll', (function() {
+editing.registerCommand('selectAll', (function() {
   'use strict';
 
   // Note: To avoid referencing |window.document|, we should not use
@@ -200,7 +200,7 @@ editing.defineCommand('selectAll', (function() {
    * @param {string} value Noe used.
    * @return {boolean}
    */
-  function selectAllCommandImpl(contextDocument, userInterface, value) {
+  function selectAllCommand(contextDocument, userInterface, value) {
     if (trySelectAllOnSelectElement(contextDocument))
       return true;
 
@@ -248,20 +248,7 @@ editing.defineCommand('selectAll', (function() {
     return true;
   }
 
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {boolean} userInterface Not used.
-   * @param {string} value Noe used.
-   * @return {boolean}
-   */
-  function selectAllCommand(context, userInterface, value) {
-    return selectAllCommandImpl(context.document, userInterface, value);
-  }
-
   // Note: For ease of debugging, we would like to see function name in stack
   // trace, we use named function rather than anonymous function.
-  return {
-    function: selectAllCommand,
-    undoable: false
-  };
+  return selectAllCommand;
 })());

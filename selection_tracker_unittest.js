@@ -15,7 +15,9 @@ function expectOnContextResult(expectedResult, context) {
 // SelectionTracker.finish
 //
 testCaseWithSample('SelectionTracker.finish.1',
-  '<p contenteditable>^abcd|</p>', function(context, selection) {
+  '<p contenteditable>^abcd|</p>', function(sample, selection) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selection);
   var tracker = new editing.SelectionTracker(context,
       context.normalizeSelection(selection));
   tracker.finish();
@@ -23,7 +25,9 @@ testCaseWithSample('SelectionTracker.finish.1',
 });
 
 testCaseWithSample('SelectionTracker.finish.2',
-  '<p contenteditable>|abcd^</p>', function(context, selection) {
+  '<p contenteditable>|abcd^</p>', function(sample, selection) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selection);
   var tracker = new editing.SelectionTracker(context,
       context.normalizeSelection(selection));
   tracker.finish();
@@ -34,7 +38,9 @@ testCaseWithSample('SelectionTracker.finish.2',
 // SelectionTracker.finishWithStartAsAnchor
 //
 testCaseWithSample('SelectionTracker.finishWithStartAsAnchor.1',
-  '<p contenteditable>^abcd|</p>', function(context, selection) {
+  '<p contenteditable>^abcd|</p>', function(sample, selection) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selection);
   var tracker = new editing.SelectionTracker(context,
       context.normalizeSelection(selection));
   tracker.finishWithStartAsAnchor();
@@ -42,7 +48,9 @@ testCaseWithSample('SelectionTracker.finishWithStartAsAnchor.1',
 });
 
 testCaseWithSample('SelectionTracker.finishWithStartAsAnchor.2',
-  '<p contenteditable>|abcd^</p>', function(context, selection) {
+  '<p contenteditable>|abcd^</p>', function(sample, selection) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selection);
   var tracker = new editing.SelectionTracker(context,
       context.normalizeSelection(selection));
   tracker.finishWithStartAsAnchor();

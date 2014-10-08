@@ -132,6 +132,7 @@ testing.define('Sample', (function() {
   /**
    * @constructor
    * @final
+   * @struct
    * @param {string} htmlText
    */
   function Sample(htmlText) {
@@ -140,9 +141,13 @@ testing.define('Sample', (function() {
     // Note: Firefox requires focus to retrieve selection from IFRAME.
     iframe.focus();
 
+    /** @type {editing.ImmutableSelection} */
     this.endingSelection_ = null;
+    /** @type {!HTMLIFrameEleemnt} */
     this.iframe_ = iframe;
+    /** @type {!Document} */
     this.document_ = iframe.contentDocument;
+    /** @type {Selection} */
     this.domSelection_ = iframe.contentWindow.getSelection();
     if (!this.domSelection_)
       throw new Error('Can not get selection from IFRAME');
@@ -163,6 +168,7 @@ testing.define('Sample', (function() {
         this.addRange(anchor);
       }
     }
+    /** @type {editing.ImmutableSelection} */
     this.startingSelection_ = parseSample(this.document, htmlText);
     var editor = editing.Editor.getOrCreate(this.document_);
     editor.setDomSelection(this.startingSelection_);
@@ -205,6 +211,24 @@ testing.define('Sample', (function() {
 
   /**
    * @this {!Sample}
+   * @param {string} tagName
+   * @param {!Element}
+   */
+  function createElement(tagName) {
+    return this.document_.createElement(tagName);
+  }
+
+  /**
+   * @this {!Sample}
+   * @param {string} text
+   * @return {!Text}
+   */
+  function createTextNode(text) {
+    return this.document_.createTextNode(text);
+  }
+
+  /**
+   * @this {!Sample}
    */
   function finish() {
     console.assert(this.iframe_);
@@ -212,18 +236,16 @@ testing.define('Sample', (function() {
     this.iframe_ = null;
   }
 
-  Object.defineProperties(Sample.prototype, {
-    document: {get: function() { return this.document_; }},
-    document_: {writable: true},
-    domSelection: {get: function() { return this.domSelection_; }},
-    domSelection_: {writable: true},
-    endingSelection: {get: function() { return this.endingSelection_; }},
-    endingSelection_: {writable: true},
-    execCommand: {value: execCommand},
-    finish: {value: finish},
-    iframe_: {writable: true},
-    startingSelection: {get: function() { return this.startingSelection_; }},
-    startingSelection_: {writable: true}
-  });
+  Sample.prototype = /** @struct */ {
+    createElement: createElement,
+    createTextNode: createTextNode,
+    execCommand: execCommand,
+    finish: finish,
+    get document() { return this.document_; },
+    get domSelection() { return this.domSelection_; },
+    get endingSelection() { return this.endingSelection_; },
+    get startingSelection() { return this.startingSelection_; }
+  };
+  Object.freeze(Sample.prototype);
   return Sample;
 })());

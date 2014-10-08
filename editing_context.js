@@ -206,28 +206,6 @@ editing.EditingContext = (function() {
   }
 
   /**
-   * @this {!editing.EditingContext}
-   * @param {string} name
-   * @param {boolean=} opt_userInterface
-   * @param {string=} opt_value
-   *
-   * Emulation of |Document.execCommand|.
-   */
-  function execCommand(name, opt_userInterface, opt_value) {
-    ASSERT_EDITING_IN_PROGRESS(this);
-    if (typeof(name) != 'string') {
-      console.log('execCommand name', name);
-      throw new Error('execCommand takes string: ' + name);
-    }
-    var userInterface = Boolean(opt_userInterface);
-    var value = opt_value === undefined ? '' : String(opt_value);
-    var commandDefinition = editing.lookupCommand(name);
-    if (!commandDefinition)
-      throw new Error('No such command ' + name);
-    return commandDefinition.function(this, userInterface, value);
-  }
-
-  /**
    * @this {!EditingContext}
    * @param {!Node} node
    * @return {boolean}
@@ -798,7 +776,6 @@ editing.EditingContext = (function() {
     cloneNode: cloneNode ,
     createElement: createElement,
     createTextNode: createTextNode,
-    execCommand: execCommand,
     get editor() { return this.editor_; },
     // Selection after executing editing command. This |ImmutableSelection| is
     // put into undo stack for redo operation. See also |startingSelection|

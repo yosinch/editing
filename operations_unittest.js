@@ -13,9 +13,9 @@ function createHtmlGetter(element) {
 //
 testCaseWithSample('operations.appendChild.1',
     '|<p>foo</p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
-      var newChild = context.createElement('bar');
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
+      var newChild = sample.createElement('bar');
       var operation = new editing.AppendChild(parentNode, newChild);
 
       operation.redo();
@@ -30,9 +30,9 @@ testCaseWithSample('operations.appendChild.1',
 //
 testCaseWithSample('operations.insertBefore.1',
     '|<p>foo</p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
-      var newChild = context.createElement('bar');
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
+      var newChild = sample.createElement('bar');
       var operation = new editing.InsertBefore(parentNode, newChild,
                                                parentNode.firstChild);
       operation.redo();
@@ -47,8 +47,8 @@ testCaseWithSample('operations.insertBefore.1',
 //
 testCaseWithSample('operations.removeAttribute.1',
     '|<p><foo x="1"></p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
       var element = parentNode.firstChild;
       var operation = new editing.RemoveAttribute(element, 'x');
 
@@ -64,8 +64,8 @@ testCaseWithSample('operations.removeAttribute.1',
 //
 testCaseWithSample('operations.removeChild.1',
     '|<p>foo</p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
       var oldChild = parentNode.firstChild;
       var operation = new editing.RemoveChild(parentNode, oldChild);
       operation.redo();
@@ -80,9 +80,9 @@ testCaseWithSample('operations.removeChild.1',
 //
 testCaseWithSample('operations.replceChild.1',
     '|<p>foo</p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
-      var newChild = context.createTextNode('bar');
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
+      var newChild = sample.createTextNode('bar');
       var oldChild = parentNode.firstChild;
       var operation = new editing.ReplaceChild(parentNode, newChild, oldChild);
       operation.redo();
@@ -97,8 +97,8 @@ testCaseWithSample('operations.replceChild.1',
 //
 testCaseWithSample('operations.setAttribute.1',
     '|<p><foo x="1"></p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
       var element = parentNode.firstChild;
       var operation = new editing.SetAttribute(element, 'x', 'baz');
 
@@ -114,8 +114,8 @@ testCaseWithSample('operations.setAttribute.1',
 //
 testCaseWithSample('operations.setStyle.1',
     '|<p><foo style="color: blue;"></p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
       var element = parentNode.firstChild;
       var operation = new editing.SetStyle(element);
       operation.setProperty('color', 'red');
@@ -131,8 +131,8 @@ testCaseWithSample('operations.setStyle.1',
 
 testCaseWithSample('operations.setStyle.2',
     '|<p><foo style="color: blue;"></p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
       var element = parentNode.firstChild;
       var operation = new editing.SetStyle(element);
       operation.setProperty('font-weight', 'bold');
@@ -152,10 +152,10 @@ testCaseWithSample('operations.setStyle.2',
 //
 testCaseWithSample('operations.splitText.1',
     '|<p>foobar</p>',
-    function(context, selection) {
-      var parentNode = context.document.body.firstChild;
+    function(sample, selection) {
+      var parentNode = sample.document.body.firstChild;
       var textNode = parentNode.firstChild;
-      var newNode = context.createTextNode('bar');
+      var newNode = sample.createTextNode('bar');
       var operation = new editing.SplitText(textNode, newNode);
 
       operation.redo();

@@ -17,6 +17,9 @@ editing.EditingContext.prototype.document;
 /** @type {!editing.Editor} */
 editing.EditingContext.prototype.editor;
 
+/** @type {string} */
+editing.EditingContext.prototype.name;
+
 /**
  * @this {!editing.EditingContext}
  * @param {!Node} parentNode

@@ -5,23 +5,20 @@
 var editing;
 
 /**
- * @typedef {function(!editing.EditingContext, boolean=, string=) : boolean}
+ * @typedef {function(!Document, boolean, string) : boolean}
  */
 var CommandFunction;
 
 /**
- * @typedef {{
- *    function: !CommandFunction,
- *    undoable: boolean
- * }}
+ * @typedef {function(!editing.EditingContext, boolean, string) : boolean}
  */
-var CommandDefinition;
+var UndoableCommandFunction;
 
 /**
  * @param {string} name
- * @param {(!CommandDefinition|!CommandFunction)} thing
+ * @param {!UndoableCommandFunction} commandFunction
  */
-editing.defineCommand = function(name, thing) {};
+editing.defineCommand = function(name, commandFunction) {};
 
 /**
  * @param {!Node} node
@@ -31,9 +28,15 @@ editing.isContentEditable = function(node) {};
 
 /**
  * @param {string} name
- * @return [boolean}
+ * @return {CommandFunction}
  */
 editing.lookupCommand = function(name) {};
+
+/**
+ * @param {string} name
+ * @param {!CommandFunction} commandFunction
+ */
+editing.registerCommand = function(name, commandFunction) {};
 
 /** @enum {string} */
 editing.SelectionDirection = {

@@ -12,22 +12,74 @@ editing.Editor = (function() {
    * @param {!Document} document
    */
   function Editor(document) {
-    this.context_ = null;
+    /** @type {editing.EditingContext} */
     this.currentContext_ = null;
+    /** @const @type {!Document} */
     this.document_ = document;
     this.redoStack_ = [];
+    /** @type {editing.ImmutableSelection} */
     this.selection_ = null;
     this.undoStack_ = [];
     Object.seal(this);
   }
 
+  // Forward declaration for Closure compiler.
+  Editor.prototype = /** @struct */{
+    /**
+     * @this {!Editor}
+     * @param {string} name
+     * @param {!editing.ImmutableSelection} selection
+     * @return {!editing.EditingContext}
+     */
+    createContext: function(name, selection) {},
+
+    /** @return {!editing.ImmutableSelection} */
+    getDomSelection: function() {},
+
+    /**
+     * @param {!editing.ImmutableSelection} selection
+     */
+    setDomSelection: function(selection) {}
+  };
+
   /**
-   * @this {!Editor}
-   * @param {string} name
-   * @param {!editing.ImmutableSelection} selection
-   * @return {!editing.EditingContext}
+   * @param {string} commandName
+   * @param {!UndoableCommandFunction} commandFunction
+   * @return {!CommandFunction}
    */
-  Editor.prototype.createContext = function(name, selection) {};
+  Editor.createCommandFunction = function(commandName, commandFunction) {
+    return function(contextDocument, userInterface, value) {
+      console.assert(typeof userInterface === 'boolean', userInterface);
+      console.assert(typeof value === 'string', value);
+      var editor = Editor.getOrCreate(contextDocument);
+      editor.selection_ = editor.getDomSelection();
+      var context = editor.createContext(commandName, editor.selection_);
+      editor.currentContext_ = context;
+      var succeeded = false;
+      var returnValue;
+      try {
+        returnValue = commandFunction(context, userInterface, value);
+        succeeded = true;
+      } catch (exception) {
+        console.log('execCommand', exception);
+        throw exception;
+      } finally {
+        editor.currentContext_ = null;
+        if (!succeeded)
+          return false;
+        console.assert(context.endingSelection instanceof
+                       editing.ImmutableSelection);
+        editor.setDomSelection(context.endingSelection);
+        editor.undoStack_.push({
+          commandName: commandName,
+          endingSelection: context.endingSelection,
+          operations: context.operations,
+          startingSelection: context.startingSelection
+        });
+        return returnValue;
+      }
+    }
+  }
 
   /**
    * @param {!Document} document
@@ -38,19 +90,6 @@ editing.Editor = (function() {
       document.editor_ = new editing.Editor(document);
     return document.editor_;
   }
-
-  /** @return {!editing.ImmutableSelection} */
-  Editor.prototype.getDomSelection = function() {};
-
-  /**
-   * @type {editing.ImmutableSelection}
-   */
-  Editor.prototype.selection_;
-
-  /**
-   * @param {!editing.ImmutableSelection} selection
-   */
-  Editor.prototype.setDomSelection = function(selection) {};
 
   /**
    * @this {!editing.Editor}
@@ -79,46 +118,15 @@ editing.Editor = (function() {
     }
     var userInterface = Boolean(opt_userInterface);
     var value = opt_value === undefined ? '' : String(opt_value);
-    var commandDefinition = editing.lookupCommand(name);
-    if (!commandDefinition)
-      throw new Error('No such command ' + name);
+    var commandFunction = editing.lookupCommand(name);
+    if (!commandFunction)
+      return false;
     if (this.currentContext_) {
       throw new Error("We don't execute document.execCommand('" + name +
         "') this time, because it is called recursively in" +
         " document.execCommand('" + this.currentContext_.name + "')");
     }
-
-    this.selection_ = this.getDomSelection();
-    var context = this.createContext(name, this.selection_);
-    if (!commandDefinition.undoable)
-      return commandDefinition.function(context, userInterface, value);
-
-    this.currentContext_ = context;
-    var succeeded = false;
-    var returnValue;
-    try {
-      returnValue = commandDefinition.function(context, userInterface, value);
-      succeeded = true;
-    } catch (exception) {
-      console.log('execCommand', exception);
-      throw exception;
-    } finally {
-      this.currentContext_ = null;
-      if (!succeeded)
-        return false;
-      console.assert(context.endingSelection instanceof
-                     editing.ImmutableSelection);
-      console.assert(context.startingSelection instanceof
-                     editing.ImmutableSelection);
-      this.setDomSelection(context.endingSelection);
-      this.undoStack_.push({
-        commandName: name,
-        endingSelection: context.endingSelection,
-        operations: context.operations,
-        startingSelection: context.startingSelection
-      });
-      return returnValue;
-    }
+    return commandFunction(this.document, userInterface, value);
   }
 
   /**
@@ -244,7 +252,7 @@ editing.Editor = (function() {
     createContext: createContext,
     currentContext: function() { return this.currentContext_; },
     execCommand: execCommand,
-    getDomSelection: getDomSelection ,
+    getDomSelection: getDomSelection,
     get document() { return this.document_; },
     get selection() { return this.selection_; },
     setDomSelection: setDomSelection,

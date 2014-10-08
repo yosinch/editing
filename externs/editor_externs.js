@@ -10,9 +10,17 @@
 /**
  * @constructor
  * @final
+ * @struct
  * @param {!Document} document
  */
 editing.Editor = function(document) {}
+
+/**
+ * @param {string} commandName
+ * @param {!UndoableCommandFunction} commandFunction
+ * @return {!CommandFunction}
+ */
+editing.Editor.createCommandFunction = function(commandName, commandFunction) {};
 
 /**
  * @param {!Document} document
@@ -37,7 +45,7 @@ editing.Editor.prototype.document;
  * @return {boolean}
  */
 editing.Editor.prototype.execCommand = function(commandName, opt_userInterface,
-                                        opt_value) {};
+                                                opt_value) {};
 
 /** @return {!editing.ImmutableSelection} */
 editing.Editor.prototype.getDomSelection = function() {};

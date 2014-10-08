@@ -66,17 +66,16 @@ function testCaseWithSample(name, htmlText, testFunction) {
   testCase(name, function() {
     var sample = new testing.Sample(htmlText || '^foo|');
     var editor = editing.Editor.getOrCreate(sample.document);
-    var context = editor.createContext('noname', sample.startingSelection);
-    if (!(context.startingSelection instanceof editing.ImmutableSelection))
+    if (!(sample.startingSelection instanceof editing.ImmutableSelection))
       throw new Error('No startingSelection');
     if (testRunner.useTryCatch) {
       try {
-        testFunction(context, context.startingSelection);
+        testFunction(sample, sample.startingSelection);
       } finally {
         sample.finish();
       }
     } else {
-      testFunction(context, context.startingSelection);
+      testFunction(sample, sample.startingSelection);
       sample.finish();
     }
   });

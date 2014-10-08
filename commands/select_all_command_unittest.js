@@ -15,13 +15,14 @@ testCaseFor('selectAll.noEditale.1', {
 
 testCaseWithSample('selectAll.noEditale.cancel',
   '<div>foo|</div>',
-  function(context) {
-    context.document.addEventListener('selectstart', function(event) {
+  function(sample) {
+    sample.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
-    var lastSelection = context.editor.getDomSelection();
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var lastSelection = editor.getDomSelection();
+    editor.execCommand('selectAll');
+    var domSelection = editor.document.getSelection();
     expectEq(lastSelection.anchorNode,
              function() { return domSelection.anchorNode; });
     expectEq(lastSelection.anchorOffset,
@@ -59,13 +60,14 @@ testCaseFor('selectAll.contentEditable.3', {
 
 testCaseWithSample('selectAll.contentEditable.cancel',
   '<div contenteditable>foo|</div>',
-  function(context) {
-    context.document.addEventListener('selectstart', function(event) {
+  function(sample) {
+    sample.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
-    var lastSelection = context.editor.getDomSelection();
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var lastSelection = editor.getDomSelection();
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
              function() { return domSelection.anchorNode; });
     expectEq(lastSelection.anchorOffset,
@@ -87,22 +89,20 @@ testCaseFor('selectAll.contentEditable.mixed', {
 //
 testCaseWithSample('selectAll.frame.1',
   '|<div contenteditable><iframe></iframe></div>',
-  function(context) {
+  function(sample) {
     // Execute "selectAll" inside IFRAME element.
-    var iframe = context.document.querySelector('iframe');
+    var iframe = sample.document.querySelector('iframe');
     var iframeDocument = iframe.contentDocument;
     iframeDocument.body.appendChild(iframeDocument.createTextNode('foo'));
     var iframeEditor = new editing.Editor(iframeDocument);
-    var iframeContext = new editing.EditingContext(iframeEditor, 'selectAll',
-        editing.ImmutableSelection.EMPTY_SELECTION);
-    iframeContext.execCommand('selectAll');
+    iframeEditor.execCommand('selectAll');
 
     // We should select IFRAME element.
-    var domSelection = context.document.getSelection();
-    expectEq(context.document.body.firstChild,
+    var domSelection = sample.document.getSelection();
+    expectEq(sample.document.body.firstChild,
              function() { return domSelection.anchorNode; });
     expectEq(0, function() { return domSelection.anchorOffset; })
-    expectEq(context.document.body.firstChild,
+    expectEq(sample.document.body.firstChild,
              function() { return domSelection.focusNode; });
     expectEq(1, function() { return domSelection.focusOffset; })
   });
@@ -112,12 +112,13 @@ testCaseWithSample('selectAll.frame.1',
 //
 testCaseWithSample('selectAll.input.1',
   '<div>|foo<input value="bar">baz</div>',
-  function(context) {
-    var inputElement = context.document.querySelector('input');
+  function(sample) {
+    var inputElement = sample.document.querySelector('input');
     inputElement.focus();
     inputElement.setSelectionRange(1, 1);
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectTrue(function() { return domSelection.isCollapsed; });
     expectEq(inputElement.parentNode, function() { return domSelection.anchorNode; });
     expectEq(1, function() { return domSelection.anchorOffset; });
@@ -127,15 +128,16 @@ testCaseWithSample('selectAll.input.1',
 
 testCaseWithSample('selectAll.input.cancel',
   '<div>|foo<input value="bar">baz</div>',
-  function(context) {
-    var inputElement = context.document.querySelector('input');
+  function(sample) {
+    var inputElement = sample.document.querySelector('input');
     inputElement.focus();
-    context.document.addEventListener('selectstart', function(event) {
+    sample.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
-    var lastSelection = context.editor.getDomSelection();
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var lastSelection = editor.getDomSelection();
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
              function() { return domSelection.anchorNode; });
     expectEq(lastSelection.anchorOffset,
@@ -152,11 +154,12 @@ testCaseWithSample('selectAll.input.cancel',
 //
 testCaseWithSample('selectAll.select.multiple',
   '|<select multiple><option>1</option><option>2</option><option>3</option></select>',
-  function(context) {
-    var selectElement = context.document.querySelector('select');
+  function(sample) {
+    var selectElement = sample.document.querySelector('select');
     selectElement.focus();
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectEq(1, function() { return domSelection.rangeCount; });
     expectTrue(function() { return selectElement.options[0].selected; });
     expectTrue(function() { return selectElement.options[1].selected; });
@@ -166,15 +169,16 @@ testCaseWithSample('selectAll.select.multiple',
 // SelectAll for SELECT element ins't cancelable.
 testCaseWithSample('selectAll.select.multiple.cancel',
   '|<select multiple><option>1</option><option>2</option><option>3</option></select>',
-  function(context) {
-    var selectElement = context.document.querySelector('select');
+  function(sample) {
+    var selectElement = sample.document.querySelector('select');
     selectElement.focus();
-    context.document.addEventListener('selectstart', function(event) {
+    sample.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
-    var lastSelection = context.editor.getDomSelection();
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var lastSelection = editor.getDomSelection();
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
              function() { return domSelection.anchorNode; });
     expectEq(lastSelection.anchorOffset,
@@ -199,12 +203,13 @@ testCaseFor('selectAll.select.single', {
 //
 testCaseWithSample('selectAll.textArea.1',
   '<div>|foo<textarea>bar</textarea>baz</div>',
-  function(context) {
-    var textAreaElement = context.document.querySelector('textarea');
+  function(sample) {
+    var textAreaElement = sample.document.querySelector('textarea');
     textAreaElement.focus();
     textAreaElement.setSelectionRange(1, 1);
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectTrue(function() { return domSelection.isCollapsed; });
     expectEq(textAreaElement.parentNode,
              function() { return domSelection.anchorNode; });
@@ -215,15 +220,16 @@ testCaseWithSample('selectAll.textArea.1',
 
 testCaseWithSample('selectAll.textArea.cancel',
   '<div>|foo<textarea>bar</textarea>baz</div>',
-  function(context) {
-    var textAreaElement = context.document.querySelector('textarea');
+  function(sample) {
+    var textAreaElement = sample.document.querySelector('textarea');
     textAreaElement.focus();
-    context.document.addEventListener('selectstart', function(event) {
+    sample.document.addEventListener('selectstart', function(event) {
       event.preventDefault();
     });
-    var lastSelection = context.editor.getDomSelection();
-    context.execCommand('selectAll');
-    var domSelection = context.document.getSelection();
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var lastSelection = editor.getDomSelection();
+    editor.execCommand('selectAll');
+    var domSelection = sample.document.getSelection();
     expectEq(lastSelection.anchorNode,
              function() { return domSelection.anchorNode; });
     expectEq(lastSelection.anchorOffset,

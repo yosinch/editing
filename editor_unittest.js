@@ -10,14 +10,15 @@
 testCaseWithSample('editor.getDomSelection.1',
   // editing/style/apply-style-atomic.html
   '<div contenteditable>|1<progress><a style>2</a></progress></div>',
-  function(context) {
-    var range = context.document.createRange();
-    range.selectNodeContents(context.document.querySelector('div'));
-    context.document.getSelection().removeAllRanges();
-    context.document.getSelection().addRange(range);
+  function(sample) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var range = sample.document.createRange();
+    range.selectNodeContents(sample.document.querySelector('div'));
+    sample.document.getSelection().removeAllRanges();
+    sample.document.getSelection().addRange(range);
     // |range| start is DIV,0 and end is DIV,2
     // selection.anchor is "1",0 and focus is DIV,2
-    var selection = context.editor.getDomSelection();
+    var selection = editor.getDomSelection();
     expectEq('1', function() { return selection.anchorNode.nodeValue; });
     expectEq(0, function() { return selection.anchorOffset; });
     expectEq('DIV', function() { return selection.focusNode.nodeName; });
@@ -31,8 +32,8 @@ testCaseWithSample('editor.getDomSelection.1',
 //
 testCaseWithSample('editor.setDomSelection.caret.1',
   '<p contenteditable>|0123</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq('0123', function() { return domSelection.anchorNode.nodeValue; });
@@ -43,8 +44,8 @@ testCaseWithSample('editor.setDomSelection.caret.1',
 
 testCaseWithSample('editor.setDomSelection.caret.2',
   '<p contenteditable>0|123</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq('0123', function() { return domSelection.anchorNode.nodeValue; });
@@ -55,8 +56,8 @@ testCaseWithSample('editor.setDomSelection.caret.2',
 
 testCaseWithSample('editor.setDomSelection.caret.3',
   '<p contenteditable>0123|</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq('0123', function() { return domSelection.anchorNode.nodeValue; });
@@ -67,8 +68,8 @@ testCaseWithSample('editor.setDomSelection.caret.3',
 
 testCaseWithSample('editor.setDomSelection.caret.4',
   '<p contenteditable>| 0123</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq(' 0123', function() { return domSelection.anchorNode.nodeValue; });
@@ -79,8 +80,8 @@ testCaseWithSample('editor.setDomSelection.caret.4',
 
 testCaseWithSample('editor.setDomSelection.caret.5',
   '<p contenteditable>0123 |</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq('0123 ', function() { return domSelection.anchorNode.nodeValue; });
@@ -91,8 +92,8 @@ testCaseWithSample('editor.setDomSelection.caret.5',
 
 testCaseWithSample('editor.setDomSelection.range.1',
   '<p contenteditable>^0123|</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq('0123', function() { return domSelection.anchorNode.nodeValue; });
@@ -103,8 +104,8 @@ testCaseWithSample('editor.setDomSelection.range.1',
 
 testCaseWithSample('editor.setDomSelection.range.2',
   '<p contenteditable>0^12|3</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq('0123', function() { return domSelection.anchorNode.nodeValue; });
@@ -117,8 +118,8 @@ testCaseWithSample('editor.setDomSelection.range.2',
 // trailing spaces.
 testCaseWithSample('editor.setDomSelection.range.3',
   '<p contenteditable>^ 0123 |</p>',
-  function(context, selection) {
-    var editor = context.editor;
+  function(sample, selection) {
+    var editor = editing.Editor.getOrCreate(sample.document);
     editor.setDomSelection(selection);
     var domSelection = editor.document.getSelection();
     expectEq(' 0123 ', function() { return domSelection.anchorNode.nodeValue; });
