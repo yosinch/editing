@@ -114,7 +114,7 @@ editing.registerCommand('selectAll', (function() {
    */
   function selectAllOnDocument(contextDocument) {
     if (!contextDocument)
-      throw new Error('NOTREACHED');
+      throw new Error('UNREACHABLE');
     var selection = contextDocument.getSelection();
     if (!selection)
       return;

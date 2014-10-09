@@ -14,7 +14,7 @@ testing.define('Sample', (function() {
         return index;
       ++index;
     }
-    console.assert(false, 'NOTREACHED');
+    throw new Error('UNREACHABLE');
   }
 
   // If boundary point is between text nodes, we merge them.

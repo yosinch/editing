@@ -409,7 +409,7 @@ editing.dom = (function() {
         return index;
       ++index;
     }
-    throw new Error('NOTREACEHD');
+    throw new Error('UNREACHABLE');
   }
 
   /**
