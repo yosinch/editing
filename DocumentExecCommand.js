@@ -6,11 +6,6 @@ installClass('Document', function(documentPrototype) {
   'use strict';
 
   <include src="editing.js">
-  <include src="content_model.js">
-  <include src="dom.js">
-  <include src="editing_context.js">
-  <include src="editor.js">
-  <include src="immutable_selection.js">
   <include src="commands/select_all_command.js">
 
   /**
@@ -21,8 +16,10 @@ installClass('Document', function(documentPrototype) {
    * @return {boolean}
    */
   function execCommandInJavaScript(commandName, userInterface, commandValue) {
-    var editor = editing.Editor.getOrCreate(this);
-    return editor.execCommand(commandName, userInterface, commandValue);
+    var commandFunction = editing.lookupCommand(commandName);
+    if (!commandFunction)
+      throw new Error('No such command ' + commandName);
+    return commandFunction(document, userInterface, commandValue);
   }
 
   // For ease of debugging, we use named function |execCommandInJavaScript| to

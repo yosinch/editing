@@ -116,7 +116,7 @@ testCaseWithSample('selectAll.input.1',
   function(sample) {
     var inputElement = sample.document.querySelector('input');
     inputElement.focus();
-    inputElement.setSelectionRange(1, 1);
+    //inputElement.setSelectionRange(1, 1);
     var editor = editing.Editor.getOrCreate(sample.document);
     editor.execCommand('selectAll');
     var domSelection = sample.document.getSelection();
@@ -198,6 +198,33 @@ testCaseFor('selectAll.select.single', {
   before: '<div>foo|<select><option>1</option><option selected>2</option><option>3</option></select>bar</div>',
   undo: false
 });
+
+//
+// Shadow
+//
+testCaseWithSample('selectAll.shadow.1',
+  '<div>|<p>host</p></div><template><b><content></b></template>',
+  function(sample) {
+    // Attach shadow DOM tree
+    var host = sample.document.querySelector('p');
+    var shadowRoot = host.createShadowRoot();
+    var shadowTree = sample.document.querySelector('template')
+        .content.cloneNode(true);
+    shadowRoot.appendChild(shadowTree);
+
+    // Select
+    var domSelection = sample.document.getSelection();
+    domSelection.collapse(host, 0);
+
+    // Run "selectAll"
+    var editor = editing.Editor.getOrCreate(sample.document);
+    editor.execCommand('selectAll');
+
+    expectEq('host', function() { return domSelection.anchorNode.nodeValue; });
+    expectEq(0, function() { return domSelection.anchorOffset; });
+    expectEq('host', function() { return domSelection.focusNode.nodeValue; });
+    expectEq(4, function() { return domSelection.focusOffset; });
+  });
 
 //
 // TEXTAREA element

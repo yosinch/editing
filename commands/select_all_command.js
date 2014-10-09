@@ -29,6 +29,35 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
+   * @param {!Element} element
+   * @return {Element}
+   */
+  function findShadowHost(element) {
+    for (var runner = element; runner.nodeType === Node.ELEMENT_NODE;
+         runner = /** @type {Element} */(runner.parentNode)) {
+      if (runner.shadowRoot)
+        return runner;
+    }
+    return null;
+  }
+
+  /**
+   * @param {!Element} contentEditable
+   * @return {!Element}
+   */
+  function highestEditableRoot(contentEditable) {
+    /** @type {!Element} */
+    var rootEditable = contentEditable;
+    for (var runner = contentEditable;
+         runner && runner.nodeType === Node.ELEMENT_NODE;
+         runner = runner.parentNode) {
+      if (runner.isContentEditable)
+        rootEditable = /** @type {!Element} */(runner);
+    }
+    return rootEditable;
+  }
+
+  /**
    * @param {Selection} domSelection
    * @return {boolean}
    */
@@ -43,6 +72,11 @@ editing.registerCommand('selectAll', (function() {
     return !domSelection.anchorOffset && domSelection.focusOffset === maxOffset;
   }
 
+  /** @const @type {!Set.<string>} */
+  var textFieldTypes = new Set([
+    'text', 'search', 'tel', 'url', 'email', 'password', 'number', 'datetime'
+  ]);
+
   /**
    * @param {!Element} element
    * @return {boolean}
@@ -51,7 +85,7 @@ editing.registerCommand('selectAll', (function() {
     if (element.tagName !== 'INPUT')
       return false;
     var inputElement = /** @type {!HTMLInputElement} */(element);
-    return inputElement.type === 'text';
+    return textFieldTypes.has(inputElement.type);
   }
 
   // TODO(yosin) We should move |nodeIndex()| to another file to share with
@@ -73,81 +107,48 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
-   * @param {!Node} startContainer
+   * @param {!Element} startContainer A container element of current selection.
+   *     This element is in DOM tree even if C++ |FrameSeleciton| selects inside
+   *     shadow DOM tree.
    */
   function selectAllOnContainer(startContainer) {
+    var contextDocument = startContainer.ownerDocument;
+    var selection = contextDocument.getSelection();
+    if (!selection)
+      return;
+    var root = null;
+    var selectStartTarget = null;
+    var shadowHost = findShadowHost(startContainer);
     if (startContainer.nodeType === Node.ELEMENT_NODE &&
         startContainer.isContentEditable) {
-      selectAllOnContentEditable(/** @type {!Element} */(startContainer));
-      return;
+      root = highestEditableRoot(/** @type {!Element} */(startContainer));
+      selectStartTarget = shadowHost || root;
+    } else if (shadowHost) {
+      root = shadowHost;
+      selectStartTarget = shadowHost;
+    } else {
+      root = contextDocument.documentElement;
+      selectStartTarget = contextDocument.body;
     }
-    selectAllOnDocument(startContainer.ownerDocument);
-  }
-
-  /**
-   * @param {!Element} contentEditable
-   */
-  function selectAllOnContentEditable(contentEditable) {
-    var contextDocument = contentEditable.ownerDocument;
-    var selection = contextDocument.getSelection();
-    if (!selection)
+    if (!root)
       return;
-    /** @type {!Element} */
-    var rootEditable = contentEditable;
-    for (var runner = contentEditable;
-         runner && runner.nodeType === Node.ELEMENT_NODE;
-         runner = runner.parentNode) {
-      if (runner.isContentEditable)
-        rootEditable = /** @type {!Element} */(runner);
-    }
-    if (!dispatchSelectStartEvent(rootEditable))
+    if (selectStartTarget && !dispatchSelectStartEvent(selectStartTarget))
       return;
-    selection.selectAllChildren(rootEditable);
+    selection.selectAllChildren(root);
     selectFrameElementInParentIfFullySelected(contextDocument);
   }
 
   /**
-   * TODO(yosin) Closure compiler wrong type annotation for Node.ownerDocument,
-   * which says value of ownerDocument is nullable Document. Once, we fix this
-   * issue, we should change type annotation for |selectAllOnDocument()|.
-   * @param {Document} contextDocument
+   * @param {(!HTMLInputElement|!HTMLTextAreaElement)} textFieldElement
    */
-  function selectAllOnDocument(contextDocument) {
-    if (!contextDocument)
-      throw new Error('UNREACHABLE');
-    var selection = contextDocument.getSelection();
-    if (!selection)
+  function selectAllOnTextField(textFieldElement) {
+    if (!dispatchSelectStartEvent(textFieldElement))
       return;
-    var selectStartTarget = contextDocument.body;
-    if (selectStartTarget &&
-        !dispatchSelectStartEvent(selectStartTarget)) {
-      return;
-    }
-    selection.selectAllChildren(contextDocument);
-    if (selection.isCollapsed) {
-      var target = contextDocument.documentElement || contextDocument.body;
-      if (target)
-        selection.selectAllChildren(target);
-    }
-    selectFrameElementInParentIfFullySelected(contextDocument);
-  }
-
-  /**
-   * @param {!HTMLTextAreaElement} textAreaElement
-   */
-  function selectAllOnTextAreaElement(textAreaElement) {
-    if (!dispatchSelectStartEvent(textAreaElement))
-      return;
-    textAreaElement.setSelectionRange(0, textAreaElement.value.length);
-  }
-
-  /**
-   * @param {!HTMLInputElement} inputElement
-   */
-  function selectAllOnTextField(inputElement) {
-    if (!dispatchSelectStartEvent(inputElement))
-      return;
-    inputElement.setSelectionRange(0, inputElement.value.length);
+    textFieldElement.select();
+    // TODO(yosin) Once http://crbug.com/421751 fixed, we don't need to
+    // dispatch "select" event here.
+    var event = new Event('select', {bubbles: true});
+    textFieldElement.dispatchEvent(event);
   }
 
   /**
@@ -194,55 +195,71 @@ editing.registerCommand('selectAll', (function() {
 
   /**
    * @param {!Document} contextDocument
-   * @param {boolean} userInterface Not used.
-   * @param {string} value Noe used.
-   * @return {boolean}
    */
-  function selectAllCommand(contextDocument, userInterface, value) {
+  function selectAll(contextDocument) {
     if (trySelectAllOnSelectElement(contextDocument))
-      return true;
+      return;
 
     var domSelection = contextDocument.getSelection();
     if (!domSelection || !domSelection.rangeCount) {
-      selectAllOnDocument(contextDocument);
-      return true;
+      selectAllOnContainer(contextDocument.documentElement);
+      return;
     }
 
     var range = domSelection.getRangeAt(0);
     var startContainer = range.startContainer;
-    if (startContainer.nodeType !== Node.DOCUMENT_NODE &&
-        startContainer.nodeType !== Node.ELEMENT_NODE) {
-      if (!startContainer.parentNode)
-        return true;
-      selectAllOnContainer(startContainer.parentNode);
-      return true;
+    if (startContainer.nodeType === Node.DOCUMENT_NODE) {
+      selectAllOnContainer(contextDocument.documentElement);
+      return;
+    }
+
+    if (startContainer.nodeType !== Node.ELEMENT_NODE) {
+      var parent = startContainer.parentNode;
+      if (!parent)
+        return;
+      if (parent.nodeType === Node.DOCUMENT_NODE) {
+        selectAllOnContainer(contextDocument.documentElement);
+        return;
+      }
+      selectAllOnContainer(/** @type {!Element} */(parent));
+      return;
     }
 
     if (startContainer.isContentEditable) {
-      selectAllOnContainer(startContainer);
-      return true;
+      selectAllOnContainer(/** @type {!Element} */(startContainer));
+      return;
     }
 
     var targetNode = startContainer.childNodes[range.startOffset];
     if (!targetNode || targetNode.nodeType !== Node.ELEMENT_NODE) {
-      selectAllOnContainer(startContainer);
-      return true;
+      selectAllOnContainer(/** @type {!Element}*/(startContainer));
+      return;
     }
 
     var targetElement = /** @type {!Element} */(targetNode);
     if (isTextField(targetElement)) {
       var inputElement = /** @type {!HTMLInputElement} */(targetElement);
       selectAllOnTextField(inputElement);
-      return true;
+      return;
     }
 
     if (targetElement.tagName === 'TEXTAREA') {
       var textAreaElement = /** @type {!HTMLTextAreaElement} */(targetElement);
-      selectAllOnTextAreaElement(textAreaElement);
-      return true;
+      selectAllOnTextField(textAreaElement);
+      return;
     }
 
     selectAllOnContainer(targetElement);
+  }
+
+  /**
+   * @param {!Document} contextDocument
+   * @param {boolean} userInterface Not used.
+   * @param {string} value Noe used.
+   * @return {boolean}
+   */
+  function selectAllCommand(contextDocument, userInterface, value) {
+    selectAll(contextDocument);
     return true;
   }
 
