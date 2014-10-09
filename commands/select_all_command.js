@@ -69,7 +69,7 @@ editing.registerCommand('selectAll', (function() {
         return index;
       ++index;
     }
-    throw new Error('NOTREACEHD');
+    throw new Error('UNREACHABLE');
   }
 
   /**
@@ -110,7 +110,7 @@ editing.registerCommand('selectAll', (function() {
    * TODO(yosin) Closure compiler wrong type annotation for Node.ownerDocument,
    * which says value of ownerDocument is nullable Document. Once, we fix this
    * issue, we should change type annotation for |selectAllOnDocument()|.
-   * @param {?Document} contextDocument
+   * @param {Document} contextDocument
    */
   function selectAllOnDocument(contextDocument) {
     if (!contextDocument)
@@ -139,7 +139,6 @@ editing.registerCommand('selectAll', (function() {
     if (!dispatchSelectStartEvent(textAreaElement))
       return;
     textAreaElement.setSelectionRange(0, textAreaElement.value.length);
-    return;
   }
 
   /**
@@ -149,7 +148,6 @@ editing.registerCommand('selectAll', (function() {
     if (!dispatchSelectStartEvent(inputElement))
       return;
     inputElement.setSelectionRange(0, inputElement.value.length);
-    return;
   }
 
   /**
