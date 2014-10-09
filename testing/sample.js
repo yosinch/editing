@@ -236,6 +236,14 @@ testing.define('Sample', (function() {
     this.iframe_ = null;
   }
 
+  /**
+   * @this {!Sample}
+   * @return {string}
+   */
+  function getContentHtml() {
+    return testing.serializeNode(this.document_.body.firstChild);
+  }
+
   Sample.prototype = /** @struct */ {
     createElement: createElement,
     createTextNode: createTextNode,
@@ -244,7 +252,8 @@ testing.define('Sample', (function() {
     get document() { return this.document_; },
     get domSelection() { return this.domSelection_; },
     get endingSelection() { return this.endingSelection_; },
-    get startingSelection() { return this.startingSelection_; }
+    get startingSelection() { return this.startingSelection_; },
+    getContentHtml: getContentHtml
   };
   Object.freeze(Sample.prototype);
   return Sample;

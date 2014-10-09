@@ -75,6 +75,14 @@ editing.EditingContext.prototype.operations;
 
 /**
  * @this {!editing.EditingContext}
+ * @param {!Element} newElement
+ * @param {!Element} oldElement
+ */
+editing.EditingContext.prototype.moveAllChildren = function(newElement,
+                                                            oldElement) {};
+
+/**
+ * @this {!editing.EditingContext}
  * @param {!editing.ImmutableSelection} selection
  */
 editing.EditingContext.prototype.normalizeSelection = function(selection) {};

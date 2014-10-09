@@ -43,7 +43,7 @@ editing.defineCommand('createLink', (function() {
         context.setStyle(styleElement, property.name, property.value);
         context.removeStyle(element, property.name);
       }
-      moveAllChildren(context, styleElement, element);
+      context.moveAllChildren(styleElement, element);
       context.appendChild(element, styleElement);
     }
 
@@ -87,7 +87,7 @@ editing.defineCommand('createLink', (function() {
       }
       // Introduce text-level elements for inline style.
       style.createElements(context, function(context, property, styleElement) {
-        moveAllChildren(context, styleElement, element);
+        context.moveAllChildren(styleElement, element);
         context.appendChild(element, styleElement);
         context.removeStyle(element, property.name);
       });
@@ -156,19 +156,6 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} newElement
-   * @param {!Element} oldElement
-   */
-  // TODO(yosin) We should move |moveAllChildren()| to |EditingContext| to
-  // share with other commands.
-  function moveAllChildren(context, newElement, oldElement) {
-    var child;
-    while (child = oldElement.firstChild)
-      context.appendChild(newElement, child);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
    * @param {!Element} newParent
    * @param {!Element} oldParent
    * @param {!editing.SelectionTracker} selectionTracker
@@ -178,7 +165,7 @@ editing.defineCommand('createLink', (function() {
   function mergeElements(context, newParent, oldParent, selectionTracker) {
     console.assert(newParent !== oldParent,
                    'Should not move children to itself');
-    moveAllChildren(context, newParent, oldParent);
+    context.moveAllChildren(newParent, oldParent);
     selectionTracker.willRemoveNode(oldParent);
     context.removeChild(oldParent.parentNode, oldParent);
   }
@@ -213,7 +200,7 @@ editing.defineCommand('createLink', (function() {
       return selection;
 
     // Move lowest anchor contents to anchor element.
-    moveAllChildren(context, anchorElement, startContainer);
+    context.moveAllChildren(anchorElement, startContainer);
 
     // Move highest content node before anchor element
     context.insertBefore(anchorElement.parentNode, lastOf(elements),
@@ -280,7 +267,7 @@ editing.defineCommand('createLink', (function() {
     var child = /** @type {!Element} */(element.firstChild);
     console.assert(child === element.lastChild);
     context.removeChild(element, child);
-    moveAllChildren(context, element, child);
+    context.moveAllChildren(element, child);
     context.insertBefore(element.parentNode, child, element);
     context.appendChild(child, element);
   }

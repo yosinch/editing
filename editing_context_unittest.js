@@ -18,6 +18,42 @@ function dumpNodes(nodes) {
 }
 
 //
+// moveAllChildren
+//
+testCaseWithSample('context.moveAllChildren.1',
+  '|<p><a>foo</a><c></c></p>', function(sample, selectionIn) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selectionIn);
+  var srcElement = sample.document.querySelector('a');
+  var dstElement =  sample.document.querySelector('c');
+  context.moveAllChildren(dstElement, srcElement);
+  expectEq('<p><a></a><c>foo</c></p>',
+           function() { return sample.getContentHtml(); });
+});
+
+testCaseWithSample('context.moveAllChildren.2',
+  '|<p><a>foo<b>bar</b>baz</a><c></c></p>', function(sample, selectionIn) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selectionIn);
+  var srcElement = sample.document.querySelector('a');
+  var dstElement =  sample.document.querySelector('c');
+  context.moveAllChildren(dstElement, srcElement);
+  expectEq('<p><a></a><c>foo<b>bar</b>baz</c></p>',
+           function() { return sample.getContentHtml(); });
+});
+
+testCaseWithSample('context.moveAllChildren.noChildren',
+  '|<p><a></a><c></c></p>', function(sample, selectionIn) {
+  var editor = editing.Editor.getOrCreate(sample.document);
+  var context = editor.createContext('noname', selectionIn);
+  var srcElement = sample.document.querySelector('a');
+  var dstElement =  sample.document.querySelector('c');
+  context.moveAllChildren(dstElement, srcElement);
+  expectEq('<p><a></a><c></c></p>',
+           function() { return sample.getContentHtml(); });
+});
+
+//
 // normalizeSelection
 //
 testCaseWithSample('context.normalizeSelection.splitTextCaret',

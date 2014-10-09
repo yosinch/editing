@@ -29,7 +29,7 @@ editing.defineCommand('Unlink', (function() {
         context.setStyle(styleElement, property.name, property.value);
         context.removeStyle(element, property.name);
       });
-      moveAllChildren(context, styleElement, element);
+      context.moveAllChildren(styleElement, element);
       context.appendChild(element, styleElement);
     }
 
@@ -72,7 +72,7 @@ editing.defineCommand('Unlink', (function() {
       }
       // Introduce text-level elements for inline style.
       style.createElements(context, function(context, property, styleElement) {
-        moveAllChildren(context, styleElement, element);
+        context.moveAllChildren(styleElement, element);
         context.appendChild(element, styleElement);
         context.removeStyle(element, property.name);
       });
@@ -113,19 +113,6 @@ editing.defineCommand('Unlink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} newElement
-   * @param {!Element} oldElement
-   */
-  // TODO(yosin) We should move |moveAllChildren()| to |EditingContext| to
-  // share with other commands.
-  function moveAllChildren(context, newElement, oldElement) {
-    while (oldElement.hasChildNodes())
-      context.appendChild(newElement,
-                          /** @type {!Node} */(oldElement.firstChild));
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
    * @param {!Element} element
    */
   function swapParentAndChild(context, element) {
@@ -134,7 +121,7 @@ editing.defineCommand('Unlink', (function() {
     var child = /** @type {!Element} */(element.firstChild);
     console.assert(child === element.lastChild);
     context.removeChild(element, child);
-    moveAllChildren(context, element, child);
+    context.moveAllChildren(element, child);
     context.insertBefore(element.parentNode, child, element);
     context.appendChild(child, element);
   }

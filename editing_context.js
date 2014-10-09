@@ -278,6 +278,17 @@ editing.EditingContext = (function() {
   }
 
   /**
+   * @this {!editing.EditingContext}
+   * @param {!Element} newElement
+   * @param {!Element} oldElement
+   */
+  function moveAllChildren(newElement, oldElement) {
+    var child;
+    while (child = oldElement.firstChild)
+      this.appendChild(newElement, child);
+  }
+
+  /**
    * @this {!editing.EditingContext} context
    * @param {!editing.ImmutableSelection} selection
    */
@@ -791,6 +802,7 @@ editing.EditingContext = (function() {
     insertAfter: insertAfter,
     insertBefore: insertBefore,
     insertChildrenBefore: insertChildrenBefore,
+    moveAllChildren: moveAllChildren,
     normalizeSelection: normalizeSelection,
     removeAttribute: removeAttribute,
     removeChild: removeChild,
