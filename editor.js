@@ -63,7 +63,7 @@ editing.Editor = (function() {
         returnValue = commandFunction(context, userInterface, value);
         succeeded = true;
       } catch (exception) {
-        console.log('execCommand', exception);
+        console.log('execCommand', exception, exception.stack);
         throw exception;
       } finally {
         editor.currentContext_ = null;
