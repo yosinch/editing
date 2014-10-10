@@ -14,9 +14,6 @@ editing.EditingContext = function(editor, name, selection) {}
 /** @type {!Document} */
 editing.EditingContext.prototype.document;
 
-/** @type {!editing.Editor} */
-editing.EditingContext.prototype.editor;
-
 /** @type {string} */
 editing.EditingContext.prototype.name;
 

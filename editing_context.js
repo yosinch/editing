@@ -27,9 +27,6 @@ editing.EditingContext = (function() {
     /** @private @type {!Document} */
     this.document_ = document;
 
-    /** @private @type {!editing.Editor} */
-    this.editor_ = editor;
-
     /** @private @type {?editing.ImmutableSelection} */
     this.endingSelection_ = null;
 
@@ -777,7 +774,6 @@ editing.EditingContext = (function() {
     constructor: EditingContext,
     createElement: createElement,
     createTextNode: createTextNode,
-    get editor() { return this.editor_; },
     // Selection after executing editing command. This |ImmutableSelection| is
     // put into undo stack for redo operation. See also |startingSelection|
     get endingSelection() { return endingSelection.call(this); },
