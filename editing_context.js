@@ -188,15 +188,6 @@ editing.EditingContext = (function() {
 
   /**
    * @this {!EditingContext}
-   * @param {!Node} node
-   * @return {!Node}
-   */
-  function cloneNode(node) {
-    return node.cloneNode(false);
-  }
-
-  /**
-   * @this {!EditingContext}
    * @return {!editing.ImmutableSelection}
    */
   function endingSelection() {
@@ -784,7 +775,6 @@ editing.EditingContext = (function() {
   EditingContext.prototype = /** @struct */ {
     appendChild: appendChild,
     constructor: EditingContext,
-    cloneNode: cloneNode ,
     createElement: createElement,
     createTextNode: createTextNode,
     get editor() { return this.editor_; },
