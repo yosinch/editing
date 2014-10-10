@@ -21,6 +21,15 @@ window['editing']= {};
   }
 
   /**
+   * @template T
+   * @param {!Array.<T>} array
+   * @return {T}
+   */
+  function lastOf(array) {
+    return array.length ? array[array.length - 1] : null;
+  }
+
+  /**
    * @param {string} name
    * @return {?CommandFunction}
    */
@@ -42,6 +51,7 @@ window['editing']= {};
 
   editing = {
     defineCommand: defineCommand,
+    lastOf: lastOf,
     lookupCommand: lookupCommand,
     registerCommand: registerCommand
   };

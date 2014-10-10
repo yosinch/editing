@@ -21,6 +21,13 @@ var UndoableCommandFunction;
 editing.defineCommand = function(name, commandFunction) {};
 
 /**
+ * @template T
+ * @param {!Array.<T>} array
+ * @return {T}
+ */
+editing.lastOf = function(array) {};
+
+/**
  * @param {string} name
  * @return {CommandFunction}
  */

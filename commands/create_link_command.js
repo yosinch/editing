@@ -11,6 +11,7 @@ editing.defineCommand('createLink', (function() {
   /** @const */ var isEditable = editing.dom.isEditable;
   /** @const */ var isElement = editing.dom.isElement;
   /** @const */ var isPhrasing = editing.dom.isPhrasing;
+  /** @const */ var lastOf = editing.lastOf;
 
   /**
    * @param {Node} node
@@ -60,15 +61,6 @@ editing.defineCommand('createLink', (function() {
    */
   function isEffectiveNode(node) {
     return isEditable(node) && !isAnchorElement(node);
-  }
-
-  /**
-   * @template T
-   * @param {!Array.<T>} array
-   * @return {T}
-   */
-  function lastOf(array) {
-    return array.length ? array[array.length - 1] : null;
   }
 
   /**

@@ -9,6 +9,7 @@ editing.defineCommand('Unlink', (function() {
       editing.LinkCommandContextBase.isAnchorElement;
   /** @const */ var isElement = editing.dom.isElement;
   /** @const */ var isPhrasing = editing.dom.isPhrasing;
+  /** @const */ var lastOf = editing.lastOf;
 
   /**
    * @param {!Node} node
@@ -16,15 +17,6 @@ editing.defineCommand('Unlink', (function() {
    */
   function isEffectiveNode(node) {
     return !isAnchorElement(node);
-  }
-
-  /**
-   * @template T
-   * @param {!Array.<T>} array
-   * @return {T}
-   */
-  function lastOf(array) {
-    return array.length ? array[array.length - 1] : null;
   }
 
   /**
