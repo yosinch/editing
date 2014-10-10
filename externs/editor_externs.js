@@ -13,14 +13,15 @@
  * @struct
  * @param {!Document} document
  */
-editing.Editor = function(document) {}
+editing.Editor = function(document) {};
 
 /**
  * @param {string} commandName
  * @param {!UndoableCommandFunction} commandFunction
  * @return {!CommandFunction}
  */
-editing.Editor.createCommandFunction = function(commandName, commandFunction) {};
+editing.Editor.createCommandFunction = function(commandName,
+                                                commandFunction) {};
 
 /**
  * @param {!Document} document
@@ -28,42 +29,43 @@ editing.Editor.createCommandFunction = function(commandName, commandFunction) {}
  */
 editing.Editor.getOrCreate = function(document) {};
 
-/**
- * @param {string} name
- * @param {!editing.ImmutableSelection} selection
- * @return {!editing.EditingContext}
- */
-editing.Editor.prototype.createContext = function(name, selection) {};
+editing.Editor.prototype = /** @struct */ {
+  /** @type {!Document} */
+  get document() {},
 
-/** @type {!Document} */
-editing.Editor.prototype.document;
+  /** @type {!editing.ImmutableSelection} */
+  get selection() {},
 
-/**
- * @param {string} commandName
- * @param {boolean=} opt_userInterface
- * @param {string=} opt_value
- * @return {boolean}
- */
-editing.Editor.prototype.execCommand = function(commandName, opt_userInterface,
-                                                opt_value) {};
+  /**
+   * @param {string} name
+   * @param {!editing.ImmutableSelection} selection
+   * @return {!editing.EditingContext}
+   */
+  createContext: function(name, selection) {},
 
-/** @return {!editing.ImmutableSelection} */
-editing.Editor.prototype.getSelectionFromDom = function() {};
+  /**
+   * @param {string} commandName
+   * @param {boolean=} opt_userInterface
+   * @param {string=} opt_value
+   * @return {boolean}
+   */
+  execCommand: function(commandName, opt_userInterface, opt_value) {},
 
-/**
- * @return {boolean}
- */
-editing.Editor.prototype.redo = function() {};
+  /** @return {!editing.ImmutableSelection} */
+  getSelectionFromDom: function() {},
 
-/** @type {!editing.ImmutableSelection} */
-editing.Editor.prototype.selection;
+  /**
+   * @return {boolean}
+   */
+  redo: function() {},
 
-/**
- * @param {!editing.ImmutableSelection} selection
- */
-editing.Editor.prototype.setDomSelection = function(selection) {};
+  /**
+   * @param {!editing.ImmutableSelection} selection
+   */
+  setDomSelection: function(selection) {},
 
-/**
- * @return {boolean}
- */
-editing.Editor.prototype.undo = function() {};
+  /**
+   * @return {boolean}
+   */
+  undo: function() {}
+};
