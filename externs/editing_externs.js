@@ -21,12 +21,6 @@ var UndoableCommandFunction;
 editing.defineCommand = function(name, commandFunction) {};
 
 /**
- * @param {!Node} node
- * @return {boolean}
- */
-editing.isContentEditable = function(node) {};
-
-/**
  * @param {string} name
  * @return {CommandFunction}
  */

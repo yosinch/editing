@@ -99,11 +99,11 @@ editing.ImmutableSelection = (function() {
     if (!this.anchorNode_)
       return false;
     if (editing.dom.isElement(this.anchorNode_))
-      return editing.dom.isContentEditable(this.anchorNode_);
+      return this.anchorNode_.isContentEditable;
     var parentNode = this.anchorNode_.parentNode;
     if (!parentNode)
       return false;
-    return editing.dom.isContentEditable(parentNode);
+    return parentNode.isContentEditable;
   }
 
   /**

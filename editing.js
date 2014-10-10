@@ -64,7 +64,6 @@ window['editing']= {};
 
   editing = {
     defineCommand: defineCommand,
-    isContentEditable: isContentEditable,
     lookupCommand: lookupCommand,
     registerCommand: registerCommand
   };

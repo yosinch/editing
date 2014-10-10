@@ -193,14 +193,17 @@ testCaseWithSample('dom.computeSelectedNodes.NodesTreeUL',
 //
 // isEditable
 //
-testCaseWithSample('dom.isEditable', '', function(sample, selection) {
-  var elementA = sample.createElement('a');
+// Note: Due to http://crbug.com/313082, to get true from |isContentEditable|,
+// element should be associated to renderer.
+testCaseWithSample('dom.isEditable',
+  '|<a>foo</a>', function(sample, selection) {
+  var elementA = sample.document.querySelector('a');
   expectFalse(function () { return editing.dom.isEditable(elementA); });
 
   var elementB = sample.createElement('b');
   elementA.appendChild(elementB);
   elementA.setAttribute('contentEditable', 'true');
-  expectTrue(function () { return editing.dom.isContentEditable(elementA); });
+  expectTrue(function () { return elementA.isContentEditable; });
   expectFalse(function () { return editing.dom.isEditable(elementA); });
   expectTrue(function () { return editing.dom.isEditable(elementB); });
 });

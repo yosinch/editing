@@ -227,22 +227,6 @@ editing.dom = (function() {
   }
 
   /**
-   * @param {!Element} element
-   * @return {boolean}
-   */
-  function isContentEditable(element) {
-    for (var runner = element; runner && isElement(runner);
-         runner = runner.parentNode) {
-      var contentEditable = runner.getAttribute('contenteditable');
-      if (typeof(contentEditable) == 'string')
-        return contentEditable.toLowerCase() != 'false';
-      if (editing.isContentEditable(runner))
-        return true;
-    }
-    return false;
-  }
-
-  /**
    * @param {!Node} node
    * @param {!Node} other
    * Returns true if |other| is an ancestor of |node|, otherwise false.
@@ -264,7 +248,7 @@ editing.dom = (function() {
     var container = node.parentNode;
     if (!container)
       return false;
-    return isContentEditable(/** @type {!Element} */(container));
+    return container.isContentEditable;
   }
 
   /**
@@ -448,7 +432,6 @@ editing.dom = (function() {
     canContainRangeEndPoint: canContainRangeEndPoint,
     commonAncestor: commonAncestor,
     computeSelectedNodes: computeSelectedNodes,
-    isContentEditable: isContentEditable,
     isDescendantOf: isDescendantOf,
     isEditable: isEditable,
     isElement: isElement,
