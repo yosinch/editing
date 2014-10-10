@@ -101,6 +101,7 @@ editing.defineCommand('Unlink', (function() {
 
   UnlinkCommandContext.prototype = /** @type {!UnlinkCommandContext} */
     (Object.create(editing.LinkCommandContextBase.prototype, {
+      constructor: {value: UnlinkCommandContext},
       execute: {value: execute}
   }));
   Object.freeze(UnlinkCommandContext.prototype);
