@@ -5,6 +5,8 @@
 editing.defineCommand('createLink', (function() {
   'use strict';
 
+  /** @const */ var isAnchorElement =
+      editing.LinkCommandContextBase.isAnchorElement;
   /** @const */ var isDescendantOf = editing.dom.isDescendantOf;
   /** @const */ var isEditable = editing.dom.isEditable;
   /** @const */ var isElement = editing.dom.isElement;
@@ -21,83 +23,6 @@ editing.defineCommand('createLink', (function() {
       return false;
     var element = /** @type {!Element} */(node);
     return getAnchorUrl(element) === url && element.attributes.length === 1;
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   */
-  // TODO(yosin) We should move |expandInlineStyle()| to library to share
-  // with other commands.
-  function expandInlineStyle(context, element) {
-    /**
-     * @param {!editing.EditingContext} context
-     * @param {!Element} element
-     */
-    function expandInlineStyleWithCSS(context, element) {
-      var style = new editing.EditingStyle(element);
-      if (!style.hasStyle)
-        return;
-      var styleElement = context.createElement('span');
-      for (var property of style.properties) {
-        context.setStyle(styleElement, property.name, property.value);
-        context.removeStyle(element, property.name);
-      }
-      context.moveAllChildren(styleElement, element);
-      context.appendChild(element, styleElement);
-    }
-
-    /**
-     * @param {!editing.EditingContext} context
-     * @param {!Element} element
-     */
-    function expandInlineStyleWithoutCSS(context, element) {
-      var style = new editing.EditingStyle(element);
-      if (!style.hasStyle)
-        return;
-      if (element.childElementCount) {
-        // Apply inline style to text child element.
-        var lastElement = null;
-        // TODO(yosin) We should use |for-of| once closure-compiler #643 fixed.
-        Array.prototype.forEach.call(element.childNodes, function(child) {
-          if (isElement(child)) {
-            style.applyInheritedStyle(context, /** @type {!Element} */(child));
-            lastElement = null;
-            return;
-          }
-          if (lastElement) {
-            context.appendChild(lastElement, child);
-            return;
-          }
-          if (editing.dom.isWhitespaceNode(child)) {
-            // We don't need to wrap whitespaces with style element.
-            // See createLink.style.7
-            return;
-          }
-          style.createElements(context,
-              function(context, property, styleElement) {
-                if (!lastElement)
-                  context.replaceChild(element, styleElement, child);
-                context.appendChild(styleElement, child);
-                lastElement = styleElement;
-              });
-        });
-        context.removeAttribute(element, 'style');
-        return;
-      }
-      // Introduce text-level elements for inline style.
-      style.createElements(context, function(context, property, styleElement) {
-        context.moveAllChildren(styleElement, element);
-        context.appendChild(element, styleElement);
-        context.removeStyle(element, property.name);
-      });
-    }
-
-    if (context.shouldUseCSS) {
-      expandInlineStyleWithCSS(context, element);
-      return;
-    }
-    expandInlineStyleWithoutCSS(context, element);
   }
 
   /**
@@ -127,14 +52,6 @@ editing.defineCommand('createLink', (function() {
     context.replaceChild(parentNode, anchorElement, anchorPhraseNode);
     context.appendChild(anchorElement, anchorPhraseNode);
     return anchorElement;
-  }
-
-  /**
-   * @param {Node} node
-   * @return {boolean}
-   */
-  function isAnchorElement(node) {
-    return Boolean(node) && node.nodeName === 'A';
   }
 
   /**
@@ -172,60 +89,6 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!editing.ImmutableSelection} selection
-   * @return {!editing.ImmutableSelection}
-   *
-   * Reorder A element which contents is phrasing elements.
-   * Example: <a><b><i>foo</i></a> => <b><i><a>foo</a></i></b>
-   */
-  function normalizeSelectedStartNode(context, selection) {
-    console.assert(selection.isNormalized);
-    var startContainer = /** @type {!Element} */(selection.startContainer);
-    /** @type {Element} */
-    var anchorElement = null;
-    var elements = [];
-    for (var runner = startContainer;
-         runner && runner.parentNode && isPhrasing(runner);
-         runner = runner.parentNode) {
-      if (isAnchorElement(runner)) {
-        anchorElement = /** @type {!Element} */(runner);
-        break;
-      }
-      if (runner.previousSibling || runner.nextSibling)
-        break;
-      elements.push(runner);
-    }
-
-    if (!anchorElement || !elements.length)
-      return selection;
-
-    // Move lowest anchor contents to anchor element.
-    context.moveAllChildren(anchorElement, startContainer);
-
-    // Move highest content node before anchor element
-    context.insertBefore(anchorElement.parentNode, lastOf(elements),
-                         anchorElement);
-
-    // Move anchor element to lowest
-    context.appendChild(startContainer, anchorElement);
-
-    // Adjust selection
-    var newEndContainer = selection.endContainer === startContainer ?
-        anchorElement : selection.endContainer;
-    if (selection.direction === editing.SelectionDirection.ANCHOR_IS_START) {
-      return new editing.ImmutableSelection(
-          anchorElement, selection.startOffset,
-          newEndContainer, selection.endOffset,
-          selection.direction);
-    }
-    return new editing.ImmutableSelection(
-        newEndContainer, selection.endOffset,
-        anchorElement, selection.startOffset,
-        selection.direction);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
    * @param {string} url
    */
@@ -259,49 +122,6 @@ editing.defineCommand('createLink', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   */
-  function swapParentAndChild(context, element) {
-    console.assert(element.firstChild &&
-                   isElement(element.firstChild));
-    var child = /** @type {!Element} */(element.firstChild);
-    console.assert(child === element.lastChild);
-    context.removeChild(element, child);
-    context.moveAllChildren(element, child);
-    context.insertBefore(element.parentNode, child, element);
-    context.appendChild(child, element);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} anchorElement
-   */
-  function unwrapAnchorContents(context, anchorElement) {
-    /**
-     * @param {!Node} node
-     * @return {boolean}
-     * Returns true if all child element is identical phrasing element.
-     */
-    function canUnwrapContents(node) {
-      if (!isElement(node))
-        return false;
-      var element = /** @type {!Element} */(node);
-      var firstChild = element.firstChild;
-      if (!firstChild)
-        return false;
-      return Array.prototype.every.call(element.childNodes, function(child) {
-        return isElement(child) && isPhrasing(child) &&
-               child.nodeName === firstChild.nodeName &&
-               child.firstChild;
-      });
-    }
-
-    while (canUnwrapContents(anchorElement))
-      swapParentAndChild(context, anchorElement);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
    * @param {string} url
    * @return {boolean}
    * If selection is caret, we insert |url| before caret and select it,
@@ -331,19 +151,33 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
+   * @constructor
+   * @extends {editing.LinkCommandContextBase}
+   * @final
+   * @struct
    * @param {!editing.EditingContext} context
-   * @param {string} urlValue
+   * @param {boolean} userInterface
+   * @param {string} commandValue
+   */
+  function CreateLinkCommandContext(context, userInterface, commandValue) {
+    editing.LinkCommandContextBase.call(this, context, userInterface,
+                                        commandValue);
+  }
+
+  /**
+   * @this {!CreateLinkCommandContext}
    * @return {boolean}
    */
-  function createLinkForRange(context, urlValue) {
-    console.assert(urlValue !== '');
-
+  function execute() {
+    /** @const */ var commandContext = this;
+    /** @const */ var context = this.context;
+    /** @const */ var urlValue = this.commandValue;
     /** @type {Element} */var currentAnchorElement = null;
 
     function endAnchorElement() {
       if (!currentAnchorElement)
         return;
-      unwrapAnchorContents(context, currentAnchorElement);
+      commandContext.unwrapAnchorContents(currentAnchorElement);
       currentAnchorElement = null;
     }
 
@@ -382,7 +216,7 @@ editing.defineCommand('createLink', (function() {
         return element;
       if (getAnchorUrl(element) == urlValue)
         return element;
-      expandInlineStyle(this, element);
+      commandContext.expandInlineStyle(element);
       // Note: We keep NAME attribute here, otherwise following tests are
       // failed: createLink.w3c.46, createLink.w3c.46r createLink.w3c.47,
       // createLink.w3c.47r
@@ -443,7 +277,7 @@ editing.defineCommand('createLink', (function() {
       return createLinkForCaret(context, urlValue);
     // TODO(yosin) We should reorder content elements for caret, once Chrome
     // does so.
-    selection = normalizeSelectedStartNode(context, selection);
+    selection = this.normalizeSelectedStartNode(selection);
 
     var selectionTracker = new editing.SelectionTracker(context, selection);
     var effectiveNodes = context.setUpEffectiveNodesWithSplitter(
@@ -467,6 +301,8 @@ editing.defineCommand('createLink', (function() {
     /** @const @type {Node} */
     var endNode = editing.dom.nextNodeSkippingChildren(lastNode);
     var atomicElements = [];
+    // TODO(yosin) Once closure compiler support |break| in |for-of|, we
+    // should use |for-of| instead of |Array.prototype.every()|.
     effectiveNodes.every(function(currentNode) {
       if (currentNode === currentAnchorElement)
         return true;
@@ -516,7 +352,7 @@ editing.defineCommand('createLink', (function() {
           context.removeAttribute(anchorElement, 'name');
         }
 
-        swapParentAndChild(context, anchorElement);
+        this.swapParentAndChild(anchorElement);
 
         currentAnchorElement = anchorElement;
         return true;
@@ -535,7 +371,7 @@ editing.defineCommand('createLink', (function() {
           // createLink.Range.42.3:
           //   <a><b><i>^foo|bar</i></b></a> =>
           //   <b><i><a>foo</a><a>bar</a></i></b>
-          unwrapAnchorContents(context, anchorElement);
+          commandContext.unwrapAnchorContents(anchorElement);
 
           // Expand style for createLink.style.6.css
           // But not for see createLink.style.4
@@ -548,11 +384,11 @@ editing.defineCommand('createLink', (function() {
           // createLink.style.5.css, createLink.style.7
           var newAnchorElement = splitAnchorElement(
               context, anchorElement, /** @type {!Node} */(endNode));
-          expandInlineStyle(context, anchorElement);
+          commandContext.expandInlineStyle(anchorElement);
           if (shouldExpandInlineStyleAfterSplit)
-            expandInlineStyle(context, newAnchorElement);
+            commandContext.expandInlineStyle(newAnchorElement);
         } else {
-          expandInlineStyle(context, anchorElement);
+          commandContext.expandInlineStyle(anchorElement);
         }
         setAnchorUrl(context, anchorElement, urlValue);
         if (currentAnchorElement && canMergeAnchor(anchorElement, urlValue)) {
@@ -593,7 +429,7 @@ editing.defineCommand('createLink', (function() {
 
       wrapByAnchor(currentNode);
       return true;
-    });
+    }, this);
 
     // The last effective node is descendant of pending container.
     // Example: foo<b>^bar<i>baz quux</i></b>|mox
@@ -605,23 +441,31 @@ editing.defineCommand('createLink', (function() {
     return true;
   }
 
+  CreateLinkCommandContext.prototype = /** @type {!CreateLinkCommandContext} */
+    (Object.create(editing.LinkCommandContextBase.prototype, {
+      execute: {value: execute}
+  }));
+  Object.freeze(CreateLinkCommandContext.prototype);
+
   /**
    * @param {!editing.EditingContext} context
    * @param {boolean} userInterface
-   * @param {string} url
+   * @param {string} commandValue
    * @return {boolean}
    */
-  function createLinkCommand(context, userInterface, url) {
+  function createLinkCommand(context, userInterface, commandValue) {
     var selection = context.startingSelection;
-    if (url === '' || !selection.isEditable) {
+    if (commandValue === '' || !selection.isEditable) {
       context.setEndingSelection(selection);
       return false;
     }
 
     if (selection.isCaret)
-      return createLinkForCaret(context,url);
+      return createLinkForCaret(context, commandValue);
 
-    return createLinkForRange(context, url);
+    var commandContext = new CreateLinkCommandContext(context, userInterface,
+                                                  commandValue);
+    return commandContext.execute();
   }
 
   return createLinkCommand;

@@ -3,96 +3,12 @@
 // found in the LICENSE file.
 
 editing.defineCommand('Unlink', (function() {
-
   'use strict';
 
+  /** @const */ var isAnchorElement =
+      editing.LinkCommandContextBase.isAnchorElement;
   /** @const */ var isElement = editing.dom.isElement;
   /** @const */ var isPhrasing = editing.dom.isPhrasing;
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   */
-  // TODO(yosin) We should move |expandInlineStyle()| to library to share
-  // with other commands.
-  function expandInlineStyle(context, element) {
-    /**
-     * @param {!editing.EditingContext} context
-     * @param {!Element} element
-     */
-    function expandInlineStyleWithCSS(context, element) {
-      var style = new editing.EditingStyle(element);
-      if (!style.hasStyle)
-        return;
-      var styleElement = context.createElement('span');
-      style.properties.forEach(function(property) {
-        context.setStyle(styleElement, property.name, property.value);
-        context.removeStyle(element, property.name);
-      });
-      context.moveAllChildren(styleElement, element);
-      context.appendChild(element, styleElement);
-    }
-
-    /**
-     * @param {!editing.EditingContext} context
-     * @param {!Element} element
-     */
-    function expandInlineStyleWithoutCSS(context, element) {
-      var style = new editing.EditingStyle(element);
-      if (!style.hasStyle)
-        return;
-      if (element.childElementCount) {
-        // Apply inline style to text child element.
-        var lastElement = null;
-        [].forEach.call(element.childNodes, function(child) {
-          if (isElement(child)) {
-            style.applyInheritedStyle(context, /** @type {!Element} */(child));
-            lastElement = null;
-            return;
-          }
-          if (lastElement) {
-            context.appendChild(lastElement, child);
-            return;
-          }
-          if (editing.dom.isWhitespaceNode(child)) {
-            // We don't need to wrap whitespaces with style element.
-            // See createLink.style.7
-            return;
-          }
-          style.createElements(context,
-              function(context, property, styleElement) {
-                if (!lastElement)
-                  context.replaceChild(element, styleElement, child);
-                context.appendChild(styleElement, child);
-                lastElement = styleElement;
-              });
-        });
-        context.removeAttribute(element, 'style');
-        return;
-      }
-      // Introduce text-level elements for inline style.
-      style.createElements(context, function(context, property, styleElement) {
-        context.moveAllChildren(styleElement, element);
-        context.appendChild(element, styleElement);
-        context.removeStyle(element, property.name);
-      });
-    }
-
-    if (context.shouldUseCSS) {
-      expandInlineStyleWithCSS(context, element);
-      return;
-    }
-    expandInlineStyleWithoutCSS(context, element);
-  }
-
-  /**
-   * @param {Node} node
-   * @return {boolean}
-   */
-  function isAnchorElement(node) {
-    return Boolean(node) && node.nodeName === 'A';
-  }
-
 
   /**
    * @param {!Node} node
@@ -112,55 +28,26 @@ editing.defineCommand('Unlink', (function() {
   }
 
   /**
+   * @constructor
+   * @extends {editing.LinkCommandContextBase}
+   * @final
+   * @struct
    * @param {!editing.EditingContext} context
-   * @param {!Element} element
+   * @param {boolean} userInterface
+   * @param {string} commandValue
    */
-  function swapParentAndChild(context, element) {
-    console.assert(element.firstChild &&
-                   isElement(element.firstChild));
-    var child = /** @type {!Element} */(element.firstChild);
-    console.assert(child === element.lastChild);
-    context.removeChild(element, child);
-    context.moveAllChildren(element, child);
-    context.insertBefore(element.parentNode, child, element);
-    context.appendChild(child, element);
+  function UnlinkCommandContext(context, userInterface, commandValue) {
+    editing.LinkCommandContextBase.call(this, context, userInterface,
+                                        commandValue);
   }
 
   /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} anchorElement
-   */
-  function unwrapAnchorContents(context, anchorElement) {
-    /**
-     * @param {!Node} node
-     * @return {boolean}
-     * Returns true if all child element is identical phrasing element.
-     */
-    function canUnwrapContents(node) {
-      if (!isElement(node))
-        return false;
-      var element = /** @type {!Element} */(node);
-      var firstChild = element.firstChild;
-      if (!firstChild)
-        return false;
-      return [].every.call(element.childNodes, function(child) {
-        return isElement(child) && isPhrasing(child) &&
-               child.nodeName === firstChild.nodeName &&
-               !!child.firstChild;
-      });
-    }
-
-    while (canUnwrapContents(anchorElement))
-      swapParentAndChild(context, anchorElement);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {boolean} userInterface Not used.
-   * @param {string} value Not used.
+   * @this {!UnlinkCommandContext}
    * @return {boolean}
    */
-  function unlinkCommand(context, userInterface, value) {
+  function execute() {
+    /** @const */ var commandContext = this;
+    /** @const */ var context = this.context;
     /** @const */ var selection = context.normalizeSelection(
         context.startingSelection);
     var selectionTracker = new editing.SelectionTracker(context, selection);
@@ -177,6 +64,9 @@ editing.defineCommand('Unlink', (function() {
     // aren't valid HTML5.
     /** @const @type {!Array.<!Element>} */
     var anchorElements = [];
+
+    // TODO(yosin) Once closure compiler support |continue| in |for-of|, we
+    // should use |for-of| instead of |Array.prototype.every()|.
     effectiveNodes.forEach(function(currentNode) {
       var lastAnchorElement = lastOf(anchorElements);
       if (lastAnchorElement &&
@@ -199,10 +89,10 @@ editing.defineCommand('Unlink', (function() {
         return;
 
       var anchorElement = /** @type {!Element} */(currentNode);
-      unwrapAnchorContents(context, anchorElement);
-      expandInlineStyle(context, anchorElement);
+      this.unwrapAnchorContents(anchorElement);
+      commandContext.expandInlineStyle(anchorElement);
       anchorElements.push(anchorElement);
-    });
+    }, this);
 
     while (anchorElements.length) {
       var endNode = lastOf(effectiveNodes);
@@ -215,6 +105,24 @@ editing.defineCommand('Unlink', (function() {
 
     selectionTracker.finishWithStartAsAnchor();
     return true;
+  }
+
+  UnlinkCommandContext.prototype = /** @type {!UnlinkCommandContext} */
+    (Object.create(editing.LinkCommandContextBase.prototype, {
+      execute: {value: execute}
+  }));
+  Object.freeze(UnlinkCommandContext.prototype);
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {boolean} userInterface Not used.
+   * @param {string} value Not used.
+   * @return {boolean}
+   */
+  function unlinkCommand(context, userInterface, value) {
+    var commandContext = new UnlinkCommandContext(context, userInterface,
+                                                  value);
+    return commandContext.execute();
   }
 
   return unlinkCommand;
