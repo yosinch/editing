@@ -420,7 +420,7 @@ window['TestRunner'] = (function() {
   Object.defineProperties(TestRunner.prototype, {
     addTest: {value: addTest},
     allTestCases_: {writable: true},
-    constructor: TestRunner,
+    constructor: {value: TestRunner},
     fail: {value: fail},
     getSectionNames: {value: getSectionNames},
     pass: {value: pass},

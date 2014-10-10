@@ -82,7 +82,7 @@ editing.AppendChild = (function() {
 
   AppendChild.prototype = /** @type {!AppendChild} */
     (Object.create(editing.Operation.prototype, {
-      constructor: AppendChild,
+      constructor: {value: AppendChild},
       redo: {value: redo},
       undo: {value: undo}
     }));
@@ -134,7 +134,7 @@ editing.InsertBefore = (function() {
 
   InsertBefore.prototype = /** @type {!InsertBefore} */
     (Object.create(editing.Operation.prototype, {
-      constructor: InsertBefore,
+      constructor: {value: InsertBefore},
       redo: {value: redo},
       undo: {value: undo}
     }));
@@ -186,7 +186,7 @@ editing.RemoveAttribute = (function() {
 
   RemoveAttribute.prototype = /** @type {!RemoveAttribute} */
     (Object.create(editing.Operation.prototype, {
-      constructor: RemoveAttribute,
+      constructor: {value: RemoveAttribute},
       redo: {value: redo},
       undo: {value: undo}
     }));
@@ -235,7 +235,7 @@ editing.RemoveChild = (function() {
 
   RemoveChild.prototype = /** @type {!RemoveChild} */
     (Object.create(editing.Operation.prototype, {
-      constructor: RemoveChild,
+      constructor: {value: RemoveChild},
       redo: {value: redo},
       undo: {value: undo}
     }));
@@ -287,7 +287,7 @@ editing.ReplaceChild = (function() {
 
   ReplaceChild.prototype = /** @type {!ReplaceChild} */
     (Object.create(editing.Operation.prototype, {
-      constructor: ReplaceChild,
+      constructor: {value: ReplaceChild},
       redo: {value: redo},
       undo: {value: undo}
     }));
@@ -344,7 +344,7 @@ editing.SetAttribute = (function() {
 
   SetAttribute.prototype = /** @type {!SetAttribute} */
     (Object.create(editing.Operation.prototype, {
-      constructor: SetAttribute,
+      constructor: {value: SetAttribute},
       redo: {value: redo},
       undo: {value: undo}
     }));
@@ -413,7 +413,7 @@ editing.SetStyle = (function() {
 
   SetStyle.prototype = /** @type {!SetStyle} */
     (Object.create(editing.Operation.prototype, {
-      constructor: SetStyle,
+      constructor: {value: SetStyle},
       redo: {value: redo},
       setProperty: {value: setProperty},
       undo: {value: undo}
@@ -466,7 +466,7 @@ editing.SplitText = (function() {
 
   SplitText.prototype = /** @type {SplitText} */
     (Object.create(editing.Operation.prototype, {
-      constructor: SplitText,
+      constructor: {value: SplitText},
       redo: {value: redo},
       undo: {value: undo}
     }));
