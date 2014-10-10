@@ -218,8 +218,10 @@ editing.defineCommand('InsertOrderedList', (function() {
     var firstList = /** @type {!Element} */(listNode);
     var secondList = context.createElement(listNode.nodeName);
     // TODO(hajimehoshi): Copy other attributes?
-    if (firstList.hasAttribute('style'))
-      secondList.setAttribute('style', firstList.getAttribute('style'));
+    if (firstList.hasAttribute('style')) {
+      context.setAttribute(secondList, 'style',
+                           firstList.getAttribute('style'));
+    }
     context.insertAfter(listNode.parentNode, secondList, firstList);
     
     // TOOD(hajimehoshi): Use nextSiblingsWhile in the future.
@@ -315,6 +317,10 @@ editing.defineCommand('InsertOrderedList', (function() {
     var result = [list];
     var node = list;
 
+    /**
+     * @param {!Node} node
+     * @return {Node}
+     */
     function getPreviousNode(node) {
       if (!node.previousSibling)
         return node.parentNode;
@@ -331,6 +337,10 @@ editing.defineCommand('InsertOrderedList', (function() {
       return null;
     }
 
+    /**
+     * @param {!Node} node
+     * @return {Node}
+     */
     function getNextNode(node) {
       if (node !== list && node.firstChild)
         return node.firstChild;
@@ -355,8 +365,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         // used or (2) CSS white-space is pre.
         if (editing.nodes.isWhitespaceNode(node))
           continue;
-        else
-          break;
+        break;
       }
     }
 
@@ -371,8 +380,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         // used or (2) CSS white-space is pre.
         if (editing.nodes.isWhitespaceNode(node))
           continue;
-        else
-          break;
+        break;
       }
     }
 
@@ -382,7 +390,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   /**
    * @param {!editing.EditingContext} context
    * @param {!Array.<!Node>} listNodes
-   * @param {Number} mainListIndex
+   * @param {number} mainListIndex
    * @return {Node}
    */
   function mergeLists(context, listNodes, mainListIndex) {
@@ -397,11 +405,10 @@ editing.defineCommand('InsertOrderedList', (function() {
     var mainList = listNodes[mainListIndex];
     var mainListFirstChild = mainList.firstChild;
     var parent = mainList.parentNode;
-    for (var i = 0; i< listNodes.length; i++) {
+    listNodes.forEach(function(listNode, i) {
       if (i === mainListIndex)
-        continue;
+        return;
 
-      var listNode = listNodes[i];
       console.assert(listNode.nodeName === 'OL');
       // A list item can be <dt> or <dd>. See w3c.24.
       console.assert(Array.prototype.every.call(
@@ -409,13 +416,12 @@ editing.defineCommand('InsertOrderedList', (function() {
           return isListItem(node) || canContentOfDL(node);
         }));
 
-      if (i < mainListIndex) {
+      if (i < mainListIndex)
         insertChildNodesBefore(context, mainList, listNode, mainListFirstChild);
-      } else {
+      else
         insertChildNodesBefore(context, mainList, listNode, null);
-      }
       context.removeChild(listNode.parentNode, listNode);
-    }
+    });
 
     return mainList;
   }
@@ -607,7 +613,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         // See w3c.118.
         if (listNode.hasAttribute('style')) {
           var span = context.createElement('SPAN');
-          span.setAttribute('style', listNode.getAttribute('style'));
+          context.setAttribute(span, 'style', listNode.getAttribute('style'));
           context.insertBefore(newList.parentNode, span, newList);
           context.appendChild(span, newList);
         }
