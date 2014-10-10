@@ -89,15 +89,13 @@ editing.Editor = (function() {
   }
 
   /**
-   * @this {!editing.Editor}
+   * @this {!Editor}
    * @param {string} name
    * @param {!editing.ImmutableSelection} selection
    * @return {!editing.EditingContext}
    */
   function createContext(name, selection) {
-    console.assert(selection instanceof editing.ImmutableSelection,
-                   selection + ' must be ImmutableSelection');
-    return new editing.EditingContext(this, name, selection);
+    return new editing.EditingContext(this.document_, name, selection);
   }
 
   /**

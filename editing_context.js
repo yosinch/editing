@@ -15,17 +15,13 @@ editing.EditingContext = (function() {
    * @constructor
    * @final
    * @struct
-   * @param {!editing.Editor} editor
+   * @param {!Document} contextDocument
    * @param {string} name A name for this context for error message.
    * @param {!editing.ImmutableSelection} selection
    */
-  function EditingContext(editor, name, selection) {
-    console.assert(editor instanceof editing.Editor);
-    console.assert(selection instanceof editing.ImmutableSelection);
-    var document = editor.document;
-
+  function EditingContext(contextDocument, name, selection) {
     /** @private @type {!Document} */
-    this.document_ = document;
+    this.document_ = contextDocument;
 
     /** @private @type {?editing.ImmutableSelection} */
     this.endingSelection_ = null;

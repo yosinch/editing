@@ -5,11 +5,11 @@
 /**
  * @constructor
  * @final
- * @param {!editing.Editor} editor
+ * @param {!Document} document
  * @param {string} name A name for this context for error message.
  * @param {!editing.ImmutableSelection} selection
  */
-editing.EditingContext = function(editor, name, selection) {}
+editing.EditingContext = function(document, name, selection) {}
 
 /** @type {!Document} */
 editing.EditingContext.prototype.document;
