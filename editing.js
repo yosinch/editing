@@ -20,28 +20,6 @@ window['editing']= {};
         editing.Editor.createCommandFunction(commandName, commandFunction));
   }
 
-  // TODO(yosin) Once, Node.isContentEditable works for nodes without render
-  // object, we dont' need to have |editing.isContentEditable|.
-  // See http://crbug.com/313082
-  /**
-   * @param {!Node} node
-   * @return {boolean}
-   */
-  function isContentEditable(node) {
-    if (window.document === node.ownerDocument &&
-        node.style.display !== 'none') {
-      return node.isContentEditable;
-    }
-    if (node.isContentEditable)
-      return true;
-    if (node.nodeType !== Node.ELEMENT_NODE)
-      return false;
-    var contentEditable = node.getAttribute('contenteditable');
-    if (typeof(contentEditable) !== 'string')
-      return false;
-    return contentEditable.toLowerCase() !== 'false';
-  }
-
   /**
    * @param {string} name
    * @return {?CommandFunction}
