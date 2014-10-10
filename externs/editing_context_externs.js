@@ -5,6 +5,7 @@
 /**
  * @constructor
  * @final
+ * @struct
  * @param {!Document} document
  * @param {string} name A name for this context for error message.
  * @param {!editing.ImmutableSelection} selection
@@ -163,6 +164,9 @@ editing.EditingContext.prototype.setUpEffectiveNodes = function(selection,
  */
 editing.EditingContext.prototype.setUpEffectiveNodesWithSplitter =
     function(selection, predicate, splitter) {};
+
+/** @type {boolean} */
+editing.EditingContext.prototype.shouldUseCSS;
 
 /**
  * @this {!editing.EditingContext}
