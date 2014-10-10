@@ -4,6 +4,7 @@
 
 /**
  * @constructor
+ * @extends {editing.UndoUnit}
  * @final
  * @struct
  * @param {!Document} document
@@ -11,20 +12,6 @@
  * @param {!editing.ImmutableSelection} selection
  */
 editing.EditingContext = function(document, name, selection) {}
-
-/** @type {!Document} */
-editing.EditingContext.prototype.document;
-
-/** @type {string} */
-editing.EditingContext.prototype.name;
-
-/**
- * @this {!editing.EditingContext}
- * @param {!Node} parentNode
- * @param {!Node} newChild
- */
-editing.EditingContext.prototype.appendChild = function(parentNode,
-                                                        newChild) {};
 
 /**
  * @this {!editing.EditingContext}
@@ -40,16 +27,6 @@ editing.EditingContext.prototype.createElement = function(tagName) {};
  */
 editing.EditingContext.prototype.createTextNode = function(text) {};
 
-/** @type {!editing.ImmutableSelection} */
-editing.EditingContext.prototype.endingSelection;
-
-/**
- * @this {!editing.EditingContext}
- * @param {!Node} node
- * @return {boolean}
- */
-editing.EditingContext.prototype.inDocument = function(node) {};
-
 /**
  * @this {!editing.EditingContext}
  * @param {Node} parentNode
@@ -58,18 +35,6 @@ editing.EditingContext.prototype.inDocument = function(node) {};
  */
 editing.EditingContext.prototype.insertAfter = function(
     parentNode, newChild, refChild) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {Node} parentNode
- * @param {!Node} newChild
- * @param {?Node} refChild
- */
-editing.EditingContext.prototype.insertBefore = function(
-    parentNode, newChild, refChild) {};
-
-/** @type {!Array.<!editing.Operation>} */
-editing.EditingContext.prototype.operations;
 
 /**
  * @this {!editing.EditingContext}
@@ -84,58 +49,6 @@ editing.EditingContext.prototype.moveAllChildren = function(newElement,
  * @param {!editing.ImmutableSelection} selection
  */
 editing.EditingContext.prototype.normalizeSelection = function(selection) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {!Element} element
- * @param {string} name
- */
-editing.EditingContext.prototype.removeAttribute = function(element, name) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {Node} parentNode
- * @param {!Node} oldChild
- */
-editing.EditingContext.prototype.removeChild = function(parentNode,
-                                                        oldChild) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {!Element} element
- * @param {string} propertyName
- */
-editing.EditingContext.prototype.removeStyle = function(element,
-                                                        propertyName) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {!Node} parentNode
- * @param {!Node} newChild
- * @param {!Node} oldChild
- */
-editing.EditingContext.prototype.replaceChild = function(
-    parentNode, newChild, oldChild) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {!Node} element
- * @param {string} name
- * @param {string} newValue
- */
-editing.EditingContext.prototype.setAttribute = function(element, name,
-                                                         newValue) {};
-
-/**
- * @this {!editing.EditingContext}
- * @param {!editing.ImmutableSelection} selection
- */
-editing.EditingContext.prototype.setEndingSelection = function(selection) {};
-
-/**
- * @this {!editing.EditingContext}
- */
-editing.EditingContext.prototype.setEndingSelectionAsEmpty = function() {};
 
 /**
  * @this {!editing.EditingContext}
@@ -185,14 +98,6 @@ editing.EditingContext.prototype.splitNode = function(element, child) {};
 editing.EditingContext.prototype.splitNodeLeft = function(element, child) {};
 
 /**
- * @this {!editing.EditingContext}
- * @param {!Text} node
- * @param {number} offset
- * @return {!Text}
- */
-editing.EditingContext.prototype.splitText = function(node, offset) {};
-
-/**
   * @this {!editing.EditingContext}
   * @param {!Element} element
   * @param {!Node} refNode
@@ -207,9 +112,6 @@ editing.EditingContext.prototype.splitTree = function(element, refNode) {};
    * @return {!Element}
    */
 editing.EditingContext.prototype.splitTreeLeft = function(element, refNode) {};
-
-/** @type {!editing.ImmutableSelection} */
-editing.EditingContext.prototype.startingSelection;
 
 /**
  * @this {!editing.EditingContext}

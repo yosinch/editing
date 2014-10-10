@@ -18,6 +18,7 @@ python checker.py --compiler $closure_jar --out_dir /tmp \
   externs/operations_externs.js \
   externs/immutable_selection_externs.js \
   externs/selection_tracker_externs.js \
+  externs/undo_unit_externs.js \
   testing/externs/sample_externs.js \
   testing/externs/testing_externs.js \
   testing/externs/test_runner_externs.js \

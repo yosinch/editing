@@ -144,29 +144,6 @@ testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.2',
   });
 
 //
-// removeAttribute
-//
-testCaseWithSample('context.removeAttribute.1',
-    '<p contenteditable>|<a id="foo">bar</a></p>',
-    function(sample, selectionIn) {
-      var editor = editing.Editor.getOrCreate(sample.document);
-      var context = editor.createContext('noname', selectionIn);
-      var element = context.document.querySelector('a');
-      context.removeAttribute(element, 'id');
-      expectFalse(function () { return element.hasAttribute('id') });
-    });
-
-testCaseWithSample('context.removeAttribute.2',
-    '<p contenteditable>|<a id="foo">bar</a></p>',
-    function(sample, selectionIn) {
-      var editor = editing.Editor.getOrCreate(sample.document);
-      var context = editor.createContext('noname', selectionIn);
-      var element = context.document.querySelector('a');
-      // No exception for non-existing removing attribute.
-      context.removeAttribute(element, 'notexist');
-    });
-
-//
 // setUpEffectiveNodes
 //
 testCaseWithSample('context.setUpEffectiveNodes.1',
