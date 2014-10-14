@@ -76,9 +76,9 @@ editing.LinkCommandContextBase = (function() {
     /** @type {Element} */
     var anchorElement = null;
     var elements = [];
-    for (var runner of editing.dom.ancestorsOrSelf(startContainer)) {
-      if (!isPhrasing(runner))
-        break;
+    for (var runner = startContainer;
+         runner && runner.parentNode && isPhrasing(runner);
+         runner = runner.parentNode) {
       if (isAnchorElement(runner)) {
         anchorElement = /** @type {!Element} */(runner);
         break;
