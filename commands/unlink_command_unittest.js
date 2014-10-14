@@ -108,8 +108,15 @@ testCaseFor('unlink.contents.text.partial.focus.anchor', {
 //
 // Unlink from partial anchor content
 //
+// We should move B element out of A element.
 testCaseFor('unlink.contents.partial.anchor.focus', {
   before: '<p contenteditable><a href="foo"><b>ab^cd|ef</b></a></p>',
+  after: '<p contenteditable><b><a href="foo">ab</a>^cd|<a href="foo">ef</a></b></p>'
+});
+
+// Wrap A element by B element.
+testCaseFor('unlink.contents.partial.anchor.focus.2', {
+  before: '<p contenteditable><b><a href="foo">ab^cd|ef</a></b></p>',
   after: '<p contenteditable><b><a href="foo">ab</a>^cd|<a href="foo">ef</a></b></p>'
 });
 

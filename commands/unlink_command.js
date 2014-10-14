@@ -40,9 +40,15 @@ editing.defineCommand('Unlink', (function() {
   function execute() {
     /** @const */ var commandContext = this;
     /** @const */ var context = this.context;
+    if (context.startingSelection.isCaret) {
+      context.setEndingSelection(context.startingSelection);
+      return false;
+    }
+
     /** @const */ var selection = context.normalizeSelection(
         context.startingSelection);
     var selectionTracker = new editing.SelectionTracker(context, selection);
+    selection = commandContext.normalizeSelectedStartNode(selection);
     var effectiveNodes = context.setUpEffectiveNodes(selection,
                                                      isEffectiveNode);
     if (!effectiveNodes[0])
