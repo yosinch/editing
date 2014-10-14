@@ -56,14 +56,6 @@ editing.defineCommand('createLink', (function() {
   }
 
   /**
-   * @param {!Node} node
-   * @return {boolean}
-   */
-  function isEffectiveNode(node) {
-    return isEditable(node) && !isAnchorElement(node);
-  }
-
-  /**
    * @param {!editing.EditingContext} context
    * @param {!Element} anchorElement
    * @param {string} url
@@ -138,10 +130,10 @@ editing.defineCommand('createLink', (function() {
   function CreateLinkCommandContext(context, userInterface, commandValue) {
     editing.LinkCommandContextBase.call(this, context, userInterface,
                                         commandValue);
+    /** @private @type {Element} */
+    this.anchorElement_ = null;
     /** @private @type {!Array.<!Element>} */
     this.atomicElements_ = [];
-    /** @private @type {Element} */
-    this.currentAnchorElement_ = null;
     /** @private @type {Node} */
     this.endNode_ = null;
     /** @private @type {Node} */
@@ -157,10 +149,10 @@ editing.defineCommand('createLink', (function() {
 
   /** @param {!CreateLinkCommandContext} commandContext */
   function endAnchorElement(commandContext) {
-    if (!commandContext.currentAnchorElement_)
+    if (!commandContext.anchorElement_)
       return;
-    commandContext.unwrapAnchorContents(commandContext.currentAnchorElement_);
-    commandContext.currentAnchorElement_ = null;
+    commandContext.unwrapAnchorContents(commandContext.anchorElement_);
+    commandContext.anchorElement_ = null;
   }
 
   /**
@@ -237,27 +229,29 @@ editing.defineCommand('createLink', (function() {
       commandContext.expandInlineStyle(anchorElement);
     }
     setAnchorUrl(context, anchorElement, urlValue);
-    if (commandContext.currentAnchorElement_ &&
+    if (commandContext.anchorElement_ &&
         canMergeAnchor(anchorElement, urlValue)) {
       // Merge |anchorElement| into |currentAnchorElement|.
       // See createLink.abc.3, createLink.w3c.20
-      mergeElements(commandContext, commandContext.currentAnchorElement_,
+      mergeElements(commandContext, commandContext.anchorElement_,
                     anchorElement);
       console.assert(!anchorElement.parentNode);
       return !handleLastNode;
     }
     processPendingContents(commandContext);
-    commandContext.currentAnchorElement_ = anchorElement;
+    commandContext.anchorElement_ = anchorElement;
     return !handleLastNode;
   }
 
   /**
    * @param {!CreateLinkCommandContext} commandContext
    * @param {!Node} currentNode
+   * @return {boolean}
    */
   function processAtomicElementsIfNeeded(commandContext, currentNode) {
     while (commandContext.atomicElements_.length &&
-         !isDescendantOf(currentNode, lastOf(commandContext.atomicElements_))) {
+           !isDescendantOf(currentNode,
+                           lastOf(commandContext.atomicElements_))) {
       commandContext.atomicElements_.shift();
     }
 
@@ -281,7 +275,7 @@ editing.defineCommand('createLink', (function() {
       commandContext.pendingContainers_.push(element);
       return;
     }
-    if (commandContext.currentAnchorElement_)
+    if (commandContext.anchorElement_)
       commandContext.pendingContainers_.push(element);
     commandContext.atomicElements_.push(element);
   }
@@ -292,7 +286,7 @@ editing.defineCommand('createLink', (function() {
    */
   function processNonPhrasingNode(commandContext, currentNode) {
     /** @const */ var context = commandContext.context;
-    var savedCurrentAnchorElement = commandContext.currentAnchorElement_;
+    var savedCurrentAnchorElement = commandContext.anchorElement_;
     processPendingContents(commandContext);
     if (savedCurrentAnchorElement !== currentNode.parentNode)
       return true;
@@ -313,14 +307,13 @@ editing.defineCommand('createLink', (function() {
     }
 
     commandContext.swapParentAndChild(anchorElement);
-    commandContext.currentAnchorElement_ = anchorElement;
+    commandContext.anchorElement_ = anchorElement;
   }
 
   /** @param {!CreateLinkCommandContext} commandContext */
   function processPendingContents(commandContext) {
-    commandContext.pendingContents_.forEach(function(node) {
+    for (var node of commandContext.pendingContents_)
       wrapByAnchor(commandContext, node);
-    });
     endAnchorElement(commandContext);
     commandContext.pendingContainers_ = [];
     commandContext.pendingContents_ = [];
@@ -333,6 +326,14 @@ editing.defineCommand('createLink', (function() {
   function setUpEffectiveNodes(commandContext) {
     /** @const */ var context = commandContext.context;
     /** @const */ var urlValue = commandContext.commandValue;
+
+    /**
+     * @param {!Node} node
+     * @return {boolean}
+     */
+    function isEffectiveNode(node) {
+      return isEditable(node) && !isAnchorElement(node);
+    }
 
     /**
      * @this {!editing.EditingContext}
@@ -396,7 +397,7 @@ editing.defineCommand('createLink', (function() {
     /** @const */ var context = commandContext.context;
     /** @const */ var urlValue = commandContext.commandValue;
 
-    if (!commandContext.currentAnchorElement_) {
+    if (!commandContext.anchorElement_) {
       if (!editing.dom.isVisibleNode(node)) {
         // We don't want to have leading whitespaces in anchor element.
         return;
@@ -404,32 +405,32 @@ editing.defineCommand('createLink', (function() {
       var nextSibling = node.nextSibling;
       if (canMergeAnchor(nextSibling, urlValue)) {
         // See w3c.26, w3c.30
-        commandContext.currentAnchorElement_ =
+        commandContext.anchorElement_ =
             /** @type {!Element} */(nextSibling);
-        context.insertBefore(commandContext.currentAnchorElement_, node,
-                             commandContext.currentAnchorElement_.firstChild);
+        context.insertBefore(commandContext.anchorElement_, node,
+                             commandContext.anchorElement_.firstChild);
         return;
       }
       var previousSibling = node.previousSibling;
       if (canMergeAnchor(previousSibling, urlValue)) {
         // See w3c.27
-        commandContext.currentAnchorElement_ =
+        commandContext.anchorElement_ =
           /** @type {!Element} */(previousSibling);
-        context.appendChild(commandContext.currentAnchorElement_, node);
+        context.appendChild(commandContext.anchorElement_, node);
         return;
       }
-      commandContext.currentAnchorElement_ = insertNewAnchorElement(
+      commandContext.anchorElement_ = insertNewAnchorElement(
           context, urlValue, node);
       return;
     }
 
-    if (isDescendantOf(node, commandContext.currentAnchorElement_)) {
+    if (isDescendantOf(node, commandContext.anchorElement_)) {
       // See w3c.44
       return;
     }
 
-    if (node.parentNode === commandContext.currentAnchorElement_.parentNode) {
-      context.appendChild(commandContext.currentAnchorElement_, node);
+    if (node.parentNode === commandContext.anchorElement_.parentNode) {
+      context.appendChild(commandContext.anchorElement_, node);
       return;
     }
 
@@ -458,7 +459,7 @@ editing.defineCommand('createLink', (function() {
     // TODO(yosin) Once closure compiler support |continue| in |for-of|, we
     // should use |for-of| instead of |Array.prototype.every()|.
     effectiveNodes.every(function(currentNode) {
-      if (currentNode === this.currentAnchorElement_)
+      if (currentNode === this.anchorElement_)
         return true;
 
       if (processAtomicElementsIfNeeded(commandContext, currentNode))
