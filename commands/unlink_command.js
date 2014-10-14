@@ -45,8 +45,7 @@ editing.defineCommand('Unlink', (function() {
       return false;
     }
 
-    /** @const */ var selection = context.normalizeSelection(
-        context.startingSelection);
+    var selection = context.normalizeSelection(context.startingSelection);
     var selectionTracker = new editing.SelectionTracker(context, selection);
     selection = commandContext.normalizeSelectedStartNode(selection);
     var effectiveNodes = context.setUpEffectiveNodes(selection,

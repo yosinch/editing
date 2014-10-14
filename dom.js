@@ -9,7 +9,7 @@ editing.dom = (function() {
    * @constructor
    * @implements $jscomp.Iterable.<!Node>
    * @final
-   * @param {!Node} node
+   * @param {Node} node
    */
   function AncestorsOrSelf(node) {
     /** @private @type {Node} */
@@ -108,7 +108,7 @@ editing.dom = (function() {
    * @return {!$jscomp.Iterable.<!Node>}
    */
   function ancestors(node) {
-    return ancestorsOrSelf(node.parentNode);
+    return new AncestorsOrSelf(node.parentNode);
   }
 
   /**
