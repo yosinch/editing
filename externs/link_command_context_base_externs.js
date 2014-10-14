@@ -20,16 +20,21 @@ editing.LinkCommandContextBase = function(context, userInterface,
 editing.LinkCommandContextBase.isAnchorElement = function(node) {};
 
 /**
+ * @param {!editing.EditingContext} context
+ * @param {!Element} element
+ */
+editing.LinkCommandContextBase.swapParentAndChild =
+    function(context, element) {};
+
+/**
  * @param {!editing.ImmutableSelection} selection
  * @return {!editing.ImmutableSelection}
  */
 editing.LinkCommandContextBase.prototype.normalizeSelectedStartNode =
     function(selection) {};
 
-/** @param {!Element} element */
-editing.LinkCommandContextBase.prototype.swapParentAndChild =
-    function(element) {};
-
-/** @param {!Element} element */
+/**
+ * @param {!Element} element
+ */
 editing.LinkCommandContextBase.prototype.unwrapAnchorContents =
     function(element) {};

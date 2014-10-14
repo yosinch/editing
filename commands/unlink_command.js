@@ -10,6 +10,8 @@ editing.defineCommand('Unlink', (function() {
   /** @const */ var isElement = editing.dom.isElement;
   /** @const */ var isPhrasing = editing.dom.isPhrasing;
   /** @const */ var lastOf = editing.lastOf;
+  /** @const */ var swapParentAndChild =
+      editing.LinkCommandContextBase.swapParentAndChild;
 
   /**
    * @param {!Node} node
@@ -37,21 +39,6 @@ editing.defineCommand('Unlink', (function() {
       swapParentAndChild(this, element);
     }
     return this.splitTree(element, refNode);
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
-   * @param {!Element} element
-   */
-  function swapParentAndChild(context, element) {
-    console.assert(element.firstChild &&
-                   isElement(element.firstChild));
-    var child = /** @type {!Element} */(element.firstChild);
-    console.assert(child === element.lastChild);
-    context.removeChild(element, child);
-    context.moveAllChildren(element, child);
-    context.insertBefore(element.parentNode, child, element);
-    context.appendChild(child, element);
   }
 
   /**

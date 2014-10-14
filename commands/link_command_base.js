@@ -44,6 +44,21 @@ editing.LinkCommandContextBase = (function() {
   }
 
   /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function swapParentAndChild(context, element) {
+    console.assert(element.firstChild &&
+                   isElement(element.firstChild));
+    var child = /** @type {!Element} */(element.firstChild);
+    console.assert(child === element.lastChild);
+    context.removeChild(element, child);
+    context.moveAllChildren(element, child);
+    context.insertBefore(element.parentNode, child, element);
+    context.appendChild(child, element);
+  }
+
+  /**
    * @constructor
    * @extends {editing.CommandContext}
    * @struct
@@ -56,10 +71,7 @@ editing.LinkCommandContextBase = (function() {
   }
 
   LinkCommandContextBase.isAnchorElement = isAnchorElement;
-
-  // Forward declaration for closure compiler
-  /** @type {!function(!Element)} */
-  LinkCommandContextBase.prototype.swapParentAndChild;
+  LinkCommandContextBase.swapParentAndChild = swapParentAndChild;
 
   /**
    * @this {!LinkCommandContextBase}
@@ -118,21 +130,6 @@ editing.LinkCommandContextBase = (function() {
 
   /**
    * @this {!LinkCommandContextBase}
-   * @param {!Element} element
-   */
-  function swapParentAndChild(element) {
-    console.assert(element.firstChild &&
-                   isElement(element.firstChild));
-    var child = /** @type {!Element} */(element.firstChild);
-    console.assert(child === element.lastChild);
-    this.context.removeChild(element, child);
-    this.context.moveAllChildren(element, child);
-    this.context.insertBefore(element.parentNode, child, element);
-    this.context.appendChild(child, element);
-  }
-
-  /**
-   * @this {!LinkCommandContextBase}
    * @param {!Element} anchorElement
    */
   function unwrapAnchorContents(anchorElement) {
@@ -156,7 +153,7 @@ editing.LinkCommandContextBase = (function() {
     }
 
     while (canUnwrapContents(anchorElement))
-      this.swapParentAndChild(anchorElement);
+      swapParentAndChild(this.context, anchorElement);
   }
 
   LinkCommandContextBase.prototype = /** @type {LinkCommandContextBase} */

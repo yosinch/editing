@@ -12,6 +12,8 @@ editing.defineCommand('createLink', (function() {
   /** @const */ var isElement = editing.dom.isElement;
   /** @const */ var isPhrasing = editing.dom.isPhrasing;
   /** @const */ var lastOf = editing.lastOf;
+  /** @const */ var swapParentAndChild =
+      editing.LinkCommandContextBase.swapParentAndChild;
 
   /**
    * @param {Node} node
@@ -306,7 +308,7 @@ editing.defineCommand('createLink', (function() {
       context.removeAttribute(anchorElement, 'name');
     }
 
-    commandContext.swapParentAndChild(anchorElement);
+    swapParentAndChild(context, anchorElement);
     commandContext.anchorElement_ = anchorElement;
   }
 
