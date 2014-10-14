@@ -779,14 +779,12 @@ editing.defineCommand('InsertOrderedList', (function() {
   function createInsertOrderedListCommand(context, userInterface, value) {
     /** @const */ var selection = context.normalizeSelection(
         context.startingSelection);
+    /** @const */ var selectionTracker = new editing.SelectionTracker(
+        context, selection);
 
     wrapByOrderedList(context, selection);
 
-    // TODO(hajimehoshi): Fix this selection range
-    context.setEndingSelection(new editing.ImmutableSelection(
-        context.document.body.firstChild, 0,
-        context.document.body.firstChild, 0,
-        editing.SelectionDirection.ANCHOR_IS_START));
+    selectionTracker.finishWithStartAsAnchor();
 
     return true;
   }
