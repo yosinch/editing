@@ -53,6 +53,85 @@ editing.defineCommand('Unlink', (function() {
   function UnlinkCommandContext(context, userInterface, commandValue) {
     editing.LinkCommandContextBase.call(this, context, userInterface,
                                         commandValue);
+    /** @private @const @type {!Array.<!Element>} */
+    this.anchorElements_ = [];
+    /** @private @type {editing.SelectionTracker} */
+    this.selectionTracker_ = null;
+    Object.seal(this);
+  }
+
+  /**
+   * @param {!UnlinkCommandContext} commandContext
+   * @param {!Array.<!Node>} effectiveNodes
+   */
+  function processEndNode(commandContext, effectiveNodes) {
+    while (commandContext.anchorElements_.length) {
+      var endNode = lastOf(effectiveNodes);
+      var anchorElement = commandContext.anchorElements_.pop();
+      if (endNode.parentNode === anchorElement)
+        unwrapElement(commandContext, anchorElement, endNode.nextSibling);
+      else
+        unwrapElement(commandContext, anchorElement, null);
+    }
+    commandContext.selectionTracker_.finishWithStartAsAnchor();
+  }
+
+  /**
+   * @param {!UnlinkCommandContext} commandContext
+   * @param {!Node} currentNode
+   */
+  function processNode(commandContext, currentNode) {
+    var lastAnchor = lastOf(commandContext.anchorElements_);
+    if (lastAnchor && lastAnchor === currentNode.previousSibling) {
+      unwrapElement(commandContext, lastAnchor, null);
+      commandContext.anchorElements_.pop();
+    }
+
+    if (!currentNode.hasChildNodes()) {
+      if (isAnchorElement(currentNode)) {
+        commandContext.selectionTracker_.willRemoveNode(currentNode);
+        var parentNode = /** @type {!Node} */(currentNode.parentNode);
+        commandContext.context.removeChild(parentNode, currentNode);
+      }
+      return;
+    }
+
+    if (!isAnchorElement(currentNode))
+      return;
+
+    var anchorElement = /** @type {!Element} */(currentNode);
+    commandContext.unwrapAnchorContents(anchorElement);
+    commandContext.expandInlineStyle(anchorElement);
+    commandContext.anchorElements_.push(anchorElement);
+  }
+
+  /**
+   * @param {!UnlinkCommandContext} commandContext
+   * @return {!Array.<!Node>}
+   */
+  function setUpEffectiveNodes(commandContext) {
+    /** @const */ var context = commandContext.context;
+    if (context.startingSelection.isCaret)
+      return [];
+
+    var selection = context.normalizeSelection(context.startingSelection);
+    commandContext.selectionTracker_ = new editing.SelectionTracker(context,
+                                                                    selection);
+    var effectiveNodes = context.setUpEffectiveNodesWithSplitter(
+        selection, isEffectiveNode, splitTreeForUnlink);
+    if (!effectiveNodes[0])
+      effectiveNodes.shift();
+    return effectiveNodes;
+  }
+
+  /**
+   * @param {!UnlinkCommandContext} commandContext
+   * @param {!Element} element
+   * @param {Node} stopChild
+   */
+  function unwrapElement(commandContext, element, stopChild) {
+    commandContext.selectionTracker_.willUnwrapElement(element, stopChild);
+    commandContext.context.unwrapElement(element, stopChild);
   }
 
   /**
@@ -60,68 +139,16 @@ editing.defineCommand('Unlink', (function() {
    * @return {boolean}
    */
   function execute() {
-    /** @const */ var commandContext = this;
-    /** @const */ var context = this.context;
-    if (context.startingSelection.isCaret) {
-      context.setEndingSelection(context.startingSelection);
-      return false;
-    }
-
-    var selection = context.normalizeSelection(context.startingSelection);
-    var selectionTracker = new editing.SelectionTracker(context, selection);
-    var effectiveNodes = context.setUpEffectiveNodesWithSplitter(
-        selection, isEffectiveNode, splitTreeForUnlink);
-    if (!effectiveNodes[0])
-      effectiveNodes.shift();
+    var effectiveNodes = setUpEffectiveNodes(this);
     if (!effectiveNodes.length) {
-      context.setEndingSelection(context.startingSelection);
+      this.context.setEndingSelection(this.context.startingSelection);
       return false;
     }
 
-    // We'll remove nested anchor elements event if nested anchor elements
-    // aren't valid HTML5.
-    /** @const @type {!Array.<!Element>} */
-    var anchorElements = [];
+    for (var currentNode of effectiveNodes)
+      processNode(this, currentNode);
 
-    // TODO(yosin) Once closure compiler support |continue| in |for-of|, we
-    // should use |for-of| instead of |Array.prototype.every()|.
-    effectiveNodes.forEach(function(currentNode) {
-      var lastAnchorElement = lastOf(anchorElements);
-      if (lastAnchorElement &&
-          lastAnchorElement === currentNode.previousSibling) {
-        selectionTracker.willUnwrapElement(lastAnchorElement, null);
-        context.unwrapElement(lastAnchorElement, null);
-        anchorElements.pop();
-      }
-
-      if (!currentNode.hasChildNodes()) {
-        if (isAnchorElement(currentNode)) {
-          selectionTracker.willRemoveNode(currentNode);
-          var parentNode = /** @type {!Node} */(currentNode.parentNode);
-          context.removeChild(parentNode, currentNode);
-        }
-        return;
-      }
-
-      if (!isAnchorElement(currentNode))
-        return;
-
-      var anchorElement = /** @type {!Element} */(currentNode);
-      this.unwrapAnchorContents(anchorElement);
-      commandContext.expandInlineStyle(anchorElement);
-      anchorElements.push(anchorElement);
-    }, this);
-
-    while (anchorElements.length) {
-      var endNode = lastOf(effectiveNodes);
-      var anchorElement = anchorElements.pop();
-      var stopChild = endNode.parentNode == anchorElement ?
-          endNode.nextSibling : null;
-      selectionTracker.willUnwrapElement(anchorElement, stopChild);
-      context.unwrapElement(anchorElement, stopChild);
-    }
-
-    selectionTracker.finishWithStartAsAnchor();
+    processEndNode(this, effectiveNodes);
     return true;
   }
 
