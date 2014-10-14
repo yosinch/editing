@@ -303,10 +303,18 @@ editing.EditingContext = (function() {
       return selectedNodes;
     }
     if (needSplits.length) {
+      var endNode = selectedNodes[selectedNodes.length - 1];
       var oldTree = needSplits[needSplits.length - 1].parentNode;
       var newTree = splitter.call(this, oldTree, needSplits[0]);
       if (oldTree == runner)
         runner = newTree;
+      selectedNodes = [];
+      var node = startNode;
+      while (node != endNode) {
+        selectedNodes.push(node);
+        node = editing.dom.nextNode(node);
+      }
+      selectedNodes.push(endNode);
     }
 
     var effectiveNodes = selectedNodes;

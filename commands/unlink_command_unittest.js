@@ -120,6 +120,12 @@ testCaseFor('unlink.contents.partial.anchor.focus.2', {
   after: '<p contenteditable><b><a href="foo">ab</a>^cd|<a href="foo">ef</a></b></p>'
 });
 
+// A element contains B and I elements.
+testCaseFor('unlink.contents.partial.anchor.focus.3', {
+  before: '<p contenteditable><a href="foo"><b><i>ab^cd|ef</i></b></a></p>',
+  after: '<p contenteditable><b><i><a href="foo">ab</a>^cd|<a href="foo">ef</a></i></b></p>'
+});
+
 testCaseFor('unlink.contents.nodes.partial.anchor.focus', {
   before: '<p contenteditable><a href="foo"><b>ab^c</b>d|e</a></p>',
   after:'<p contenteditable><b><a href="foo">ab</a>^c</b>d|<a href="foo">e</a></p>'

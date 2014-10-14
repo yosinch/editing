@@ -36,12 +36,6 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'removeFormat.w3c.142r': {expected: 'fail', reason: 'issue #21'},
     'removeFormat.w3c.143': {expected: 'fail', reason: 'issue #21'},
     'removeFormat.w3c.143r': {expected: 'fail', reason: 'issue #21'},
-
-    // unlink command
-    'unlink.contents.nodes.partial.anchor.focus': {expected: 'fail',
-                                                   reason: 'issue #8'},
-    'unlink.contents.nodes.partial.focus.anchor': {expected: 'fail',
-                                                   reason: 'issue #8'}
   };
 })());
 

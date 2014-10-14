@@ -20,6 +20,41 @@ editing.defineCommand('Unlink', (function() {
   }
 
   /**
+   * @this {!editing.EditingContext}
+   * @param {!Element} element
+   * @param {!Node} refNode
+   * @return {!Element}
+   */
+  function splitTreeForUnlink(element, refNode) {
+    if (!isAnchorElement(element))
+      return this.splitTree(element, refNode);
+    for (;;) {
+      var child = /** @type {!Node} */(element.firstChild);
+      if (!isElement(child) || !isPhrasing(child) || child === refNode)
+        break;
+      if (child.nextSibling)
+        this.splitNode(element, child.nextSibling);
+      swapParentAndChild(this, element);
+    }
+    return this.splitTree(element, refNode);
+  }
+
+  /**
+   * @param {!editing.EditingContext} context
+   * @param {!Element} element
+   */
+  function swapParentAndChild(context, element) {
+    console.assert(element.firstChild &&
+                   isElement(element.firstChild));
+    var child = /** @type {!Element} */(element.firstChild);
+    console.assert(child === element.lastChild);
+    context.removeChild(element, child);
+    context.moveAllChildren(element, child);
+    context.insertBefore(element.parentNode, child, element);
+    context.appendChild(child, element);
+  }
+
+  /**
    * @constructor
    * @extends {editing.LinkCommandContextBase}
    * @final
@@ -47,9 +82,8 @@ editing.defineCommand('Unlink', (function() {
 
     var selection = context.normalizeSelection(context.startingSelection);
     var selectionTracker = new editing.SelectionTracker(context, selection);
-    selection = commandContext.normalizeSelectedStartNode(selection);
-    var effectiveNodes = context.setUpEffectiveNodes(selection,
-                                                     isEffectiveNode);
+    var effectiveNodes = context.setUpEffectiveNodesWithSplitter(
+        selection, isEffectiveNode, splitTreeForUnlink);
     if (!effectiveNodes[0])
       effectiveNodes.shift();
     if (!effectiveNodes.length) {
