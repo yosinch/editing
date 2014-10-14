@@ -199,37 +199,39 @@ editing.dom = (function() {
     var startContainer = /** @type {!Node} */(selection.startContainer);
     var startOffset = selection.startOffset;
     if (isText(startContainer)) {
+      startOffset = nodeIndex(startContainer);
       startContainer = startContainer.parentNode;
-      startOffset = 0;
     }
 
     var endContainer = /** @type {!Node} */(selection.endContainer);
     var endOffset = selection.endOffset;
     if (isText(endContainer)) {
+      endOffset = nodeIndex(endContainer);
       endContainer = endContainer.parentNode;
-      endOffset = 0;
     }
 
     /** @const @type {Node} */
     var startNode = startContainer.childNodes[startOffset] ||
                     nextNode(selection.startContainer.lastChild);
-    /** @const @type {Node} */
-    var endNode = endContainer.childNodes[endOffset] ||
-                  nextNodeSkippingChildren(endContainer.lastChild);
 
     // Both, |startNode| and |endNode| are nullable, e.g. <a><b>abcd|</b></a>
     if (!startNode)
       return [];
 
+    /** @type {Node} */
+    var stopNode;
+    if (endOffset) {
+      stopNode = endContainer.childNodes[endOffset] ||
+                 nextNodeSkippingChildren(endContainer.lastChild);
+    } else {
+      stopNode = endContainer;
+    }
+
     var nodes = [];
-    var iterator = nextNodes(startNode);
-    var current;
-    while (!(current = iterator.next()).done) {
-      if (current.value === endNode)
-        break;
-      if (current.value == endContainer && !selection.endOffset)
-        break;
-      nodes.push(current.value);
+    var runner = startNode;
+    while (runner !== stopNode) {
+      nodes.push(runner);
+      runner = nextNode(runner);
     }
     return nodes;
   }
