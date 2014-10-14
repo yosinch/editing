@@ -209,50 +209,50 @@ testCaseFor('insertOrderedList.w3c.117r', {
 });
 
 testCaseFor('insertOrderedList.w3c.118', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li></ul><span style="color:blue"><ol><li>^bar|</li></ol></span><ul style="color:blue"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li></ul><span style="color: blue"><ol><li>^bar|</li></ol></span><ul style="color: blue"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
   sampleId: 118
 });
 
 testCaseFor('insertOrderedList.w3c.118r', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li></ul><span style="color:blue"><ol><li>^bar|</li></ol></span><ul style="color:blue"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li></ul><span style="color: blue"><ol><li>^bar|</li></ol></span><ul style="color: blue"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
   sampleId: '118r'
 });
 
 testCaseFor('insertOrderedList.w3c.119', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li></ul><span style="color:blue"><ol><li>^bar|</li></ol></span><ul style="color:blue"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li></ul><span style="color: blue"><ol><li>^bar|</li></ol></span><ul style="color: blue"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
   sampleId: 119
 });
 
 testCaseFor('insertOrderedList.w3c.119r', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li></ul><span style="color:blue"><ol><li>^bar|</li></ol></span><ul style="color:blue"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li></ul><span style="color: blue"><ol><li>^bar|</li></ol></span><ul style="color: blue"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
   sampleId: '119r'
 });
 
 testCaseFor('insertOrderedList.w3c.120', {
-  after: '<div contenteditable><ul style="text-indent:1em"><li>foo</li></ul><span style="text-indent:1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent:1em"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li></ul><span style="text-indent: 1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent: 1em"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
   sampleId: 120
 });
 
 testCaseFor('insertOrderedList.w3c.120r', {
-  after: '<div contenteditable><ul style="text-indent:1em"><li>foo</li></ul><span style="text-indent:1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent:1em"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li></ul><span style="text-indent: 1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent: 1em"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
   sampleId: '120r'
 });
 
 testCaseFor('insertOrderedList.w3c.121', {
-  after: '<div contenteditable><ul style="text-indent:1em"><li>foo</li></ul><span style="text-indent:1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent:1em"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li></ul><span style="text-indent: 1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent: 1em"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>^bar|</li><li>baz</li></ul></div>',
   sampleId: 121
 });
 
 testCaseFor('insertOrderedList.w3c.121r', {
-  after: '<div contenteditable><ul style="text-indent:1em"><li>foo</li></ul><span style="text-indent:1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent:1em"><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li></ul><span style="text-indent: 1em"><ol><li><span style="text-indent: 1em">^bar|</span></li></ol></span><ul style="text-indent: 1em"><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>|bar^</li><li>baz</li></ul></div>',
   sampleId: '121r'
 });
 
@@ -269,38 +269,38 @@ testCaseFor('insertOrderedList.w3c.122r', {
 });
 
 testCaseFor('insertOrderedList.w3c.123', {
-  after: '<div contenteditable><ol><li><span style="color:blue">^foo|</span></li></ol><ul style="color:blue"><li>bar</li><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>^foo|</li><li>bar</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ol><li><span style="color: blue">^foo|</span></li></ol><ul style="color: blue"><li>bar</li><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>^foo|</li><li>bar</li><li>baz</li></ul></div>',
   sampleId: 123
 });
 
 testCaseFor('insertOrderedList.w3c.123r', {
-  after: '<div contenteditable><ol><li><span style="color:blue">^foo|</span></li></ol><ul style="color:blue"><li>bar</li><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>|foo^</li><li>bar</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ol><li><span style="color: blue">^foo|</span></li></ol><ul style="color: blue"><li>bar</li><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>|foo^</li><li>bar</li><li>baz</li></ul></div>',
   sampleId: '123r'
 });
 
 testCaseFor('insertOrderedList.w3c.124', {
-  after: '<div contenteditable><ol><li><span style="color:blue">^foo|</span></li></ol><ul style="color:blue"><li>bar</li><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>^foo|</li><li>bar</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ol><li><span style="color: blue">^foo|</span></li></ol><ul style="color: blue"><li>bar</li><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>^foo|</li><li>bar</li><li>baz</li></ul></div>',
   sampleId: 124
 });
 
 testCaseFor('insertOrderedList.w3c.124r', {
-  after: '<div contenteditable><ol><li><span style="color:blue">^foo|</span></li></ol><ul style="color:blue"><li>bar</li><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>|foo^</li><li>bar</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ol><li><span style="color: blue">^foo|</span></li></ol><ul style="color: blue"><li>bar</li><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>|foo^</li><li>bar</li><li>baz</li></ul></div>',
   sampleId: '124r'
 });
 
 testCaseFor('insertOrderedList.w3c.125', {
-  after: '<div contenteditable><ol><li><span style="text-indent:1em">^foo|</span></li></ol><ul style="text-indent:1em"><li>bar</li><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>^foo|</li><li>bar</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ol><li><span style="text-indent: 1em">^foo|</span></li></ol><ul style="text-indent: 1em"><li>bar</li><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>^foo|</li><li>bar</li><li>baz</li></ul></div>',
   sampleId: 125
 });
 
 testCaseFor('insertOrderedList.w3c.125r', {
-  after: '<div contenteditable><ol><li><span style="text-indent:1em">^foo|</span></li></ol><ul style="text-indent:1em"><li>bar</li><li>baz</li></ul></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>|foo^</li><li>bar</li><li>baz</li></ul></div>',
+  after: '<div contenteditable><ol><li><span style="text-indent: 1em">^foo|</span></li></ol><ul style="text-indent: 1em"><li>bar</li><li>baz</li></ul></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>|foo^</li><li>bar</li><li>baz</li></ul></div>',
   sampleId: '125r'
 });
 
@@ -317,38 +317,38 @@ testCaseFor('insertOrderedList.w3c.126r', {
 });
 
 testCaseFor('insertOrderedList.w3c.127', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li></ul><span style="color:blue"><ol><li>^baz|</li></ol></span></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li><li>^baz|</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li></ul><span style="color: blue"><ol><li>^baz|</li></ol></span></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li><li>^baz|</li></ul></div>',
   sampleId: 127
 });
 
 testCaseFor('insertOrderedList.w3c.127r', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li></ul><span style="color:blue"><ol><li>^baz|</li></ol></span></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li><li>|baz^</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li></ul><span style="color: blue"><ol><li>^baz|</li></ol></span></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li><li>|baz^</li></ul></div>',
   sampleId: '127r'
 });
 
 testCaseFor('insertOrderedList.w3c.128', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li></ul><span style="color:blue"><ol><li>^baz|</li></ol></span></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li><li>^baz|</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li></ul><span style="color: blue"><ol><li>^baz|</li></ol></span></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li><li>^baz|</li></ul></div>',
   sampleId: 128
 });
 
 testCaseFor('insertOrderedList.w3c.128r', {
-  after: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li></ul><span style="color:blue"><ol><li>^baz|</li></ol></span></div>',
-  before: '<div contenteditable><ul style="color:blue"><li>foo</li><li>bar</li><li>|baz^</li></ul></div>',
+  after: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li></ul><span style="color: blue"><ol><li>^baz|</li></ol></span></div>',
+  before: '<div contenteditable><ul style="color: blue"><li>foo</li><li>bar</li><li>|baz^</li></ul></div>',
   sampleId: '128r'
 });
 
 testCaseFor('insertOrderedList.w3c.129', {
-  after: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>bar</li></ul><span style="text-indent:1em"><ol><li><span style="text-indent: 1em">^baz|</span></li></ol></span></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>bar</li><li>^baz|</li></ul></div>',
+  after: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>bar</li></ul><span style="text-indent: 1em"><ol><li><span style="text-indent: 1em">^baz|</span></li></ol></span></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>bar</li><li>^baz|</li></ul></div>',
   sampleId: 129
 });
 
 testCaseFor('insertOrderedList.w3c.129r', {
-  after: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>bar</li></ul><span style="text-indent:1em"><ol><li><span style="text-indent: 1em">^baz|</span></li></ol></span></div>',
-  before: '<div contenteditable><ul style="text-indent:1em"><li>foo</li><li>bar</li><li>|baz^</li></ul></div>',
+  after: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>bar</li></ul><span style="text-indent: 1em"><ol><li><span style="text-indent: 1em">^baz|</span></li></ol></span></div>',
+  before: '<div contenteditable><ul style="text-indent: 1em"><li>foo</li><li>bar</li><li>|baz^</li></ul></div>',
   sampleId: '129r'
 });
 
