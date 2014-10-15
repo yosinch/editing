@@ -60,12 +60,31 @@ FILES_IGNORING_TEST = [
     ]
 ];
 
+JS_EXTERNS = [
+    'externs/es6_externs.js',
+    'externs/dom_externs.js',
+    'externs/html5_externs.js',
+    'externs/command_context_externs.js',
+    'externs/editing_externs.js',
+    'externs/editing_context_externs.js',
+    'externs/editing_style_externs.js',
+    'externs/editor_externs.js',
+    'externs/link_command_context_base_externs.js',
+    'externs/operations_externs.js',
+    'externs/immutable_selection_externs.js',
+    'externs/selection_tracker_externs.js',
+    'externs/undo_unit_externs.js',
+    'testing/externs/sample_externs.js',
+    'testing/externs/testing_externs.js',
+    'testing/externs/test_runner_externs.js',
+];
+
 def makeOptions(name, values):
     if not len(values):
       return ''
     return name + ' ' + (' ' + name + ' ').join(values)
 
-def check(closure_jar, js_output_file, js_files, js_externs, closure_options):
+def check(closure_jar, js_output_file, js_files, closure_options):
     params = {
         'java_options': ' '.join(JAVA_OPTIONS),
         'closure_errors': makeOptions('--jscomp_error', CLOSURE_ERRORS),
@@ -73,7 +92,7 @@ def check(closure_jar, js_output_file, js_files, js_externs, closure_options):
         'closure_jar': closure_jar,
         'closure_options': ' '.join(CLOSURE_OPTIONS + closure_options),
         'js_files': makeOptions('--js', js_files),
-        'js_externs': makeOptions('--externs', js_externs),
+        'js_externs': makeOptions('--externs', JS_EXTERNS),
     }
     command_line = ('java %(java_options)s -jar %(closure_jar)s' + \
                     ' --js_output_file=' + js_output_file + \
@@ -98,8 +117,6 @@ def main():
         help="Path to source files to typecheck")
     parser.add_argument("-C", "--compiler",
         help="Path to compiler.jar");
-    parser.add_argument("-e", "--js_externs", nargs=argparse.ONE_OR_MORE,
-        help="Path to externs files.");
     parser.add_argument("-o", "--out_dir",
         help="A place to output results", default='.')
 
@@ -124,8 +141,7 @@ def main():
         js_output_file = js_output_file = os.path.join(
             options.out_dir, 'output.js')
         succeeded = check(options.compiler, js_output_file,
-                          js_sources, options.js_externs,
-                          closure_options) and succeeded
+                          js_sources, closure_options) and succeeded
     else:
         for js_source in js_sources:
             js_basename = os.path.basename(js_source)
@@ -133,8 +149,7 @@ def main():
                 options.out_dir, os.path.splitext(js_basename)[0] + '_min.js')
             print 'Checking', js_source
             succeeded = check(options.compiler, js_output_file,
-                              [js_source], options.js_externs,
-                              closure_options) and succeeded
+                              [js_source], closure_options) and succeeded
     return 0 if succeeded else 1
 
 if __name__ == '__main__':
