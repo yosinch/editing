@@ -139,16 +139,19 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
-   * @param {(!HTMLInputElement|!HTMLTextAreaElement)} textFieldElement
+   * @param {!Element} element |element| should be either INPUT or TEXTAREA
+   *    element which have |select()| method.
    */
-  function selectAllOnTextField(textFieldElement) {
-    if (!dispatchSelectStartEvent(textFieldElement))
+  function selectAllOnTextField(element) {
+    if (!dispatchSelectStartEvent(element))
       return;
+    // To make closure compiler happy to call |select()| method.
+    var textFieldElement = /** @type {!HTMLInputElement} */(element);
     textFieldElement.select();
     // TODO(yosin) Once http://crbug.com/421751 fixed, we don't need to
     // dispatch "select" event here.
     var event = new Event('select', {bubbles: true});
-    textFieldElement.dispatchEvent(event);
+    element.dispatchEvent(event);
   }
 
   /**
@@ -237,15 +240,8 @@ editing.registerCommand('selectAll', (function() {
     }
 
     var targetElement = /** @type {!Element} */(targetNode);
-    if (isTextField(targetElement)) {
-      var inputElement = /** @type {!HTMLInputElement} */(targetElement);
-      selectAllOnTextField(inputElement);
-      return;
-    }
-
-    if (targetElement.tagName === 'TEXTAREA') {
-      var textAreaElement = /** @type {!HTMLTextAreaElement} */(targetElement);
-      selectAllOnTextField(textAreaElement);
+    if (isTextField(targetElement) || targetElement.tagName === 'TEXTAREA') {
+      selectAllOnTextField(targetElement);
       return;
     }
 
