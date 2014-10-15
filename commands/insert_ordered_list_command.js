@@ -529,7 +529,7 @@ editing.defineCommand('InsertOrderedList', (function() {
    * @param {!Array.<!Node>} effectiveNodes
    * @return Node
    */
-  function processNodeInList(context, nodes, effectiveNodes) {
+  function processNodesInList(context, nodes, effectiveNodes) {
     // TODO: Refactoring
     var originalNode = nodes[0];
     var listItemNode = /** @type {!Element} */(
@@ -791,7 +791,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
 
       if (isInList(nodes[0])) {
-        var list = processNodeInList(context, nodes, effectiveNodes);
+        var list = processNodesInList(context, nodes, effectiveNodes);
         if (list)
           mergeableListCandidates.push(list);
         return;
