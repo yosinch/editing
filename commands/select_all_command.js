@@ -21,24 +21,11 @@ editing.registerCommand('selectAll', (function() {
    * @param {!Document} targetDocument
    * @return {Element}
    */
-  function findHostingFrameElement(targetDocument) {
+  function getHostingFrameElement(targetDocument) {
     var targetWindow = targetDocument.defaultView;
     if (!targetWindow)
       return null;
     return targetWindow.frameElement;
-  }
-
-  /**
-   * @param {!Element} element
-   * @return {Element}
-   */
-  function findShadowHost(element) {
-    for (var runner = element; runner.nodeType === Node.ELEMENT_NODE;
-         runner = /** @type {Element} */(runner.parentNode)) {
-      if (runner.shadowRoot)
-        return runner;
-    }
-    return null;
   }
 
   /**
@@ -81,7 +68,9 @@ editing.registerCommand('selectAll', (function() {
    * @param {!Element} element
    * @return {boolean}
    */
-  function isTextField(element) {
+  function isTextFormControl(element) {
+    if (element.tagName === 'TEXTAREA')
+      return true;
     if (element.tagName !== 'INPUT')
       return false;
     var inputElement = /** @type {!HTMLInputElement} */(element);
@@ -107,35 +96,48 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
-   * @param {!Element} startContainer A container element of current selection.
-   *     This element is in DOM tree even if C++ |FrameSeleciton| selects inside
-   *     shadow DOM tree.
+   * @param {!Selection} selection
+   * @param {Node} container
    */
-  function selectAllOnContainer(startContainer) {
-    var contextDocument = startContainer.ownerDocument;
-    var selection = contextDocument.getSelection();
-    if (!selection)
+  function selectAllOnContainer(selection, container) {
+    if (!container)
       return;
-    var root = null;
-    var selectStartTarget = null;
-    var shadowHost = findShadowHost(startContainer);
-    if (startContainer.nodeType === Node.ELEMENT_NODE &&
-        startContainer.isContentEditable) {
-      root = highestEditableRoot(/** @type {!Element} */(startContainer));
-      selectStartTarget = shadowHost || root;
-    } else if (shadowHost) {
-      root = shadowHost;
-      selectStartTarget = shadowHost;
-    } else {
-      root = contextDocument.documentElement;
-      selectStartTarget = contextDocument.body;
+    if (container.nodeType !== Node.ELEMENT_NODE) {
+      selectAllOnDocument(selection, container.ownerDocument);
+      return;
     }
-    if (!root)
+    var element = /** @type {!Element} */(container);
+    if (element.isContentEditable) {
+      var rootEditable = highestEditableRoot(element);
+      selectAllOnElement(selection, rootEditable, rootEditable);
       return;
+    }
+    selectAllOnDocument(selection, container.ownerDocument);
+  }
+
+  /**
+   * @param {!Selection} selection
+   * @param {Document} contextDocument
+   */
+  function selectAllOnDocument(selection, contextDocument) {
+    if (!contextDocument)
+      return;
+    var documentElement = contextDocument.documentElement;
+    if (!documentElement)
+      return;
+    selectAllOnElement(selection, documentElement, contextDocument.body);
+  }
+
+  /**
+   * @param {!Selection} selection
+   * @param {!Element} element
+   * @param {Element} selectStartTarget
+   */
+  function selectAllOnElement(selection, element, selectStartTarget) {
     if (selectStartTarget && !dispatchSelectStartEvent(selectStartTarget))
       return;
-    selection.selectAllChildren(root);
-    selectFrameElementInParentIfFullySelected(contextDocument);
+    selection.selectAllChildren(element.shadowRoot || element);
+    selectFrameElementInParentIfFullySelected(selection, element.ownerDocument);
   }
 
   /**
@@ -155,15 +157,18 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
-   * @param {!Document} contextDocument
+   * @param {!Selection} selection
+   * @param {Document} contextDocument
    * For ease of deleting frame, we set selection to cover a frame element on
    * parent window.
    */
-  function selectFrameElementInParentIfFullySelected(contextDocument) {
-    var selection = contextDocument.getSelection();
+  function selectFrameElementInParentIfFullySelected(selection,
+                                                     contextDocument) {
+    if (!contextDocument)
+      return;
     if (!isFullySelected(selection))
       return;
-    var frameElement = findHostingFrameElement(contextDocument);
+    var frameElement = getHostingFrameElement(contextDocument);
     if (!frameElement)
       return;
     var ownerElement = frameElement.parentNode;
@@ -203,49 +208,49 @@ editing.registerCommand('selectAll', (function() {
     if (trySelectAllOnSelectElement(contextDocument))
       return;
 
-    var domSelection = contextDocument.getSelection();
-    if (!domSelection || !domSelection.rangeCount) {
-      selectAllOnContainer(contextDocument.documentElement);
+    var selection = contextDocument.getSelection();
+    if (!selection)
+      return;
+
+    if (!selection.rangeCount) {
+      selectAllOnDocument(selection, contextDocument);
       return;
     }
 
-    var range = domSelection.getRangeAt(0);
+    var range = selection.getRangeAt(0);
     var startContainer = range.startContainer;
-    if (startContainer.nodeType === Node.DOCUMENT_NODE) {
-      selectAllOnContainer(contextDocument.documentElement);
+    if (startContainer.nodeType === Node.TEXT_NODE ||
+        startContainer.nodeType === Node.COMMENT_NODE) {
+      selectAllOnContainer(selection, startContainer.parentNode);
       return;
     }
 
-    if (startContainer.nodeType !== Node.ELEMENT_NODE) {
-      var parent = startContainer.parentNode;
-      if (!parent)
-        return;
-      if (parent.nodeType === Node.DOCUMENT_NODE) {
-        selectAllOnContainer(contextDocument.documentElement);
+    if (range.collapsed) {
+      var targetNode = startContainer.childNodes[range.startOffset];
+      if (!targetNode || targetNode.nodeType !== Node.ELEMENT_NODE) {
+        selectAllOnContainer(selection, startContainer);
         return;
       }
-      selectAllOnContainer(/** @type {!Element} */(parent));
-      return;
+
+      var targetElement = /** @type {!Element} */(targetNode);
+
+      // Note: When C++ selection has positions in shadow DOM tree, JavaScript
+      // selection points to shadow host.
+      // TODO(yosin) Once Blink support to select crossing shadow DOM tree
+      // boundary, we should update this code.
+      if (targetElement.shadowRoot) {
+        selectAllOnElement(selection, targetElement, targetElement);
+        return;
+      }
+
+      if (!targetElement.isContentEditable &&
+          isTextFormControl(targetElement)) {
+        selectAllOnTextField(targetElement);
+        return;
+      }
     }
 
-    if (startContainer.isContentEditable) {
-      selectAllOnContainer(/** @type {!Element} */(startContainer));
-      return;
-    }
-
-    var targetNode = startContainer.childNodes[range.startOffset];
-    if (!targetNode || targetNode.nodeType !== Node.ELEMENT_NODE) {
-      selectAllOnContainer(/** @type {!Element}*/(startContainer));
-      return;
-    }
-
-    var targetElement = /** @type {!Element} */(targetNode);
-    if (isTextField(targetElement) || targetElement.tagName === 'TEXTAREA') {
-      selectAllOnTextField(targetElement);
-      return;
-    }
-
-    selectAllOnContainer(targetElement);
+    selectAllOnContainer(selection, startContainer);
   }
 
   /**
