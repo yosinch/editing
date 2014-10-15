@@ -248,10 +248,8 @@ testCaseFor('selectAll.select.single', {
 
       // Select node in shadow tree
       var domSelection = sample.document.getSelection();
-      var range = sample.document.createRange();
-      range.setStart(host.shadowRoot.firstChild, 0);
-      domSelection.removeAllRanges();
-      domSelection.addRange(range);
+      domSelection.collapse(host.shadowRoot.firstChild, 0);
+      domSelection.extend(host.shadowRoot.firstChild, 2);
 
       // Run "selectAll"
       var editor = editing.Editor.getOrCreate(sample.document);
