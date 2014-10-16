@@ -239,7 +239,7 @@ testCaseFor('selectAll.select.single', {
       expectEq(5, function() { return domSelection.focusOffset; });
     });
 
-  // Select shadow tree => select all => select shadow host
+  // Select shadow tree, multiple immediate child nodes in shadow root
   testCaseWithSample('selectAll.shadow.2',
     '<div>|before<p>host</p>after</div><template><i>BEFORE</i> 012<b><content></b>345 <i>AFTER</i></template>',
     function(sample) {
@@ -268,7 +268,7 @@ testCaseFor('selectAll.select.single', {
       expectEq(6, function() { return selection1.focusOffset; });
     });
 
-  // Select shadow tree => select all => select shadow host
+  // Select shadow tree, only one immediate child in shadow root
   testCaseWithSample('selectAll.shadow.3',
     '<div>|before<p>host</p>after</div><template><span><i>BEFORE</i> 012<b><content></b>345 <i>AFTER</i></span></template>',
     function(sample) {
@@ -295,6 +295,35 @@ testCaseFor('selectAll.select.single', {
       expectEq(0, function() { return selection1.anchorOffset; });
       expectEq('AFTER', function() { return selection1.focusNode.nodeValue; });
       expectEq(5, function() { return selection1.focusOffset; });
+    });
+
+  // Select shadow tree in oldest shadow tree
+  testCaseWithSample('selectAll.shadow.4',
+    '<div>|before<p>host</p>after</div>',
+    function(sample) {
+      var host = sample.document.querySelector('p');
+      host.createShadowRoot().innerHTML = '<b>before</b><i><content></content></i><b>after</b>';
+      host.createShadowRoot().innerHTML = '<i>BEFORE</i><b><shadow></shadow></b><i>AFTER</i>';
+      var shadowRoot = host.shadowRoot.olderShadowRoot;
+
+      // Select node in shadow tree
+      var domSelection = sample.document.getSelection();
+      var selection1 = shadowRoot.getSelection();
+      domSelection.collapse(shadowRoot.firstChild.firstChild, 1);
+      domSelection.extend(shadowRoot.firstChild.firstChild, 4);
+
+      // Run "selectAll"
+      var editor = editing.Editor.getOrCreate(sample.document);
+      editor.execCommand('selectAll');
+
+      expectEq(host.parentNode, function() { return domSelection.anchorNode; });
+      expectEq(1, function() { return domSelection.anchorOffset; });
+      expectEq(host.parentNode, function() { return domSelection.focusNode; });
+      expectEq(1, function() { return domSelection.focusOffset; });
+      expectEq('before', function() { return selection1.anchorNode.nodeValue; });
+      expectEq(0, function() { return selection1.anchorOffset; });
+      expectEq('before', function() { return selection1.focusNode.nodeValue; });
+      expectEq(6, function() { return selection1.focusOffset; });
     });
 
   // Select host content in editable => select all => select all in editable

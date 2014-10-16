@@ -36,7 +36,15 @@ editing.registerCommand('selectAll', (function() {
   function getSelectedTreeScope(treeScope) {
     for (;;) {
       var selection = treeScope.getSelection();
-      if (!selection || !isCollapsed(selection))
+      if (!selection)
+        return treeScope;
+      if (!selection.anchorNode) {
+        if (!treeScope.olderShadowRoot)
+          return treeScope;
+        treeScope = treeScope.olderShadowRoot;
+        continue;
+      }
+      if (!isCollapsed(selection))
         return treeScope;
       var selectedNode = getStartNode(selection);
       if (!selectedNode || selectedNode.nodeType !== Node.ELEMENT_NODE ||
