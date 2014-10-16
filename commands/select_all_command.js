@@ -10,7 +10,8 @@ editing.registerCommand('selectAll', (function() {
 
   /**
    * @param {(!Element|!Document)} eventTarget
-   * @return {boolean}
+   * @return {boolean} Returns false if |Event.prototype.preventDefaults()|
+   *    called.
    */
   function dispatchSelectStartEvent(eventTarget) {
     var event = new Event('selectstart', {bubbles: true, cancelable: true});
@@ -29,38 +30,142 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
-   * @param {!Element} contentEditable
-   * @return {!Element}
+   * @param {(!Document|!ShadowRoot)} treeScope
+   * @return {!Document|!ShadowRoot}
    */
-  function highestEditableRoot(contentEditable) {
-    /** @type {!Element} */
-    var rootEditable = contentEditable;
-    for (var runner = contentEditable;
-         runner && runner.nodeType === Node.ELEMENT_NODE;
-         runner = runner.parentNode) {
-      if (runner.isContentEditable)
-        rootEditable = /** @type {!Element} */(runner);
+  function getSelectedTreeScope(treeScope) {
+    for (;;) {
+      var selection = treeScope.getSelection();
+      if (!selection || !isCollapsed(selection))
+        return treeScope;
+      var selectedNode = getStartNode(selection);
+      if (!selectedNode || selectedNode.nodeType !== Node.ELEMENT_NODE ||
+          !selectedNode.shadowRoot) {
+        return treeScope;
+      }
+      treeScope = selectedNode.shadowRoot;
     }
-    return rootEditable;
   }
 
   /**
-   * @param {Selection} domSelection
+   * @param {!Selection} selection
+   * @return {Node}
+   * TODO(yosin) Once http://crbug.com/380690 fixed, we should use
+   * |select.getRangeAt(0)|.
+   */
+  function getStartContainer(selection) {
+    if (isAnchorStart(selection))
+      return selection.anchorNode;
+    return selection.focusNode;
+  }
+
+  /**
+   * @param {!Selection} selection
+   * @return {Node}
+   * TODO(yosin) Once http://crbug.com/380690 fixed, we should use
+   * |select.getRangeAt(0)|.
+   */
+  function getStartNode(selection) {
+    if (!selection.anchorNode)
+      return null;
+    if (isAnchorStart(selection))
+      return selection.anchorNode.childNodes[selection.anchorOffset];
+    return selection.focusNode.childNodes[selection.focusOffset];
+  }
+
+  /**
+   * @param {!Selection} selection
+   * @return {(HTMLInputElement|HTMLTextAreaElement)}
+   */
+  function getTextFormControl(selection) {
+    if (!isCollapsed(selection))
+      return null;
+    var startNode = getStartNode(selection);
+    if (!startNode)
+      return null;
+    if (startNode.nodeName === 'TEXTAREA')
+      return /** @type {!HTMLTextAreaElement} */(startNode);
+    if (startNode.nodeName !== 'INPUT')
+      return null;
+    var inputElement = /** @type {!HTMLInputElement} */(startNode);
+    return isTextFormControl(inputElement) ? inputElement : null;
+  }
+
+  /**
+   * @param {!Document|!ShadowRoot} treeScope
+   * @param {!Selection} selection
+   * @return {Node}
+   */
+  function highestEditableRoot(treeScope, selection) {
+    if (!selection.rangeCount)
+      return null;
+    var root = null;
+    for (var runner = getStartContainer(selection);
+         runner; runner = runner.parentNode) {
+      if (runner.nodeType === Node.ELEMENT_NODE &&
+          runner.isContentEditable) {
+        root = /** @type {!Element} */(runner);
+      }
+    }
+    return root;
+  }
+
+  /**
+   * @param {!Selection} selection
+   * @return {boolean}
+   * TODO(yosin) Once http://crbug.com/380690 fixed, we should use
+   * |select.getRangeAt(0)|.
+   */
+  function isAnchorStart(selection) {
+    if (!selection.rangeCount)
+      return false;
+    var anchorRange = selection.anchorNode.ownerDocument.createRange();
+    anchorRange.setStart(selection.anchorNode, selection.anchorOffset);
+    var focusRange = selection.focusNode.ownerDocument.createRange();
+    focusRange.setStart(selection.focusNode, selection.focusOffset);
+    return anchorRange.compareBoundaryPoints(Range.START_TO_START,
+                                             focusRange) >= 0;
+  }
+
+  /**
+   * @param {Selection} selection
+   * @return {boolean}
+   * TODO(yosin) Once http://crbug.com/380690 fixed, we should use
+   * |select.getRangeAt(0).collapsed|.
+   */
+  function isCollapsed(selection) {
+    return Boolean(selection.anchorNode) &&
+           selection.anchorNode === selection.focusNode &&
+           selection.anchorOffset === selection.focusOffset;
+  }
+
+  /**
+   * @param {Selection} selection
    * @return {boolean}
    */
-  function isFullySelected(domSelection) {
-    if (!domSelection || !domSelection.anchorNode || !domSelection.focusNode)
+  function isFullySelected(selection) {
+    if (!selection || !selection.anchorNode || !selection.focusNode)
       return false;
-    if (domSelection.anchorNode.tagName !== 'BODY' ||
-        domSelection.focusNode.tagName !== 'BODY') {
+    if (selection.anchorNode.tagName !== 'BODY' ||
+        selection.focusNode.tagName !== 'BODY') {
       return false;
     }
-    var maxOffset = domSelection.anchorNode.childNodes.length;
-    return !domSelection.anchorOffset && domSelection.focusOffset === maxOffset;
+    var maxOffset = selection.anchorNode.childNodes.length;
+    return !selection.anchorOffset && selection.focusOffset === maxOffset;
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isShadowRoot(node) {
+    if (node.nodeType === Node.DOCUMENT_NODE)
+      return false;
+    return node instanceof node.ownerDocument.defaultView.ShadowRoot;
   }
 
   /** @const @type {!Set.<string>} */
-  var textFieldTypes = new Set([
+  var kTextFieldTypes = new Set([
     'text', 'search', 'tel', 'url', 'email', 'password', 'number', 'datetime'
   ]);
 
@@ -74,7 +179,7 @@ editing.registerCommand('selectAll', (function() {
     if (element.tagName !== 'INPUT')
       return false;
     var inputElement = /** @type {!HTMLInputElement} */(element);
-    return textFieldTypes.has(inputElement.type);
+    return kTextFieldTypes.has(inputElement.type);
   }
 
   // TODO(yosin) We should move |nodeIndex()| to another file to share with
@@ -97,73 +202,33 @@ editing.registerCommand('selectAll', (function() {
 
   /**
    * @param {!Selection} selection
-   * @param {Node} container
+   * @return {Node}
+   *
+   * See VisibleSelection::nonBoundaryShadowTreeRootNode and
+   * Node::nonBoundaryShadowTreeRootNode
    */
-  function selectAllOnContainer(selection, container) {
-    if (!container)
-      return;
-    if (container.nodeType !== Node.ELEMENT_NODE) {
-      selectAllOnDocument(selection, container.ownerDocument);
-      return;
+  function nonBoundaryShadowTreeRootNode(selection) {
+    if (!selection.rangeCount)
+      return null;
+    var root = getStartContainer(selection);
+    console.assert(!root || !isShadowRoot(root));
+    while (root) {
+      var parent = root.parentNode;
+      if (parent && isShadowRoot(parent))
+        return root;
+      root = parent;
     }
-    var element = /** @type {!Element} */(container);
-    if (element.isContentEditable) {
-      var rootEditable = highestEditableRoot(element);
-      selectAllOnElement(selection, rootEditable, rootEditable);
-      return;
-    }
-    selectAllOnDocument(selection, container.ownerDocument);
+    return null;
   }
 
   /**
-   * @param {!Selection} selection
    * @param {Document} contextDocument
-   */
-  function selectAllOnDocument(selection, contextDocument) {
-    if (!contextDocument)
-      return;
-    var documentElement = contextDocument.documentElement;
-    if (!documentElement)
-      return;
-    selectAllOnElement(selection, documentElement, contextDocument.body);
-  }
-
-  /**
    * @param {!Selection} selection
-   * @param {!Element} element
-   * @param {Element} selectStartTarget
-   */
-  function selectAllOnElement(selection, element, selectStartTarget) {
-    if (selectStartTarget && !dispatchSelectStartEvent(selectStartTarget))
-      return;
-    selection.selectAllChildren(element.shadowRoot || element);
-    selectFrameElementInParentIfFullySelected(selection, element.ownerDocument);
-  }
-
-  /**
-   * @param {!Element} element |element| should be either INPUT or TEXTAREA
-   *    element which have |select()| method.
-   */
-  function selectAllOnTextField(element) {
-    if (!dispatchSelectStartEvent(element))
-      return;
-    // To make closure compiler happy to call |select()| method.
-    var textFieldElement = /** @type {!HTMLInputElement} */(element);
-    textFieldElement.select();
-    // TODO(yosin) Once http://crbug.com/421751 fixed, we don't need to
-    // dispatch "select" event here.
-    var event = new Event('select', {bubbles: true});
-    element.dispatchEvent(event);
-  }
-
-  /**
-   * @param {!Selection} selection
-   * @param {Document} contextDocument
    * For ease of deleting frame, we set selection to cover a frame element on
    * parent window.
    */
-  function selectFrameElementInParentIfFullySelected(selection,
-                                                     contextDocument) {
+  function selectFrameElementInParentIfFullySelected(contextDocument,
+                                                     selection) {
     if (!contextDocument)
       return;
     if (!isFullySelected(selection))
@@ -202,55 +267,64 @@ editing.registerCommand('selectAll', (function() {
   }
 
   /**
+   * @param {!Selection} selection
+   * @return {boolean} Returns true if selection in text form control.
+   */
+  function trySelectAllOnTextFormControl(selection) {
+    // To make closure compiler happy to call |select()| method.
+    var textFormControl = getTextFormControl(selection);
+    if (!textFormControl || textFormControl.isContentEditable)
+      return false;
+    if (!dispatchSelectStartEvent(textFormControl))
+      return true;
+    textFormControl.select();
+    // TODO(yosin) Once http://crbug.com/421751 fixed, we don't need to
+    // dispatch "select" event here.
+    var event = new Event('select', {bubbles: true});
+    textFormControl.dispatchEvent(event);
+    return true;
+  }
+
+  /**
    * @param {!Document} contextDocument
    */
   function selectAll(contextDocument) {
     if (trySelectAllOnSelectElement(contextDocument))
       return;
 
-    var selection = contextDocument.getSelection();
+    var treeScope = getSelectedTreeScope(contextDocument);
+    var selection = treeScope.getSelection();
     if (!selection)
       return;
 
-    if (!selection.rangeCount) {
-      selectAllOnDocument(selection, contextDocument);
+    if (trySelectAllOnTextFormControl(selection))
       return;
+
+    /** @type {Node} */
+    var root = highestEditableRoot(treeScope, selection);
+    /** @const @type {Node} */
+    var shadowTree = nonBoundaryShadowTreeRootNode(selection);
+    /** @type {Node} */
+    var selectStartTarget = null;
+
+    if (root) {
+      selectStartTarget = shadowTree ? shadowTree.parentNode.host : root;
+    } else if (shadowTree) {
+      root = shadowTree;
+      selectStartTarget = shadowTree.parentNode.host;
+    } else {
+      root = contextDocument.documentElement;
+      selectStartTarget = contextDocument.body;
     }
 
-    var range = selection.getRangeAt(0);
-    var startContainer = range.startContainer;
-    if (startContainer.nodeType === Node.TEXT_NODE ||
-        startContainer.nodeType === Node.COMMENT_NODE) {
-      selectAllOnContainer(selection, startContainer.parentNode);
+    if (!root)
       return;
-    }
 
-    if (range.collapsed) {
-      var targetNode = startContainer.childNodes[range.startOffset];
-      if (!targetNode || targetNode.nodeType !== Node.ELEMENT_NODE) {
-        selectAllOnContainer(selection, startContainer);
-        return;
-      }
+    if (!dispatchSelectStartEvent(selectStartTarget))
+      return;
 
-      var targetElement = /** @type {!Element} */(targetNode);
-
-      // Note: When C++ selection has positions in shadow DOM tree, JavaScript
-      // selection points to shadow host.
-      // TODO(yosin) Once Blink support to select crossing shadow DOM tree
-      // boundary, we should update this code.
-      if (targetElement.shadowRoot) {
-        selectAllOnElement(selection, targetElement, targetElement);
-        return;
-      }
-
-      if (!targetElement.isContentEditable &&
-          isTextFormControl(targetElement)) {
-        selectAllOnTextField(targetElement);
-        return;
-      }
-    }
-
-    selectAllOnContainer(selection, startContainer);
+    selection.selectAllChildren(root);
+    selectFrameElementInParentIfFullySelected(contextDocument, selection);
   }
 
   /**

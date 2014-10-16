@@ -220,7 +220,7 @@ testCaseFor('selectAll.select.single', {
 
   // Select host content => select all => select all on document
   testCaseWithSample('selectAll.shadow.1',
-    '<div>|before<p>host</p>after</div><template>BEFORE<b><content></b>AFTER</template>',
+    '<div>|before<p>host</p>after</div><template><i>BEFORE </i><b><content></b> <i>AFTER</i></template>',
     function(sample) {
       var host = sample.document.querySelector('p');
       installShadowTree(sample, host);
@@ -241,30 +241,65 @@ testCaseFor('selectAll.select.single', {
 
   // Select shadow tree => select all => select shadow host
   testCaseWithSample('selectAll.shadow.2',
-    '<div>|before<p>host</p>after</div><template>BEFORE<b><content></b>AFTER</template>',
+    '<div>|before<p>host</p>after</div><template><i>BEFORE</i> 012<b><content></b>345 <i>AFTER</i></template>',
     function(sample) {
       var host = sample.document.querySelector('p');
       installShadowTree(sample, host);
+      var shadowRoot = host.shadowRoot;
 
       // Select node in shadow tree
       var domSelection = sample.document.getSelection();
-      domSelection.collapse(host.shadowRoot.firstChild, 0);
-      domSelection.extend(host.shadowRoot.firstChild, 2);
+      var selection1 = shadowRoot.getSelection();
+      selection1.collapse(shadowRoot.firstChild.firstChild, 1);
+      selection1.extend(shadowRoot.firstChild.firstChild, 3);
 
       // Run "selectAll"
       var editor = editing.Editor.getOrCreate(sample.document);
       editor.execCommand('selectAll');
 
       var div = sample.document.body.firstChild;
-      expectEq(div, function() { return domSelection.anchorNode; });
+      expectEq(host.parentNode, function() { return domSelection.anchorNode; });
       expectEq(1, function() { return domSelection.anchorOffset; });
-      expectEq(div, function() { return domSelection.focusNode; });
+      expectEq(host.parentNode, function() { return domSelection.focusNode; });
       expectEq(1, function() { return domSelection.focusOffset; });
+      expectEq('BEFORE', function() { return selection1.anchorNode.nodeValue; });
+      expectEq(0, function() { return selection1.anchorOffset; });
+      expectEq('BEFORE', function() { return selection1.focusNode.nodeValue; });
+      expectEq(6, function() { return selection1.focusOffset; });
+    });
+
+  // Select shadow tree => select all => select shadow host
+  testCaseWithSample('selectAll.shadow.3',
+    '<div>|before<p>host</p>after</div><template><span><i>BEFORE</i> 012<b><content></b>345 <i>AFTER</i></span></template>',
+    function(sample) {
+      var host = sample.document.querySelector('p');
+      installShadowTree(sample, host);
+      var shadowRoot = host.shadowRoot;
+
+      // Select node in shadow tree
+      var domSelection = sample.document.getSelection();
+      var selection1 = shadowRoot.getSelection();
+      selection1.collapse(shadowRoot.firstChild.firstChild.firstChild, 1);
+      selection1.extend(shadowRoot.firstChild.firstChild.firstChild, 3);
+
+      // Run "selectAll"
+      var editor = editing.Editor.getOrCreate(sample.document);
+      editor.execCommand('selectAll');
+
+      var div = sample.document.body.firstChild;
+      expectEq(host.parentNode, function() { return domSelection.anchorNode; });
+      expectEq(1, function() { return domSelection.anchorOffset; });
+      expectEq(host.parentNode, function() { return domSelection.focusNode; });
+      expectEq(1, function() { return domSelection.focusOffset; });
+      expectEq('BEFORE', function() { return selection1.anchorNode.nodeValue; });
+      expectEq(0, function() { return selection1.anchorOffset; });
+      expectEq('AFTER', function() { return selection1.focusNode.nodeValue; });
+      expectEq(5, function() { return selection1.focusOffset; });
     });
 
   // Select host content in editable => select all => select all in editable
   testCaseWithSample('selectAll.shadow.editable.1',
-    '<div>foo<div contenteditable>|before<p>host</p>after</div>bar</div>baz<template>BEFORE<b><content></b>AFTER</template>',
+    '<div>foo<div contenteditable>|before<p>host</p>after</div>bar</div>baz<template><i>BEFORE </i><b><content></b> <i>AFTER</i></template>',
     function(sample) {
       var host = sample.document.querySelector('p');
       installShadowTree(sample, host);
@@ -285,7 +320,7 @@ testCaseFor('selectAll.select.single', {
 
   // Select shadow tree in editable => select all => select host
   testCaseWithSample('selectAll.shadow.editable.2',
-    '<div>foo<div contenteditable>|before<p>host</p>after</div>bar</div>baz<template>BEFORE<b><content></b>AFTER</template>',
+    '<div>foo<div contenteditable>|before<p>host</p>after</div>bar</div>baz<template><i>BEFORE </i><b><content></b> <i>AFTER</i></template>',
     function(sample) {
       var host = sample.document.querySelector('p');
       installShadowTree(sample, host);
