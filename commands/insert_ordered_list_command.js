@@ -419,7 +419,6 @@ editing.defineCommand('InsertOrderedList', (function() {
       }
     }
 
-    var lastEffectiveNode = effectiveNodes[effectiveNodes.length - 1];
     if (lastEffectiveNode.nextSibling) {
       effectiveNodes = effectiveNodes.filter(function(node) {
         return !editing.dom.isDescendantOf(lastEffectiveNode, node);
@@ -654,8 +653,8 @@ editing.defineCommand('InsertOrderedList', (function() {
       var mainList = listNodes[mainListIndex];
       var mainListFirstChild = mainList.firstChild;
       var parent = mainList.parentNode;
-      listNodes.forEach(function(listNode, i) {
-        if (i === mainListIndex)
+      listNodes.forEach(function(listNode, index) {
+        if (index === mainListIndex)
           return;
 
         console.assert(listNode.nodeName === 'OL');
@@ -665,7 +664,7 @@ editing.defineCommand('InsertOrderedList', (function() {
             return isListItem(node) || canContentOfDL(node);
           }));
 
-        if (i < mainListIndex) {
+        if (index < mainListIndex) {
           insertChildNodesBefore(context, mainList, listNode,
                                  mainListFirstChild);
         } else {
