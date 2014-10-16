@@ -392,6 +392,18 @@ editing.dom = (function() {
 
   /**
    * @param {!Node} node
+   * @return {!Array.<!Node>}
+   */
+  function nextSiblings(node) {
+    var nodes = [];
+    var current = node;
+    while (current = current.nextSibling)
+      nodes.push(current)
+    return nodes;
+  }
+
+  /**
+   * @param {!Node} node
    * @return {number}
    */
   function nodeIndex(node) {
@@ -435,6 +447,18 @@ editing.dom = (function() {
     return null;
   }
 
+  /**
+   * @param {!Node} node
+   * @return {!Array.<!Node>}
+   */
+  function previousSiblings(node) {
+    var nodes = [];
+    var current = node;
+    while (current = current.previousSibling)
+      nodes.push(current)
+    return nodes;
+  }
+
   var dom = {
     HTMLIterable: HTMLIterable,
     ancestors: ancestors,
@@ -457,9 +481,11 @@ editing.dom = (function() {
     nextNodes: nextNodes,
     nextAncestorOrSibling: nextAncestorOrSibling,
     nextNodeSkippingChildren: nextNodeSkippingChildren,
+    nextSiblings: nextSiblings,
     nodeIndex: nodeIndex,
     previousNode: previousNode,
     previousNodeSkippingChildren: previousNodeSkippingChildren,
+    previousSiblings: previousSiblings,
   };
   Object.freeze(dom);
   return dom;
