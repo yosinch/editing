@@ -243,15 +243,15 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     /**
-     * @param {!Node} node
+     * @param {!Element} list
      * @param {function(!Node):Node} getNextNode
-     * @return {Node}
+     * @return {Element}
      */
-    function getNearestNode(node, getNextNode) {
-      var runner = node;
+    function getNearestList(list, getNextNode) {
+      var runner = list;
       while (runner = getNextNode(runner)) {
         if (runner.nodeName === 'OL')
-          return runner;
+          return /** @type {!Element} */(runner);
         if (editing.dom.isText(runner)) {
           // TODO(hajimehoshi): Check the cases when (1) xml:space='preserve' is
           // used or (2) CSS white-space is pre.
@@ -263,11 +263,12 @@ editing.defineCommand('InsertOrderedList', (function() {
       return null;
     }
 
-    var nodes = [getNearestNode(list, getPreviousNode), list,
-                 getNearestNode(list, getNextNode)];
-    return nodes.filter(function(node) {
-      return !!node;
-    });
+    // TODO(hajimehoshi): Use isVisibilityAdjecent like htmlediting.cpp
+    //var begin = editing.dom.previousNode(editing.dom.nextNodeSkippingChildren(list));
+    var nodes = [getNearestList(list, getPreviousNode),
+                 list,
+                 getNearestList(list, getNextNode)];
+    return nodes.filter(function(node) { return !!node; });
   }
 
   /**
@@ -289,7 +290,7 @@ editing.defineCommand('InsertOrderedList', (function() {
 
       // In some special cases, the list is not replaced. See w3c.90,
       // w3c.90.1, w3c.90.2, w3c.92, w3c.96.
-      if (list.parentNode && editing.dom2.isInList(list.parentNode)) {
+      if (/*list.parentNode && */editing.dom2.isInList(list.parentNode)) {
         var next = editing.dom.nextNodeSkippingChildren(list);
         if (!next)
           return true;
@@ -585,6 +586,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         return;
       }
 
+      // TODO(hajimehoshi): What if an ancestor is not contenteditable?
       if (editing.dom2.isInList(nodes[0])) {
         var list = processNodesInList(context, nodes, effectiveNodes);
         if (list)
@@ -592,6 +594,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         return;
       }
 
+      // TODO(hajimehoshi): Read C++
       // <dt>, <dd> can be content of a list according to Chrome behavior. See
       // w3c.18, w3c.24.
       if (nodes.length === 1 && editing.dom2.canContentOfDL(nodes[0])) {
