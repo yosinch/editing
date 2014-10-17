@@ -29,9 +29,9 @@ editing.contentModel = (function() {
      // Tabular data
      ' TABLE CAPTION COLGROUP COL TBODY TEHAD TFOOT TR TD TH' +
      // Forms
-     'FORM OPTION OPTGROUP FIELDSET LEGEND' +
+     ' FORM OPTION OPTGROUP FIELDSET LEGEND' +
      // Interactive elements
-     'DETAILS SUMMARY MENU MENUITEM DIALOG' +
+     ' DETAILS SUMMARY MENU MENUITEM DIALOG' +
      // Scripting
      ' SCRIPT NOSCRIPT TEMPLATE CANVAS')
     .split(' '));
