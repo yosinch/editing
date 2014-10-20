@@ -31,7 +31,7 @@ testCaseFor('removeFormat.contents.partial2', {
 
 testCaseFor('removeFormat.class', {
   before: '<p contenteditable><style>.bold{font-weight:bold}</style>^<span class="bold">abcd</span>|</p>',
-  after:'<p contenteditable><style>.bold{font-weight:bold}</style>^<span class="bold">abcd</span>|</p>',
+  after:'<p contenteditable><style>.bold{font-weight:bold}</style><span class="bold">^abcd|</span></p>',
   notes: 'class="bold" does not affect removeFormat'
 });
 
