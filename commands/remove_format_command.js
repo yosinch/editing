@@ -47,53 +47,6 @@ editing.defineCommand('removeFormat', (function() {
 
   /**
    * @param {!editing.EditingContext} context
-   * @param {!editing.ImmutableSelection} selection
-   * @return {!Array.<!Node>}
-   */
-  function prepareForStyleChange(context, selection) {
-    var selectedNodes = editing.dom.computeSelectedNodes(selection);
-    if (!selectedNodes.length)
-      return [];
-
-    var startNode = selectedNodes[0];
-    var styleElement = computeHighestStyleElement(startNode);
-    var effectiveNodes = selectedNodes.slice();
-    if (styleElement && styleElement != startNode) {
-      for (var runner = startNode.parentNode; runner != styleElement;
-           runner = runner.parentNode) {
-        effectiveNodes.unshift(runner);
-      }
-      effectiveNodes.unshift(styleElement);
-    }
-
-    effectiveNodes = effectiveNodes.map(function(currentNode) {
-      return wrapWithStyleSpanIfNeeded(context, currentNode);
-    });
-
-    if (!styleElement || styleElement == startNode)
-      return effectiveNodes;
-
-    var needSplit = false;
-    var splitable = null;
-    for (var runner = startNode; runner; runner = runner.parentNode) {
-      if (!editing.dom.isPhrasing(startNode))
-        break;
-      if (isStyleElement(runner))
-        splitable = runner;
-      if (runner === styleElement)
-        break;
-      needSplit = needSplit || !!runner.previousSibling;
-    }
-
-    if (!needSplit || !splitable)
-      return effectiveNodes;
-
-    context.splitTreeLeft(/** @type {!Element} */(splitable), startNode);
-    return effectiveNodes;
-  }
-
-  /**
-   * @param {!editing.EditingContext} context
    * @param {!Node} node
    * @return {!Node}
    */
@@ -119,6 +72,196 @@ editing.defineCommand('removeFormat', (function() {
     return styleSpan;
   }
 
+
+  /**
+   * @constructor
+   * @extends {editing.LinkCommandContextBase}
+   * @final
+   * @struct
+   * @param {!editing.EditingContext} context
+   * @param {boolean} userInterface
+   * @param {string} commandValue
+   */
+  function RemoveFormatCommandContext(context, userInterface, commandValue) {
+    editing.LinkCommandContextBase.call(this, context, userInterface,
+                                        commandValue);
+    /** @private @type {editing.SelectionTracker} */
+    this.selectionTracker_ = null;
+    /** @private @type {!Array.<!Element>} */
+    this.styleElements_ = [];
+    Object.seal(this);
+  }
+
+  // Forward declaration for closure compiler
+  RemoveFormatCommandContext.prototype = {
+    /**
+     * @this {!RemoveFormatCommandContext}
+     * @param {!Array.<!Node>} effectiveNodes
+     */
+    finish: function(effectiveNodes) {},
+
+    /**
+     * @this {!RemoveFormatCommandContext}
+     * @return {!Array.<!Node>}
+     */
+    prepare: function() {},
+
+    /**
+     * @this {!RemoveFormatCommandContext}
+     * @param {!Node} currentNode
+     */
+    processNode: function(currentNode) {},
+
+    /**
+     * @this {!RemoveFormatCommandContext}
+     */
+    removeStyle: function(element, stopChild) {}
+  }
+
+  /**
+   * @this {!RemoveFormatCommandContext}
+   */
+  function removeStyle(element, stopChild) {
+    if (TAG_NAMES_TO_REMOVE.has(element.tagName)) {
+      this.selectionTracker_.willUnwrapElement(element, stopChild);
+      this.context.unwrapElement(element, stopChild);
+      return;
+    }
+    if (!stopChild) {
+      this.context.removeAttribute(element, 'style');
+      if (element.tagName !== 'SPAN' || element.attributes.length)
+        return;
+    }
+    this.selectionTracker_.willUnwrapElement(element, stopChild);
+    this.context.unwrapElement(element, stopChild);
+  }
+
+  /**
+   * @this {!RemoveFormatCommandContext}
+   * @return {boolean}
+   */
+  function execute() {
+    var effectiveNodes = this.prepare();
+    if (!effectiveNodes.length) {
+      this.context.setEndingSelection(this.context.startingSelection);
+      return false;
+    }
+
+    for (var currentNode of effectiveNodes)
+      this.processNode(currentNode);
+
+    this.finish(effectiveNodes);
+    return true;
+  }
+
+  /**
+   * @this {!RemoveFormatCommandContext}
+   * @param {!Array.<!Node>} effectiveNodes
+   */
+  function finish(effectiveNodes) {
+    while (this.styleElements_.length) {
+      var endNode = lastOf(effectiveNodes);
+      var styleElement = this.styleElements_.pop();
+      var stopChild = endNode.parentNode === styleElement ?
+          endNode.nextSibling : null;
+      this.removeStyle(styleElement, stopChild);
+    }
+
+    this.selectionTracker_.finishWithStartAsAnchor();
+  }
+
+  /**
+   * @this {!RemoveFormatCommandContext}
+   * @return {!Array.<!Node>}
+   */
+  function prepare() {
+    /** @const */
+    var context = this.context;
+    /** @const */
+    var selection = context.normalizeSelection(context.startingSelection);
+    this.selectionTracker_ = new editing.SelectionTracker(
+        context, selection);
+    /** @type {!Array.<!Node>} */
+    var selectedNodes = editing.dom.computeSelectedNodes(selection);
+    if (!selectedNodes.length)
+      return [];
+
+    var startNode = selectedNodes[0];
+    var styleElement = computeHighestStyleElement(startNode);
+    var effectiveNodes = selectedNodes.slice();
+    if (styleElement && styleElement !== startNode) {
+      for (var runner = startNode.parentNode; runner !== styleElement;
+           runner = runner.parentNode) {
+        effectiveNodes.unshift(runner);
+      }
+      effectiveNodes.unshift(styleElement);
+    }
+
+    effectiveNodes = effectiveNodes.map(function(currentNode) {
+      return wrapWithStyleSpanIfNeeded(context, currentNode);
+    });
+
+    if (!styleElement || styleElement === startNode)
+      return effectiveNodes;
+
+    /** @type {boolean} */
+    var needSplit = false;
+    /** @type {Element} */
+    var splitable = null;
+    for (var runner = startNode; runner; runner = runner.parentNode) {
+      if (!editing.dom.isPhrasing(startNode))
+        break;
+      if (isStyleElement(runner))
+        splitable = /** @type {!Element} */(runner);
+      if (runner === styleElement)
+        break;
+      needSplit = Boolean(needSplit || runner.previousSibling);
+    }
+
+    if (!needSplit || !splitable)
+      return effectiveNodes;
+
+    context.splitTreeLeft(splitable, startNode);
+    return effectiveNodes;
+  }
+
+  /**
+   * @this {!RemoveFormatCommandContext}
+   * @param {!Node} currentNode
+   */
+  function processNode(currentNode) {
+    var styleElement = lastOf(this.styleElements_);
+    if (styleElement && styleElement === currentNode.previousSibling) {
+      this.removeStyle(styleElement, null);
+      this.styleElements_.pop();
+    }
+
+    if (!currentNode.hasChildNodes()) {
+      if (isStyleElement(currentNode)) {
+        this.selectionTracker_.willRemoveNode(currentNode);
+        var parentNode = /** @type {!Node} */(currentNode.parentNode);
+        this.context.removeChild(parentNode, currentNode);
+      }
+      return;
+    }
+
+    if (!isStyleElement(currentNode))
+      return;
+    this.styleElements_.push(currentNode);
+  }
+
+  RemoveFormatCommandContext.prototype =
+    /** @type {!RemoveFormatCommandContext} */
+    (Object.create(editing.LinkCommandContextBase.prototype, {
+      constructor: {value: RemoveFormatCommandContext},
+      finish: {value: finish},
+      execute: {value: execute},
+      prepare: {value: prepare},
+      processNode: {value: processNode},
+      removeStyle: {value: removeStyle}
+  }));
+  Object.freeze(RemoveFormatCommandContext.prototype);
+
   /**
    * @param {!editing.EditingContext} context
    * @param {boolean} userInterface Not used.
@@ -126,62 +269,9 @@ editing.defineCommand('removeFormat', (function() {
    * @return {boolean}
    */
   function removeFormatCommand(context, userInterface, value) {
-    /** @const */ var selection = context.normalizeSelection(
-        context.startingSelection);
-    /** @const */ var selectionTracker = new editing.SelectionTracker(
-        context, selection);
-    var effectiveNodes = prepareForStyleChange(context, selection);
-    if (!effectiveNodes.length) {
-      context.setEndingSelection(context.startingSelection);
-      return false;
-    }
-
-    function removeStyle(element, stopChild) {
-      if (TAG_NAMES_TO_REMOVE.has(element.tagName)) {
-        selectionTracker.willUnwrapElement(element, stopChild);
-        context.unwrapElement(element, stopChild);
-        return;
-      }
-      if (!stopChild) {
-        context.removeAttribute(element, 'style');
-        if (element.tagName != 'SPAN' || element.attributes.length)
-          return;
-      }
-      selectionTracker.willUnwrapElement(element, stopChild);
-      context.unwrapElement(element, stopChild);
-    }
-
-    /** @type {!Array.<!Element>} */ var styleElements = [];
-    effectiveNodes.forEach(function(currentNode) {
-      var styleElement = lastOf(styleElements);
-      if (styleElement && styleElement == currentNode.previousSibling) {
-        removeStyle(styleElement, null);
-        styleElements.pop();
-      }
-
-      if (!currentNode.hasChildNodes()) {
-        if (isStyleElement(currentNode)) {
-          selectionTracker.willRemoveNode(currentNode);
-          var parentNode = /** @type {!Node} */(currentNode.parentNode);
-          context.removeChild(parentNode, currentNode);
-        }
-        return;
-      }
-      if (!isStyleElement(currentNode))
-        return;
-      styleElements.push(currentNode);
-    });
-
-    while (styleElements.length) {
-      var endNode = lastOf(effectiveNodes);
-      var styleElement = styleElements.pop();
-      var stopChild = endNode.parentNode == styleElement ?
-          endNode.nextSibling : null;
-      removeStyle(styleElement, stopChild);
-    }
-
-    selectionTracker.finishWithStartAsAnchor();
-    return true;
+    var commandContext = new RemoveFormatCommandContext(context, userInterface,
+                                                        value);
+    return commandContext.execute();
   }
 
   return removeFormatCommand;
