@@ -212,10 +212,10 @@ editing.defineCommand('InsertOrderedList', (function() {
           return child;
         if (editing.dom.isText(child))
           return child;
-        if (!editing.dom2.isListMergeableContainer(child) &&
-            !editing.dom2.canContentOfDL(child)) {
+        if (editing.dom2.isTable(child) || editing.dom2.isTableCell(child))
           return null;
-        }
+        if (child.nodeName === 'UL')
+          return null;
         if (!child.lastChild)
           return child;
       }
@@ -232,10 +232,10 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (node.nextSibling)
         return node.nextSibling;
       for (var parent of editing.dom.ancestors(node)) {
-        if (!editing.dom2.isListMergeableContainer(parent) &&
-            !editing.dom2.canContentOfDL(parent)) {
+        if (editing.dom2.isTable(parent) || editing.dom2.isTableCell(parent))
           return null;
-        }
+        if (child.nodeName === 'UL')
+          return null;
         if (parent.nextSibling)
           return parent.nextSibling
       }
@@ -264,7 +264,6 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     // TODO(hajimehoshi): Use isVisibilityAdjecent like htmlediting.cpp
-    //var begin = editing.dom.previousNode(editing.dom.nextNodeSkippingChildren(list));
     var nodes = [getNearestList(list, getPreviousNode),
                  list,
                  getNearestList(list, getNextNode)];

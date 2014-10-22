@@ -158,19 +158,17 @@ editing.dom2 = (function() {
    * @param {!Node} node
    * @return boolean
    */
-  function isListMergeableContainer(node) {
-    // TODO(hajimehoshi): Add grouping tags here
-    var name = node.nodeName;
-    return name === 'P' || name === 'BLOCKQUOTE';
+  function isPhrasingElement(node) {
+    // TODO(hajimehoshi)
+    return node.nodeType === Node.ELEMENT_NODE && editing.dom.isPhrasing(node);
   }
 
   /**
    * @param {!Node} node
    * @return boolean
    */
-  function isPhrasingElement(node) {
-    // TODO(hajimehoshi)
-    return node.nodeType === Node.ELEMENT_NODE && editing.dom.isPhrasing(node);
+  function isTable(node) {
+    return node.nodeName === 'TABLE';
   }
 
   /**
@@ -266,11 +264,11 @@ editing.dom2 = (function() {
     insertChildNodesBefore: insertChildNodesBefore,
     isBreakElement: isBreakElement,
     isContainer: isContainer,
-    isListMergeableContainer: isListMergeableContainer,
     isInList: isInList,
     isPhrasingElement: isPhrasingElement,
     isList: isList,
     isListItem: isListItem,
+    isTable: isTable,
     isTableCell: isTableCell,
     removeIfEmpty: removeIfEmpty,
     replaceNodeName: replaceNodeName,
