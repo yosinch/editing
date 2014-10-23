@@ -81,7 +81,7 @@ editing.defineCommand('InsertOrderedList', (function() {
      */
     function getChildListItemCandidates(node) {
       if (editing.dom.isText(node) ||
-          (editing.dom2.isHTMLListElement(node) && node.nodeName !== 'DL') ||
+          (node.nodeName === 'OL' || node.nodeName === 'UL') ||
           editing.dom2.isHTMLTableElement(node) ||
           editing.dom2.canContentOfDL(node)) {
         return [node];
@@ -163,9 +163,9 @@ editing.defineCommand('InsertOrderedList', (function() {
     // NOTE: Even when the new list item's parent is a <li>, that is, the <li>
     // is in a <li>, it is treated as if it was in a list. See w3c.40.
     if (!listItemNode.parentNode ||
-        ((!editing.dom2.isHTMLListElement(listItemNode.parentNode) ||
-          listItemNode.parentNode.nodeName === 'DL') &&
-         !editing.dom2.isListItem(listItemNode.parentNode))) {
+        (listItemNode.parentNode.nodeName !== 'OL' &&
+         listItemNode.parentNode.nodeName !== 'UL') &&
+        !editing.dom2.isListItem(listItemNode.parentNode)) {
       var isListItemLastChildText = false;
       if (listItemNode.hasChildNodes()) {
         var childNodes = listItemNode.childNodes;
@@ -289,7 +289,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   function processList(context, list, effectiveNodes) {
     /**
      * @param {!Element} list
-     * @return boolean
+     * @return {boolean}
      *
      * Returns true if |list| should be replaced with another type of a list.
      */
@@ -306,7 +306,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         if (effectiveNodes.indexOf(next) !== -1)
           return true;
         // |next| can be a newly generated list by listifying (w3c.92).
-        if (editing.dom2.isHTMLListElement(next) && next.nodeName !== 'DL' &&
+        if ((next.nodeName === 'OL' || next.nodeName === 'UL') &&
             Array.prototype.some.call(next.childNodes, function(listItem) {
               return effectiveNodes.indexOf(listItem) !== -1;
             })) {
@@ -587,8 +587,7 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (editing.dom2.isHTMLBRElement(nodes[0]))
         return;
 
-      if (editing.dom2.isHTMLListElement(nodes[0]) &&
-          nodes[0].nodeName !== 'DL') {
+      if (nodes[0].nodeName === 'OL' || nodes[0].nodeName === 'UL') {
         var list = processList(context, /** @type {!Element} */(nodes[0]),
                                effectiveNodes);
         if (list)

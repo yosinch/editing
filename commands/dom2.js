@@ -127,7 +127,7 @@ editing.dom2 = (function() {
 
   /**
    * @param {!Node} node
-   * @return boolean
+   * @return {boolean}
    */
   function isHTMLTableCellElement(node) {
     var name = node.nodeName;
@@ -136,7 +136,7 @@ editing.dom2 = (function() {
 
   /**
    * @param {!Node} node
-   * @return boolean
+   * @return {boolean}
    */
   function isHTMLTableElement(node) {
     return node.nodeName === 'TABLE';
@@ -149,7 +149,7 @@ editing.dom2 = (function() {
   function isInList(node) {
     for (var currentNode = node.parentNode; currentNode;
          currentNode = currentNode.parentNode) {
-      if (isHTMLListElement(currentNode) && currentNode.nodeName !== 'DL')
+      if (currentNode.nodeName === 'OL' || currentNode.nodeName === 'UL')
         return true;
     }
     return false;
@@ -166,7 +166,7 @@ editing.dom2 = (function() {
 
   /**
    * @param {!Node} node
-   * @return boolean
+   * @return {boolean}
    */
   function isPhrasingElement(node) {
     return node.nodeType === Node.ELEMENT_NODE && editing.dom.isPhrasing(node);
