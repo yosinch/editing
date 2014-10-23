@@ -29,6 +29,9 @@ editing.CommandContext = (function() {
   // TODO(yosin) We should move |expandInlineStyle()| to library to share
   // with other commands.
   function expandInlineStyle(element) {
+    var parentElement = /** @type {!Element} */(element.parentNode);
+    console.assert(parentElement &&
+                   parentElement.nodeType == Node.ELEMENT_NODE);
     var context = this.context;
 
     /**
@@ -92,6 +95,11 @@ editing.CommandContext = (function() {
         context.appendChild(element, styledElement);
         context.removeStyle(element, property.name);
       });
+      if (element.tagName !== 'SPAN' || element.attributes.length)
+        return;
+      // Remove useless SPAN.
+      context.moveAllChildren(parentElement, element);
+      context.removeChild(parentElement, element);
     }
 
     if (context.shouldUseCSS) {

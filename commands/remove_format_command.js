@@ -87,6 +87,8 @@ editing.defineCommand('removeFormat', (function() {
                                         commandValue);
     /** @private @type {editing.SelectionTracker} */
     this.selectionTracker_ = null;
+    /** @private @type {boolean} */
+    this.shouldExpandInlineStyleAtEnd_ = false;
     /** @private @type {!Array.<!Element>} */
     this.styledElements_ = [];
     Object.seal(this);
@@ -165,6 +167,11 @@ editing.defineCommand('removeFormat', (function() {
       var stopChild = endNode.parentNode === styledElement ?
           endNode.nextSibling : null;
       this.removeStyle(styledElement, stopChild);
+      if (this.shouldExpandInlineStyleAtEnd_ && stopChild) {
+        // See removeFormat.w3c.17 for not expand inline style case, adn
+        // removeFormat.w3c.143 for expand inline case.
+        this.expandInlineStyle(styledElement);
+      }
     }
 
     this.selectionTracker_.finishWithStartAsAnchor();
@@ -188,6 +195,10 @@ editing.defineCommand('removeFormat', (function() {
 
     var startNode = selectedNodes[0];
     var styledElement = findHighestStyledElement(startNode);
+    // For compatibility, we don't expand inline style at end of node.
+    // See removeFormat.w3c.17
+    this.shouldExpandInlineStyleAtEnd_ =
+        styledElement !== null && !editing.dom.isPhrasing(styledElement);
     var effectiveNodes = selectedNodes.slice();
     if (styledElement && styledElement !== startNode) {
       for (var runner = startNode.parentNode; runner !== styledElement;
