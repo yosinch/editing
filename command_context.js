@@ -39,13 +39,13 @@ editing.CommandContext = (function() {
       var style = new editing.EditingStyle(element);
       if (!style.hasStyle)
         return;
-      var styleElement = context.createElement('span');
+      var styledElement = context.createElement('span');
       for (var property of style.properties) {
-        context.setStyle(styleElement, property.name, property.value);
+        context.setStyle(styledElement, property.name, property.value);
         context.removeStyle(element, property.name);
       }
-      context.moveAllChildren(styleElement, element);
-      context.appendChild(element, styleElement);
+      context.moveAllChildren(styledElement, element);
+      context.appendChild(element, styledElement);
     }
 
     /**
@@ -76,20 +76,20 @@ editing.CommandContext = (function() {
             return;
           }
           style.createElements(context,
-              function(context, property, styleElement) {
+              function(context, property, styledElement) {
                 if (!lastElement)
-                  context.replaceChild(element, styleElement, child);
-                context.appendChild(styleElement, child);
-                lastElement = styleElement;
+                  context.replaceChild(element, styledElement, child);
+                context.appendChild(styledElement, child);
+                lastElement = styledElement;
               });
         });
         context.removeAttribute(element, 'style');
         return;
       }
       // Introduce text-level elements for inline style.
-      style.createElements(context, function(context, property, styleElement) {
-        context.moveAllChildren(styleElement, element);
-        context.appendChild(element, styleElement);
+      style.createElements(context, function(context, property, styledElement) {
+        context.moveAllChildren(styledElement, element);
+        context.appendChild(element, styledElement);
         context.removeStyle(element, property.name);
       });
     }

@@ -18,21 +18,21 @@ editing.defineCommand('removeFormat', (function() {
    * @param {!Node} startNode
    * @return {Element}
    */
-  function computeHighestStyleElement(startNode) {
-    var styleElement = null;
+  function findHighestStyledElement(startNode) {
+    var styledElement = null;
     for (var runner = startNode; runner; runner = runner.parentNode) {
       if (!editing.dom.isEditable(runner))
         break;
       if (!editing.dom.isElement(runner))
         continue;
       var element = /** @type {!Element} */(runner);
-      if (isStyleElement(element))
-        styleElement = element;
+      if (isStyledElement(element))
+        styledElement = element;
     }
-    return styleElement;
+    return styledElement;
   }
 
-  function isStyleElement(node) {
+  function isStyledElement(node) {
     if (!editing.dom.isElement(node))
       return false;
     var element = /** @type {!Element} */(node);
@@ -88,7 +88,7 @@ editing.defineCommand('removeFormat', (function() {
     /** @private @type {editing.SelectionTracker} */
     this.selectionTracker_ = null;
     /** @private @type {!Array.<!Element>} */
-    this.styleElements_ = [];
+    this.styledElements_ = [];
     Object.seal(this);
   }
 
@@ -159,12 +159,12 @@ editing.defineCommand('removeFormat', (function() {
    * @param {!Array.<!Node>} effectiveNodes
    */
   function finish(effectiveNodes) {
-    while (this.styleElements_.length) {
+    while (this.styledElements_.length) {
       var endNode = lastOf(effectiveNodes);
-      var styleElement = this.styleElements_.pop();
-      var stopChild = endNode.parentNode === styleElement ?
+      var styledElement = this.styledElements_.pop();
+      var stopChild = endNode.parentNode === styledElement ?
           endNode.nextSibling : null;
-      this.removeStyle(styleElement, stopChild);
+      this.removeStyle(styledElement, stopChild);
     }
 
     this.selectionTracker_.finishWithStartAsAnchor();
@@ -187,21 +187,21 @@ editing.defineCommand('removeFormat', (function() {
       return [];
 
     var startNode = selectedNodes[0];
-    var styleElement = computeHighestStyleElement(startNode);
+    var styledElement = findHighestStyledElement(startNode);
     var effectiveNodes = selectedNodes.slice();
-    if (styleElement && styleElement !== startNode) {
-      for (var runner = startNode.parentNode; runner !== styleElement;
+    if (styledElement && styledElement !== startNode) {
+      for (var runner = startNode.parentNode; runner !== styledElement;
            runner = runner.parentNode) {
         effectiveNodes.unshift(runner);
       }
-      effectiveNodes.unshift(styleElement);
+      effectiveNodes.unshift(styledElement);
     }
 
     effectiveNodes = effectiveNodes.map(function(currentNode) {
       return wrapWithStyleSpanIfNeeded(context, currentNode);
     });
 
-    if (!styleElement || styleElement === startNode)
+    if (!styledElement || styledElement === startNode)
       return effectiveNodes;
 
     /** @type {boolean} */
@@ -211,9 +211,9 @@ editing.defineCommand('removeFormat', (function() {
     for (var runner = startNode; runner; runner = runner.parentNode) {
       if (!editing.dom.isPhrasing(startNode))
         break;
-      if (isStyleElement(runner))
+      if (isStyledElement(runner))
         splitable = /** @type {!Element} */(runner);
-      if (runner === styleElement)
+      if (runner === styledElement)
         break;
       needSplit = Boolean(needSplit || runner.previousSibling);
     }
@@ -230,14 +230,14 @@ editing.defineCommand('removeFormat', (function() {
    * @param {!Node} currentNode
    */
   function processNode(currentNode) {
-    var styleElement = lastOf(this.styleElements_);
-    if (styleElement && styleElement === currentNode.previousSibling) {
-      this.removeStyle(styleElement, null);
-      this.styleElements_.pop();
+    var styledElement = lastOf(this.styledElements_);
+    if (styledElement && styledElement === currentNode.previousSibling) {
+      this.removeStyle(styledElement, null);
+      this.styledElements_.pop();
     }
 
     if (!currentNode.hasChildNodes()) {
-      if (isStyleElement(currentNode)) {
+      if (isStyledElement(currentNode)) {
         this.selectionTracker_.willRemoveNode(currentNode);
         var parentNode = /** @type {!Node} */(currentNode.parentNode);
         this.context.removeChild(parentNode, currentNode);
@@ -245,9 +245,9 @@ editing.defineCommand('removeFormat', (function() {
       return;
     }
 
-    if (!isStyleElement(currentNode))
+    if (!isStyledElement(currentNode))
       return;
-    this.styleElements_.push(currentNode);
+    this.styledElements_.push(currentNode);
   }
 
   RemoveFormatCommandContext.prototype =
