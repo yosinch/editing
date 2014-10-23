@@ -98,9 +98,9 @@ editing.defineCommand('removeFormat', (function() {
   RemoveFormatCommandContext.prototype = {
     /**
      * @this {!RemoveFormatCommandContext}
-     * @param {!Array.<!Node>} effectiveNodes
+     * @param {!Array.<!Node>} targetNodes
      */
-    finish: function(effectiveNodes) {},
+    finish: function(targetNodes) {},
 
     /**
      * @this {!RemoveFormatCommandContext}
@@ -143,26 +143,26 @@ editing.defineCommand('removeFormat', (function() {
    * @return {boolean}
    */
   function execute() {
-    var effectiveNodes = this.prepare();
-    if (!effectiveNodes.length) {
+    var targetNodes = this.prepare();
+    if (!targetNodes.length) {
       this.context.setEndingSelection(this.context.startingSelection);
       return false;
     }
 
-    for (var currentNode of effectiveNodes)
+    for (var currentNode of targetNodes)
       this.processNode(currentNode);
 
-    this.finish(effectiveNodes);
+    this.finish(targetNodes);
     return true;
   }
 
   /**
    * @this {!RemoveFormatCommandContext}
-   * @param {!Array.<!Node>} effectiveNodes
+   * @param {!Array.<!Node>} targetNodes
    */
-  function finish(effectiveNodes) {
+  function finish(targetNodes) {
     while (this.styledElements_.length) {
-      var endNode = lastOf(effectiveNodes);
+      var endNode = lastOf(targetNodes);
       var styledElement = this.styledElements_.pop();
       var stopChild = endNode.parentNode === styledElement ?
           endNode.nextSibling : null;
@@ -199,21 +199,21 @@ editing.defineCommand('removeFormat', (function() {
     // See removeFormat.w3c.17
     this.shouldExpandInlineStyleAtEnd_ =
         styledElement !== null && !editing.dom.isPhrasing(styledElement);
-    var effectiveNodes = selectedNodes.slice();
+    var targetNodes = selectedNodes.slice();
     if (styledElement && styledElement !== startNode) {
       for (var runner = startNode.parentNode; runner !== styledElement;
            runner = runner.parentNode) {
-        effectiveNodes.unshift(runner);
+        targetNodes.unshift(runner);
       }
-      effectiveNodes.unshift(styledElement);
+      targetNodes.unshift(styledElement);
     }
 
-    effectiveNodes = effectiveNodes.map(function(currentNode) {
+    targetNodes = targetNodes.map(function(currentNode) {
       return wrapWithStyleSpanIfNeeded(context, currentNode);
     });
 
     if (!styledElement || styledElement === startNode)
-      return effectiveNodes;
+      return targetNodes;
 
     /** @type {boolean} */
     var needSplit = false;
@@ -230,10 +230,10 @@ editing.defineCommand('removeFormat', (function() {
     }
 
     if (!needSplit || !splitable)
-      return effectiveNodes;
+      return targetNodes;
 
     context.splitTreeLeft(splitable, startNode);
-    return effectiveNodes;
+    return targetNodes;
   }
 
   /**
