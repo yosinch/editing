@@ -11,6 +11,20 @@
  */
 editing.CommandContext = function(context, userInterface, commandValue) {};
 
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+editing.CommandContext.hasNoAttributeOrOnlyStyleAttribute =
+    function(element) {};
+
+/**
+ * @param {Node} node
+ * @return {boolean}
+ */
+editing.CommandContext.isSpanWithoutAttributesOrUnstyledStyleSpan =
+    function(node) {};
+
 /** @type {string} */ 
 editing.CommandContext.prototype.commandValue;
 
@@ -25,4 +39,3 @@ editing.CommandContext.prototype.execute = function() {};
 
 /** @param {!Element} element */
 editing.CommandContext.prototype.expandInlineStyle = function(element) {};
-

@@ -7,6 +7,36 @@ editing.CommandContext = (function() {
 
   /** @const */ var isElement = editing.dom.isElement;
 
+
+  /**
+   * @param {!Element} element
+   * @return {boolean}
+   */
+  function hasNoAttributeOrOnlyStyleAttribute(element) {
+    var attributes = element.attributes;
+    if (!attributes.length)
+      return true;
+    var matchedAttributes = 0;
+    // TODO(yosin) We should remove 'Apple-style-span', once UMA counter
+    // shows it isn't used.
+    if (element.getAttribute('class') == 'Apple-style-span')
+      ++matchedAttributes;
+    if (element.getAttribute('style') === '')
+      ++matchedAttributes;
+    return attributes.length <= matchedAttributes;
+  }
+
+  /**
+   * @param {Node} node
+   * @return {boolean}
+   */
+  function isSpanWithoutAttributesOrUnstyledStyleSpan(node) {
+    if (!node || node.nodeName !== 'SPAN')
+      return false;
+    var element = /** @type {!Element} */(node);
+    return hasNoAttributeOrOnlyStyleAttribute(element);
+  }
+
   /**
    * @constructor
    * @struct
@@ -24,14 +54,16 @@ editing.CommandContext = (function() {
   }
 
   /**
+   * @this {!CommandContext}
    * @param {!Element} element
    */
-  // TODO(yosin) We should move |expandInlineStyle()| to library to share
-  // with other commands.
   function expandInlineStyle(element) {
     var parentElement = /** @type {!Element} */(element.parentNode);
     console.assert(parentElement &&
                    parentElement.nodeType == Node.ELEMENT_NODE);
+    /** @const */
+    var commandContext = this;
+    /** @const */
     var context = this.context;
 
     /**
@@ -95,11 +127,10 @@ editing.CommandContext = (function() {
         context.appendChild(element, styledElement);
         context.removeStyle(element, property.name);
       });
-      if (element.tagName !== 'SPAN' || element.attributes.length)
+
+      if (!isSpanWithoutAttributesOrUnstyledStyleSpan(element))
         return;
-      // Remove useless SPAN.
-      context.moveAllChildren(parentElement, element);
-      context.removeChild(parentElement, element);
+      context.removeNodePreservingChildren(element);
     }
 
     if (context.shouldUseCSS) {
@@ -108,6 +139,12 @@ editing.CommandContext = (function() {
     }
     expandInlineStyleWithoutCSS(context, element);
   }
+
+  CommandContext.hasNoAttributeOrOnlyStyleAttribute =
+      hasNoAttributeOrOnlyStyleAttribute;
+
+  CommandContext.isSpanWithoutAttributesOrUnstyledStyleSpan =
+      isSpanWithoutAttributesOrUnstyledStyleSpan;
 
   CommandContext.prototype = /** @struct */ {
     get commandValue() { return this.commandValue_; },
