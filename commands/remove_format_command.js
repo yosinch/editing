@@ -14,6 +14,9 @@ editing.defineCommand('removeFormat', (function() {
         'SAMP', 'SMALL', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
         'VAR']);
 
+  var isSpanWithoutAttributesOrUnstyledStyleSpan =
+      editing.CommandContext.isSpanWithoutAttributesOrUnstyledStyleSpan;
+
   /**
    * @param {!Node} startNode
    * @return {Element}
@@ -194,6 +197,14 @@ editing.defineCommand('removeFormat', (function() {
       return [];
 
     var startNode = selectedNodes[0];
+    // For removeFormat.w3c.88, remove useless SPAN if start text node is
+    // split.
+    if (editing.dom.isText(startNode) && startNode.previousSibling) {
+      if (isSpanWithoutAttributesOrUnstyledStyleSpan(startNode.parentNode)) {
+        context.removeNodePreservingChildren(
+            /** @type {!Node} */(startNode.parentNode));
+      }
+    }
     var styledElement = findHighestStyledElement(startNode);
     // For compatibility, we don't expand inline style at end of node.
     // See removeFormat.w3c.17

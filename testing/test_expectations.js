@@ -15,8 +15,6 @@ testing.define('TEST_EXPECTATIONS', (function() {
     'insertOrderedList.w3c.78r': {expected: 'fail', reason: 'issue #59'},
 
     // remove format
-    'removeFormat.w3c.88': {expected: 'fail', reason: 'issue #24'},
-    'removeFormat.w3c.88r': {expected: 'fail', reason: 'issue #24'},
     'removeFormat.w3c.121': {expected: 'fail', reason: 'issue #20'},
     'removeFormat.w3c.121r': {expected: 'fail', reason: 'issue #20'},
     'removeFormat.w3c.122': {expected: 'fail', reason: 'issue #20'},
