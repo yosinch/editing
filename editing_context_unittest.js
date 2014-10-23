@@ -144,6 +144,27 @@ testCaseWithSample('context.normalizeSelection.surrounding.whitespaces.2',
   });
 
 //
+// removeNodePreservingChildren
+//
+testCaseWithSample('context.removeNodePreservingChildren.1',
+  '<p>foo|<b>bar</b>baz</p>', function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
+    context.removeNodePreservingChildren(context.document.querySelector('b'));
+    expectEq('<p>foobarbaz</p>',
+             function() { return context.document.body.firstChild.outerHTML; });
+  });
+
+testCaseWithSample('context.removeNodePreservingChildren.2',
+  '<p>foo|<b>bar<i>bar2</i></b>baz</p>', function(sample, selectionIn) {
+    var editor = editing.Editor.getOrCreate(sample.document);
+    var context = editor.createContext('noname', selectionIn);
+    context.removeNodePreservingChildren(context.document.querySelector('b'));
+    expectEq('<p>foobar<i>bar2</i>baz</p>',
+             function() { return context.document.body.firstChild.outerHTML; });
+  });
+
+//
 // setUpEffectiveNodes
 //
 testCaseWithSample('context.setUpEffectiveNodes.1',

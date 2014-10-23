@@ -52,6 +52,13 @@ editing.EditingContext.prototype.normalizeSelection = function(selection) {};
 
 /**
  * @this {!editing.EditingContext}
+ * @param {!Node} node
+ */
+editing.EditingContext.prototype.removeNodePreservingChildren =
+    function(node) {};
+
+/**
+ * @this {!editing.EditingContext}
  * @param {!Element} element
  * @param {string} propertyName
  * @param {string} propertyValue

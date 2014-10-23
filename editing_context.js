@@ -247,7 +247,18 @@ editing.EditingContext = (function() {
   }
 
   /**
-   * @this {!editing.EditingContext} context
+   * @this {!editing.EditingContext}
+   * @param {!Node} node
+   */
+  function removeNodePreservingChildren(node) {
+    var parentNode = node.parentNode;
+    while (node.firstChild)
+      this.insertBefore(parentNode, node.firstChild, node);
+    this.removeChild(parentNode, node);
+  }
+
+  /**
+   * @this {!editing.EditingContext}
    * @param {!editing.ImmutableSelection} selection
    * @param {!function(!Node):boolean} predicate
    * @return {!Array.<!Node>}
@@ -488,6 +499,7 @@ editing.EditingContext = (function() {
     insertChildrenBefore: {value: insertChildrenBefore},
     moveAllChildren: {value: moveAllChildren},
     normalizeSelection: {value: normalizeSelection},
+    removeNodePreservingChildren: {value: removeNodePreservingChildren},
     setUpEffectiveNodes: {value: setUpEffectiveNodes},
     setUpEffectiveNodesWithSplitter: {value: setUpEffectiveNodesWithSplitter},
     shouldUseCSS: { get: function() { return shouldUseCSS.call(this); } },
