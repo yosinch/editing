@@ -52,8 +52,13 @@ editing.defineCommand('removeFormat', (function() {
    * @param {!editing.EditingContext} context
    * @param {!Node} node
    * @return {!Node}
+   *
+   * Move STYLE attribute from |node| to children with SPAN element.
+   * See removeFormat.w3c.131.
+   * before: <p style="background-color: red">foo</p>
+   * after:  <p><span style="background-color: red">foo</span></p>
    */
-  function wrapWithStyleSpanIfNeeded(context, node) {
+  function pushDownInlineStyle(context, node) {
     if (!editing.dom.isElement(node))
       return node;
     var element = /** @type {!Element} */(node);
@@ -74,7 +79,6 @@ editing.defineCommand('removeFormat', (function() {
     context.removeAttribute(element, 'style');
     return styleSpan;
   }
-
 
   /**
    * @constructor
@@ -219,8 +223,9 @@ editing.defineCommand('removeFormat', (function() {
       targetNodes.unshift(styledElement);
     }
 
+    // For removeFormat.w3c.131, propagate inline style with SPAN element.
     targetNodes = targetNodes.map(function(currentNode) {
-      return wrapWithStyleSpanIfNeeded(context, currentNode);
+      return pushDownInlineStyle(context, currentNode);
     });
 
     if (!styledElement || styledElement === startNode)
