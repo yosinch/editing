@@ -109,19 +109,37 @@ editing.dom2 = (function() {
 
   /**
    * @param {!Node} node
-   * @return boolean
+   * @return {boolean}
    */
-  function isBreakElement(node) {
+  function isHTMLBRElement(node) {
     return node.nodeType === Node.ELEMENT_NODE &&
       (node.nodeName === 'BR' || node.nodeName === 'WBR');
   }
 
   /**
    * @param {!Node} node
-   * @return boolean
+   * @return {boolean}
    */
-  function isContainer(node) {
-    return isTableCell(node) || isListMergeableContainer(node);
+  function isHTMLListElement(node) {
+    var name = node.nodeName;
+    return name === 'OL' || name === 'UL' || name === 'DL';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isHTMLTableCellElement(node) {
+    var name = node.nodeName;
+    return name === 'TD' || name === 'TH';
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {boolean}
+   */
+  function isHTMLTableElement(node) {
+    return node.nodeName === 'TABLE';
   }
 
   /**
@@ -131,7 +149,7 @@ editing.dom2 = (function() {
   function isInList(node) {
     for (var currentNode = node.parentNode; currentNode;
          currentNode = currentNode.parentNode) {
-      if (isList(currentNode))
+      if (currentNode.nodeName === 'OL' || currentNode.nodeName === 'UL')
         return true;
     }
     return false;
@@ -141,46 +159,17 @@ editing.dom2 = (function() {
    * @param {!Node} node
    * @return {boolean}
    */
-  function isList(node) {
-    var name = node.nodeName;
-    return editing.dom.isElement(node) && (name === 'OL' || name === 'UL');
+  function isListItem(node) {
+    // TODO(hajimehoshi): htmlediting.cpp implements this using RenderObject.
+    return node.nodeName === 'LI';
   }
 
   /**
    * @param {!Node} node
    * @return {boolean}
    */
-  function isListItem(node) {
-    return node.nodeName === 'LI';
-  }
-
-  /**
-   * @param {!Node} node
-   * @return boolean
-   */
-  function isListMergeableContainer(node) {
-    // TODO(hajimehoshi): Add grouping tags here
-    var name = node.nodeName;
-    return name === 'P' || name === 'BLOCKQUOTE';
-  }
-
-  /**
-   * @param {!Node} node
-   * @return boolean
-   */
   function isPhrasingElement(node) {
-    // TODO(hajimehoshi)
     return node.nodeType === Node.ELEMENT_NODE && editing.dom.isPhrasing(node);
-  }
-
-  /**
-   * @param {!Node} node
-   * @return boolean
-   */
-  function isTableCell(node) {
-    var name = node.nodeName;
-    return name === 'TR' || name === 'TD' || name === 'TH' ||
-      name === 'COLGROUP' || name === 'TBODY' || name === 'THEAD';
   }
 
   /**
@@ -217,7 +206,7 @@ editing.dom2 = (function() {
   function splitList(context, listItemNode) {
     console.assert(isListItem(listItemNode));
     var listNode = listItemNode.parentNode;
-    console.assert(listNode && isList(listNode));
+    console.assert(listNode && isHTMLListElement(listNode));
 
     // Separate |listNode| into |firstList| and |secondList|.
     var firstList = /** @type {!Element} */(listNode);
@@ -264,14 +253,13 @@ editing.dom2 = (function() {
     firstIndex: firstIndex,
     firstSelfOrAncestor: firstSelfOrAncestor,
     insertChildNodesBefore: insertChildNodesBefore,
-    isBreakElement: isBreakElement,
-    isContainer: isContainer,
-    isListMergeableContainer: isListMergeableContainer,
+    isHTMLBRElement: isHTMLBRElement,
+    isHTMLListElement: isHTMLListElement,
+    isHTMLTableCellElement: isHTMLTableCellElement,
+    isHTMLTableElement: isHTMLTableElement,
     isInList: isInList,
     isPhrasingElement: isPhrasingElement,
-    isList: isList,
     isListItem: isListItem,
-    isTableCell: isTableCell,
     removeIfEmpty: removeIfEmpty,
     replaceNodeName: replaceNodeName,
     splitList: splitList,

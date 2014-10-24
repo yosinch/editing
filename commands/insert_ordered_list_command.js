@@ -80,8 +80,13 @@ editing.defineCommand('InsertOrderedList', (function() {
      * @return {!Array.<!Node>}
      */
     function getChildListItemCandidates(node) {
-      if (!editing.dom2.isContainer(node))
+      if (editing.dom.isText(node) ||
+          (node.nodeName === 'OL' || node.nodeName === 'UL') ||
+          editing.dom2.isHTMLTableElement(node) ||
+          editing.dom2.canContentOfDL(node)) {
         return [node];
+      }
+      
       return Array.prototype.reduce.call(
         node.childNodes, function(nodes, node) {
           return nodes.concat(getChildListItemCandidates(node));
@@ -158,8 +163,9 @@ editing.defineCommand('InsertOrderedList', (function() {
     // NOTE: Even when the new list item's parent is a <li>, that is, the <li>
     // is in a <li>, it is treated as if it was in a list. See w3c.40.
     if (!listItemNode.parentNode ||
-        (!editing.dom2.isList(listItemNode.parentNode) &&
-         !editing.dom2.isListItem(listItemNode.parentNode))) {
+        (listItemNode.parentNode.nodeName !== 'OL' &&
+         listItemNode.parentNode.nodeName !== 'UL') &&
+        !editing.dom2.isListItem(listItemNode.parentNode)) {
       var isListItemLastChildText = false;
       if (listItemNode.hasChildNodes()) {
         var childNodes = listItemNode.childNodes;
@@ -212,10 +218,12 @@ editing.defineCommand('InsertOrderedList', (function() {
           return child;
         if (editing.dom.isText(child))
           return child;
-        if (!editing.dom2.isListMergeableContainer(child) &&
-            !editing.dom2.canContentOfDL(child)) {
+        if (editing.dom2.isHTMLTableElement(child) ||
+            editing.dom2.isHTMLTableCellElement(child)) {
           return null;
         }
+        if (child.nodeName === 'UL')
+          return null;
         if (!child.lastChild)
           return child;
       }
@@ -232,10 +240,12 @@ editing.defineCommand('InsertOrderedList', (function() {
       if (node.nextSibling)
         return node.nextSibling;
       for (var parent of editing.dom.ancestors(node)) {
-        if (!editing.dom2.isListMergeableContainer(parent) &&
-            !editing.dom2.canContentOfDL(parent)) {
+        if (editing.dom2.isHTMLTableElement(parent) ||
+            editing.dom2.isHTMLTableCellElement(parent)) {
           return null;
         }
+        if (parent.nodeName === 'UL')
+          return null;
         if (parent.nextSibling)
           return parent.nextSibling
       }
@@ -264,7 +274,6 @@ editing.defineCommand('InsertOrderedList', (function() {
     }
 
     // TODO(hajimehoshi): Use isVisibilityAdjecent like htmlediting.cpp
-    //var begin = editing.dom.previousNode(editing.dom.nextNodeSkippingChildren(list));
     var nodes = [getNearestList(list, getPreviousNode),
                  list,
                  getNearestList(list, getNextNode)];
@@ -280,7 +289,7 @@ editing.defineCommand('InsertOrderedList', (function() {
   function processList(context, list, effectiveNodes) {
     /**
      * @param {!Element} list
-     * @return boolean
+     * @return {boolean}
      *
      * Returns true if |list| should be replaced with another type of a list.
      */
@@ -290,14 +299,14 @@ editing.defineCommand('InsertOrderedList', (function() {
 
       // In some special cases, the list is not replaced. See w3c.90,
       // w3c.90.1, w3c.90.2, w3c.92, w3c.96.
-      if (/*list.parentNode && */editing.dom2.isInList(list.parentNode)) {
+      if (editing.dom2.isInList(list.parentNode)) {
         var next = editing.dom.nextNodeSkippingChildren(list);
         if (!next)
           return true;
         if (effectiveNodes.indexOf(next) !== -1)
           return true;
         // |next| can be a newly generated list by listifying (w3c.92).
-        if (editing.dom2.isList(next) &&
+        if ((next.nodeName === 'OL' || next.nodeName === 'UL') &&
             Array.prototype.some.call(next.childNodes, function(listItem) {
               return effectiveNodes.indexOf(listItem) !== -1;
             })) {
@@ -538,7 +547,7 @@ editing.defineCommand('InsertOrderedList', (function() {
 
       // Remove <br> just after the new list.
       if (newList.nextSibling &&
-          editing.dom2.isBreakElement(newList.nextSibling)) {
+          editing.dom2.isHTMLBRElement(newList.nextSibling)) {
         var breakElement = newList.nextSibling;
         context.removeChild(breakElement.parentNode, breakElement);
       }
@@ -575,10 +584,10 @@ editing.defineCommand('InsertOrderedList', (function() {
     for (var group of listItemCandidateGroups)
       groups.push(group);
     groups.forEach(function(nodes) {
-      if (editing.dom2.isBreakElement(nodes[0]))
+      if (editing.dom2.isHTMLBRElement(nodes[0]))
         return;
 
-      if (editing.dom2.isList(nodes[0])) {
+      if (nodes[0].nodeName === 'OL' || nodes[0].nodeName === 'UL') {
         var list = processList(context, /** @type {!Element} */(nodes[0]),
                                effectiveNodes);
         if (list)
