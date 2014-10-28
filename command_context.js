@@ -93,22 +93,22 @@ editing.CommandContext = (function() {
         return;
       if (element.childElementCount) {
         // Apply inline style to text child element.
+        /** @type {Element} */
         var lastElement = null;
-        // TODO(yosin) We should use |for-of| once closure-compiler #643 fixed.
-        Array.prototype.forEach.call(element.childNodes, function(child) {
+        for (var child of Array.prototype.slice.call(element.childNodes)) {
           if (isElement(child)) {
             style.applyInheritedStyle(context, /** @type {!Element} */(child));
             lastElement = null;
-            return;
+            continue;
           }
           if (lastElement) {
-            context.appendChild(lastElement, child);
-            return;
+            context.appendChild(/** @type {!Element} */(lastElement), child);
+            continue;
           }
           if (editing.dom.isWhitespaceNode(child)) {
             // We don't need to wrap whitespaces with style element.
             // See createLink.style.7
-            return;
+            continue;
           }
           style.createElements(context,
               function(context, property, styledElement) {
@@ -117,9 +117,8 @@ editing.CommandContext = (function() {
                 context.appendChild(styledElement, child);
                 lastElement = styledElement;
               });
-        });
+        }
         context.removeAttribute(element, 'style');
-        return;
       }
       // Introduce text-level elements for inline style.
       style.createElements(context, function(context, property, styledElement) {

@@ -458,14 +458,12 @@ editing.defineCommand('createLink', (function() {
     if (!effectiveNodes.length)
       return createLinkForCaret(context, urlValue);
 
-    // TODO(yosin) Once closure compiler support |continue| in |for-of|, we
-    // should use |for-of| instead of |Array.prototype.every()|.
-    effectiveNodes.every(function(currentNode) {
+    for (var currentNode of effectiveNodes) {
       if (currentNode === this.anchorElement_)
-        return true;
+        continue;
 
       if (processAtomicElementsIfNeeded(commandContext, currentNode))
-        return true;
+        continue;
 
       var lastPendingContainer = lastOf(this.pendingContainers_);
       if (lastPendingContainer &&
@@ -475,27 +473,30 @@ editing.defineCommand('createLink', (function() {
 
       if (!isEditable(currentNode)) {
         processPendingContents(this);
-        return true;
+        continue;
       }
 
       if (isElement(currentNode)) {
         var element = /** @type {!Element} */(currentNode);
         if (!isPhrasing(element)) {
           processNonPhrasingNode(this, element);
-          return true;
+          continue;
         }
 
-        if (isAnchorElement(element))
-          return processAnchorElement(this, element);
+        if (isAnchorElement(element)) {
+          if (!processAnchorElement(this, element))
+            break;
+          continue;
+        }
 
         if (editing.dom.isInteractive(element)) {
           processPendingContents(this);
-          return true;
+          continue;
         }
 
         if (element.hasChildNodes()) {
           processContainer(commandContext, element);
-          return true;
+          continue;
         }
       }
 
@@ -503,12 +504,12 @@ editing.defineCommand('createLink', (function() {
         this.pendingContents_.push(currentNode);
         if (!currentNode.nextSibling)
           moveLastContainerToContents(this);
-        return true;
+        continue;
       }
 
       wrapByAnchor(this, currentNode);
-      return true;
-    }, this);
+      continue;
+    }
 
     // The last effective node is descendant of pending container.
     // Example: foo<b>^bar<i>baz quux</i></b>|mox

@@ -502,14 +502,12 @@ editing.defineCommand('InsertOrderedList', (function() {
       return mainList;
     }
 
-    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
-    // fixed.
-    lists.forEach(function(node) {
+    for (var node of lists) {
       console.assert(node.nodeName === 'OL');
 
       // Already merged with its siblings.
       if (!node.parentNode)
-        return;
+        continue;
 
       var listsToBeMerged = getListsToBeMerged(node);
 
@@ -561,7 +559,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         console.assert(parentNode);
         context.replaceChild(parentNode, newList, definitionListItem);
       }
-    });
+    }
   }
 
   /**
@@ -578,21 +576,19 @@ editing.defineCommand('InsertOrderedList', (function() {
     var newLists = [];
     var mergeableListCandidates = [];
 
-    // TODO(hajimehoshi): Replace for-of after google/closure-compiler#643 is
-    // fixed.
     var groups = [];
     for (var group of listItemCandidateGroups)
       groups.push(group);
-    groups.forEach(function(nodes) {
+    for (var nodes of groups) {
       if (editing.dom2.isHTMLBRElement(nodes[0]))
-        return;
+        continue;
 
       if (nodes[0].nodeName === 'OL' || nodes[0].nodeName === 'UL') {
         var list = processList(context, /** @type {!Element} */(nodes[0]),
                                effectiveNodes);
         if (list)
           mergeableListCandidates.push(list);
-        return;
+        continue;
       }
 
       // TODO(hajimehoshi): What if an ancestor is not contenteditable?
@@ -600,7 +596,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         var list = processNodesInList(context, nodes, effectiveNodes);
         if (list)
           mergeableListCandidates.push(list);
-        return;
+        continue;
       }
 
       // TODO(hajimehoshi): Read C++
@@ -613,7 +609,7 @@ editing.defineCommand('InsertOrderedList', (function() {
           list, listItem);
         context.appendChild(list, listItem);
         mergeableListCandidates.push(list);
-        return;
+        continue;
       }
 
       // Listify |nodes|.
@@ -628,7 +624,7 @@ editing.defineCommand('InsertOrderedList', (function() {
         var br = newNode.nextSibling;
         context.removeChild(br.parentNode, br);
       }
-    });
+    }
 
     mergeLists(context, mergeableListCandidates, newLists);
   }
