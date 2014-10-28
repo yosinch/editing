@@ -175,8 +175,8 @@ editing.defineCommand('removeFormat', (function() {
           endNode.nextSibling : null;
       this.removeStyle(styledElement, stopChild);
       if (this.shouldExpandInlineStyleAtEnd_ && stopChild) {
-        // See removeFormat.w3c.17 for not expand inline style case, adn
-        // removeFormat.w3c.143 for expand inline case.
+        // See removeFormat.w3c.17 for not expand inline style case, and
+        // removeFormat.w3c.134 for expand inline case.
         this.expandInlineStyle(styledElement);
       }
     }
