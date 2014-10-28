@@ -4,7 +4,7 @@ setlocal
 
 set TMP=d:\tmp
 set TEMP=d:\tmp
-set closure_jar=%CR_ROOT%\third_party\closure_compiler\compiler\compiler.jar
+set closure_jar=.\third_party\closure_compiler\compiler\compiler.jar
 
 python checker.py --compiler %closure_jar% --out_dir %TMP% -- %*
 
