@@ -477,9 +477,12 @@ editing.defineCommand('InsertOrderedList', (function() {
       var mainList = listNodes[mainListIndex];
       var mainListFirstChild = mainList.firstChild;
       var parent = mainList.parentNode;
-      listNodes.forEach(function(listNode, index) {
-        if (index === mainListIndex)
-          return;
+      var index = 0;
+      for (var listNode of listNodes) {
+        if (index === mainListIndex) {
+          ++index;
+          continue;
+        }
 
         console.assert(listNode.nodeName === 'OL');
         // A list item can be <dt> or <dd>. See w3c.24, w3c.25.
@@ -497,7 +500,8 @@ editing.defineCommand('InsertOrderedList', (function() {
                                               null);
         }
         context.removeChild(listNode.parentNode, listNode);
-      });
+        ++index;
+      }
 
       return mainList;
     }
